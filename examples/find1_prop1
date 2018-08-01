@@ -1,0 +1,15 @@
+// The find example from the Invgen-repo where we want to prove that
+// if we find a position, the element at that position is equal to v
+
+int [] a;
+int i, alength, v, r;
+
+requires 0 <= alength;
+requires i == 0;
+requires r == -1;
+ensures a[r] == v | r == -1;
+
+while (i < alength & r == -1) do
+:: a[i] == v -> r = i;
+:: true      -> i = i + 1;
+od

@@ -4,6 +4,7 @@ set(SPECTRE_LOGIC_SOURCES
     Sort.cpp
     Term.cpp
     Theory.cpp
+    Problem.cpp
 )
 set(SPECTRE_LOGIC_HEADERS
     Formula.hpp
@@ -11,6 +12,7 @@ set(SPECTRE_LOGIC_HEADERS
     Sort.hpp
     Term.hpp
     Theory.hpp
+    Problem.hpp
 )
 
 add_library(logic ${SPECTRE_LOGIC_SOURCES} ${SPECTRE_LOGIC_HEADERS})

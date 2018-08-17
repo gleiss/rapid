@@ -9,6 +9,9 @@ namespace program
     class Statement
     {
     public:
+        enum class Type{ IntAssignment, IfElse, WhileStatement, SkipStatement };
+        virtual Type type() const = 0;
+        
         virtual std::string toString(int indentation) const = 0;
     };
     std::ostream& operator<<(std::ostream& ostr, const Statement& v);
@@ -25,6 +28,7 @@ namespace program
         const std::shared_ptr<const IntExpression> lhs;
         const std::shared_ptr<const IntExpression> rhs;
         
+        Type type() const override {return Type::IntAssignment;}
         std::string toString(int indentation) const override;
     };
     
@@ -38,6 +42,7 @@ namespace program
         const std::vector<std::shared_ptr<const Statement>> ifStatements;
         const std::vector<std::shared_ptr<const Statement>> elseStatements;
         
+        Type type() const override {return Type::IfElse;}
         std::string toString(int indentation) const override;
     };
     
@@ -50,6 +55,7 @@ namespace program
         const std::shared_ptr<const BoolExpression> condition;
         const std::vector<std::shared_ptr<const Statement>> bodyStatements;
         
+        Type type() const override {return Type::WhileStatement;}
         std::string toString(int indentation) const override;
     };
     
@@ -58,6 +64,7 @@ namespace program
     public:
         SkipStatement(){};
         
+        Type type() const override {return Type::SkipStatement;}
         std::string toString(int indentation) const override;
     };
 }

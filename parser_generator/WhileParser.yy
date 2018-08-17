@@ -131,8 +131,6 @@ function_list:
 function:
   ID LPAR RPAR LCUR var_definition_list statement_list RCUR 
   {
-    for(const auto& var : $5)
-
     $$ = std::shared_ptr<const program::Function>(new program::Function($1, std::move($5), std::move($6)));
   }
 ;

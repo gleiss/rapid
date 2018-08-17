@@ -7,6 +7,10 @@
 
 namespace parser
 {
+    /*
+     * this class is used to communicate with the bison-parser, in particular to
+     * get back the parsed program.
+     */
     class WhileParsingContext
     {
     public:

@@ -19,8 +19,7 @@ namespace util {
     // must be called before exiting
     static void close();
 
-    // stream manipulators to add '%' at the start of each line (TPTP
-    // comments)
+    // stream manipulators to add ';' at the start of each line (SMTLIB comments)
     static std::ostream& comment(std::ostream& str);
     static std::ostream& nocomment(std::ostream& str);
 

@@ -46,11 +46,7 @@ namespace logic {
         const bool colored;
 
         bool isPredicateSymbol() const { return rngSort == Sorts::boolSort(); }
-        
-        std::string toTPTP() const;
-        std::string declareSymbolTPTP() const;
-        std::string declareSymbolColorTPTP() const;
- 
+         
         std::string toSMTLIB() const;
         std::string declareSymbolSMTLIB() const;
         std::string declareSymbolColorSMTLIB() const;

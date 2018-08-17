@@ -9,10 +9,8 @@ namespace logic {
     
     class Formula {
     public:
-        std::string declareTPTP(std::string decl, bool conjecture = false) const;
         std::string declareSMTLIB(std::string decl, bool conjecture = false) const;
         
-        virtual std::string toTPTP() const = 0;
         virtual std::string toSMTLIB(unsigned indentation = 0) const = 0;
         virtual std::string prettyString(unsigned indentation = 0) const = 0;
     };
@@ -26,7 +24,6 @@ namespace logic {
 
         const std::shared_ptr<const PredTerm> p;
 
-        std::string toTPTP() const override;
         std::string toSMTLIB(unsigned indentation = 0) const override;
         std::string prettyString(unsigned indentation = 0) const override;
     };
@@ -46,7 +43,6 @@ namespace logic {
         const std::shared_ptr<const Term> left;
         const std::shared_ptr<const Term> right;
         
-        std::string toTPTP() const override;
         std::string toSMTLIB(unsigned indentation = 0) const override;
         std::string prettyString(unsigned indentation = 0) const override;
     };
@@ -61,7 +57,6 @@ namespace logic {
         
         const std::vector<std::shared_ptr<const Formula>> conj;
 
-        std::string toTPTP() const override;
         std::string toSMTLIB(unsigned indentation = 0) const override;
         std::string prettyString(unsigned indentation = 0) const override;
     };
@@ -76,7 +71,6 @@ namespace logic {
         
         const std::vector<std::shared_ptr<const Formula>> disj;
 
-        std::string toTPTP() const override ;
         std::string toSMTLIB(unsigned indentation = 0) const override;
         std::string prettyString(unsigned indentation = 0) const override;
     };
@@ -90,7 +84,6 @@ namespace logic {
         
         const std::shared_ptr<const Formula> f;
 
-        std::string toTPTP() const override;
         std::string toSMTLIB(unsigned indentation = 0) const override;
         std::string prettyString(unsigned indentation = 0) const override;
         
@@ -107,7 +100,6 @@ namespace logic {
         const std::vector<std::shared_ptr<const LVariable>> vars;
         const std::shared_ptr<const Formula> f;
         
-        std::string toTPTP() const override;
         std::string toSMTLIB(unsigned indentation = 0) const override;
         std::string prettyString(unsigned indentation = 0) const override;
     };
@@ -123,7 +115,6 @@ namespace logic {
         const std::vector<std::shared_ptr<const LVariable>> vars;
         const std::shared_ptr<const Formula> f;
         
-        std::string toTPTP() const override;
         std::string toSMTLIB(unsigned indentation = 0) const override;
         std::string prettyString(unsigned indentation = 0) const override;
     };
@@ -138,12 +129,11 @@ namespace logic {
         const std::shared_ptr<const Formula> f1;
         const std::shared_ptr<const Formula> f2;
         
-        std::string toTPTP() const override;
         std::string toSMTLIB(unsigned indentation = 0) const override;
         std::string prettyString(unsigned indentation = 0) const override;
     };
     
-    inline std::ostream& operator<<(std::ostream& ostr, const Formula& e) { ostr << e.toTPTP(); return ostr; }
+    inline std::ostream& operator<<(std::ostream& ostr, const Formula& e) { ostr << e.toSMTLIB(); return ostr; }
     
 # pragma mark - Formulas
     

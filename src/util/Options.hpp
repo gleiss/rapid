@@ -75,19 +75,11 @@ namespace util {
     public:
         Configuration() :
         _outputFile("output", ""),
-        _outputFormat("output-format", {"tptp", "smtlib"}, "smtlib"),
-        _mainMode("mode", { "generation", "verification" }, "verification"),
         _timepoints("timepoints", false),
-        _arrayTheory("arraytheory", false),
-        _existentialAxioms("eaxioms", true),
         _allOptions()
         {
             registerOption(&_outputFile);
-            registerOption(&_outputFormat);
-            registerOption(&_mainMode);
             registerOption(&_timepoints);
-            registerOption(&_arrayTheory);
-            registerOption(&_existentialAxioms);
         }
         
         bool setAllValues(int argc, char *argv[]);
@@ -95,21 +87,13 @@ namespace util {
         Option* getOption(std::string name);
         
         StringOption outputFile() { return _outputFile; }
-        MultiChoiceOption outputFormat() { return _outputFormat; }
-        MultiChoiceOption mainMode() { return _mainMode; }
         BooleanOption timepoints() { return _timepoints; }
-        BooleanOption arrayTheory() { return _arrayTheory; }
-        BooleanOption existentialAxioms() { return _existentialAxioms; }
         
         static Configuration instance() { return _instance; }
         
     protected:
         StringOption _outputFile;
-        MultiChoiceOption _outputFormat;
-        MultiChoiceOption _mainMode;
         BooleanOption _timepoints;
-        BooleanOption _arrayTheory;
-        BooleanOption _existentialAxioms;
         
         std::map<std::string, Option*> _allOptions;
         

@@ -6,11 +6,6 @@ namespace logic {
 
   unsigned LVariable::freshId = 0;
 
-    std::string LVariable::toTPTP() const
-    {
-        return name;
-    }
-    
     std::string LVariable::toSMTLIB() const
     {
         return name;
@@ -21,21 +16,6 @@ namespace logic {
         return name;
     }
 
-  
-    std::string FuncTerm::toTPTP() const
-    {
-        if (subterms.size() == 0) {
-            return head->toTPTP();
-        } else {
-            std::string str = head->toTPTP() + "(";
-            for (unsigned i = 0; i < subterms.size(); i++) {
-                str += subterms[i]->toTPTP();
-                str += (i == subterms.size() - 1) ? ")" : ",";
-            }
-            return str;
-        }
-    }
-    
     std::string FuncTerm::toSMTLIB() const
     {
         if (subterms.size() == 0)
@@ -64,20 +44,7 @@ namespace logic {
         {
             std::string str = head->toSMTLIB() + "(";
             for (unsigned i = 0; i < subterms.size(); i++) {
-                str += subterms[i]->toTPTP();
-                str += (i == subterms.size() - 1) ? ")" : ",";
-            }
-            return str;
-        }
-    }
-
-    std::string PredTerm::toTPTP() const {
-        if (subterms.size() == 0) {
-            return head->toTPTP();
-        } else {
-            std::string str = head->toTPTP() + "(";
-            for (unsigned i = 0; i < subterms.size(); i++) {
-                str += subterms[i]->toTPTP();
+                str += subterms[i]->toSMTLIB();
                 str += (i == subterms.size() - 1) ? ")" : ",";
             }
             return str;

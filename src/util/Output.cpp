@@ -65,15 +65,7 @@ namespace util {
         }
         if (_atLineStart)
         {
-            if (util::Configuration::instance().outputFormat().getValue() == "tptp")
-            {
-                _dest->sputc('%');
-            }
-            else
-            {
-                assert(util::Configuration::instance().outputFormat().getValue() == "smtlib");
-                _dest->sputc(';');
-            }
+            _dest->sputc(';');
             _dest->sputc(' ');
             _atLineStart = false;
         }

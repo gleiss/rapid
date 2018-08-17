@@ -19,7 +19,6 @@ namespace logic {
     public:
 //        virtual std::vector<std::shared_ptr<const LVariable>> freeVariables() const = 0;
 
-        virtual std::string toTPTP() const = 0;
         virtual std::string toSMTLIB() const = 0;
         virtual std::string prettyString() const = 0;
     };
@@ -37,7 +36,6 @@ namespace logic {
         
 //        std::vector<std::shared_ptr<const LVariable>> freeVariables() const override;
 
-        std::string toTPTP() const override;
         std::string toSMTLIB() const override;
         virtual std::string prettyString() const override;
         
@@ -66,7 +64,6 @@ namespace logic {
         
 //        std::vector<std::shared_ptr<const LVariable>> freeVariables() const override;
 
-        std::string toTPTP() const override;
         std::string toSMTLIB() const override;
         virtual std::string prettyString() const override;
     };
@@ -91,12 +88,11 @@ namespace logic {
         
 //        std::vector<std::shared_ptr<const LVariable>> freeVariables() const override;
         
-        std::string toTPTP() const override;
         std::string toSMTLIB() const override;
         virtual std::string prettyString() const override;
     };
     
-    inline std::ostream& operator<<(std::ostream& ostr, const Term& e) { ostr << e.toTPTP(); return ostr; }
+    inline std::ostream& operator<<(std::ostream& ostr, const Term& e) { ostr << e.toSMTLIB(); return ostr; }
 
     
 # pragma mark - Terms

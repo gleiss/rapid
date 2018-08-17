@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
 //                util::Output::stream() << aRes.toString();
 //                util::Output::stream() << util::Output::nocomment;
 //
-//                // create properties and dump them to TPTP/SMTLIB
+//                // create properties and dump them to SMTLIB
 //                if (!util::Configuration::instance().timepoints().getValue())
 //                {
 //                    program::Properties props(*p, aRes);

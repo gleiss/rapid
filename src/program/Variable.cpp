@@ -35,7 +35,6 @@ namespace program {
     std::shared_ptr<const logic::Term> IntArrayApplication::toTerm(std::shared_ptr<const logic::Term> i) const
     {
         assert(i != nullptr);
-        assert(!util::Configuration::instance().arrayTheory().getValue());
         
         auto sortToDescribeTime = (util::Configuration::instance().timepoints().getValue()) ? logic::Sorts::timeSort() : logic::Sorts::intSort();
         auto s = logic::Signature::fetchOrDeclare(array->name, { sortToDescribeTime, logic::Sorts::intSort() }, logic::Sorts::intSort(), false, true);

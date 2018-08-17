@@ -6,107 +6,6 @@ namespace logic {
     
 #pragma mark - Symbol
 
-    std::string Symbol::declareSymbolTPTP() const
-    {
-        if (interpreted)
-        {
-            return ""; // don't  need to declare symbols, which are already known to TPTP-solvers.
-        }
-        
-        std::string s = "tff(symb_" + name + ", type, " + name + " : ";
-        if (argSorts.size() == 0)
-        {
-            s += rngSort->toTPTP() + ").\n";
-        }
-        else if (argSorts.size() == 1)
-        {
-            s += argSorts[0]->toTPTP() + " > " + rngSort->toTPTP() + ").\n";
-        }
-        else
-        {
-            s += "(";
-            for (unsigned i = 0; i < argSorts.size() - 1; i++)
-            {
-                s += argSorts[i]->toTPTP() + " * ";
-            }
-            s += argSorts[argSorts.size() - 1]->toTPTP() + ") > " + rngSort->toTPTP() + ").\n";
-        }
-        return s;
-    }
-    
-    std::string Symbol::toTPTP() const
-    {
-        if (name == "time_zero" || name == "time_succ" || name == "time_pre" || name == "time_sub")
-        {
-            assert(false); // term algebras are not supported with TPTP-syntax
-            return "";
-        }
-
-        if (name == "int_plus")
-        {
-            return "$sum";
-        }
-        else if (name == "int_minus")
-        {
-            return "$difference";
-        }
-        else if (name == "int_multiply")
-        {
-            return "$product";
-        }
-        else if (name == "int_quotient_e")
-        {
-            return "$quotient_e";
-        }
-        else if (name == "int_unary_minus")
-        {
-            return "$uminus";
-        }
-        else if (name == "int_greater")
-        {
-            return "$greater";
-        }
-        else if (name == "int_greater_eq")
-        {
-            return "$greatereq";
-        }
-        else if (name == "int_less")
-        {
-            return "$less";
-        }
-        else if (name == "int_less_eq")
-        {
-            return "$lesseq";
-        }
-        else if (name == "array_select")
-        {
-            return "$select";
-        }
-        else if (name == "array_store")
-        {
-            return "$store";
-        }
-        else if (name == "bool_true")
-        {
-            return "$true";
-        }
-        else if (name == "bool_false")
-        {
-            return "$false";
-        }
-        // test whether integer constant
-        else if (std::all_of(name.begin(), name.end(), ::isdigit) ||
-                 (name[0]=='-' && std::all_of(name.begin()+1, name.end(), ::isdigit)))
-        {
-            return name;
-        }
-        else
-        {
-            assert(!interpreted);
-            return name;
-        }
-    }
-
     std::string Symbol::declareSymbolSMTLIB() const
     {
         // hack since Vampire currently doesn't add the sub-predicate itself
@@ -226,24 +125,6 @@ namespace logic {
             assert(!interpreted);
             return name;
         }
-    }
-    
-    std::string Symbol::declareSymbolColorTPTP() const
-    {
-        assert(!interpreted);
-        
-        std::string s = "vampire(symbol, ";
-        s += "function, "; // predicate or function
-        s += name + ", ";
-        s += std::to_string(argSorts.size()) + ", "; // arity
-        s += colored ? "left" : "skip";
-        s += ").\n";
-        return s;
-    }
-    
-    std::string Symbol::declareSymbolColorSMTLIB() const
-    {
-        return colored ? "(color-symbol " + toSMTLIB() + " :left)\n" : "";
     }
     
 #pragma mark - Signature

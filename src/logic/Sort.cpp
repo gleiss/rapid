@@ -6,30 +6,9 @@
 namespace logic {
     
 #pragma mark - Sort
-    std::string Sort::toTPTP() const
-    {
-        // not implemented yet
-        assert(!util::Configuration::instance().arrayTheory().getValue());
-        
-        if (name == "int")
-        {
-            return "$int";
-        }
-        else if (name == "bool")
-        {
-            return "$o";
-        }
-        else
-        {
-            return name;
-        }
-    }
     
     std::string Sort::toSMTLIB() const
     {
-        // not implemented yet
-        assert(!util::Configuration::instance().arrayTheory().getValue());
-        
         if (name == "int")
         {
             return "Int";
@@ -44,32 +23,8 @@ namespace logic {
         }
     }
     
-    std::string declareSortTPTP(const Sort& s)
-    {
-        // not implemented yet
-        assert(!util::Configuration::instance().arrayTheory().getValue());
-        
-        if (s.toTPTP() == "$o" || s.toTPTP() == "$int")
-        {
-            // TPTP already knows bool and int.
-            return "";
-        }
-        else if (s.toTPTP() == "Time")
-        {
-            assert(false); // TPTP doesn't support term algebras
-            return "";
-        }
-        else
-        {
-            return "tff(sort_" + s.toTPTP() + ", type, " + s.toTPTP() + " : $tType).\n";
-        }
-    }
-    
     std::string declareSortSMTLIB(const Sort& s)
     {
-        // not implemented yet
-        assert(!util::Configuration::instance().arrayTheory().getValue());
-        
         if (s.toSMTLIB() == "Int" || s.toSMTLIB() == "Bool")
         {
             // SMTLIB already knows Int and Bool.

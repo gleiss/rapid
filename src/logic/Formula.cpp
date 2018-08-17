@@ -6,11 +6,6 @@
 
 namespace logic {
     
-    std::string Formula::declareTPTP(std::string decl, bool conjecture) const
-    {
-        return "tff(" + decl + ", " + (conjecture ? "conjecture, " : "hypothesis, ") + toTPTP() + ").";
-    }
-    
     std::string Formula::declareSMTLIB(std::string decl, bool conjecture) const
     {
         if (conjecture)
@@ -23,25 +18,12 @@ namespace logic {
             return "; " + decl + "\n" + "(assert\n" + toSMTLIB(3) + "\n)\n";
         }
     }
-    
-    std::string PredicateFormula::toTPTP() const
-    {
-        return p->toTPTP();
-    }
-    
+
     std::string PredicateFormula::toSMTLIB(unsigned indentation) const
     {
         return std::string(indentation, ' ') + p->toSMTLIB();
     }
-    
-    std::string EqualityFormula::toTPTP() const
-    {
-        if (polarity)
-            return left->toTPTP() + " = " + right->toTPTP();
-        else
-            return left->toTPTP() + " != " + right->toTPTP();
-    }
-    
+
     std::string EqualityFormula::toSMTLIB(unsigned indentation) const
     {
         if (polarity)
@@ -53,21 +35,7 @@ namespace logic {
             return std::string(indentation, ' ')  + "(not (= " + left->toSMTLIB() + " " + right->toSMTLIB() + "))";
         }
     }
-    
- 
-    std::string ConjunctionFormula::toTPTP() const
-    {
-        if (conj.size() == 0)
-            return "$true";
-        std::string str = "";
-        for (unsigned i = 0; i < conj.size(); i++) {
-            str += "(" + conj[i]->toTPTP() + ")";
-            
-            str += (i == conj.size() - 1) ? "" : " & ";
-        }
-        return str;
-    }
-    
+
     std::string ConjunctionFormula::toSMTLIB(unsigned indentation) const
     {
         if (conj.size() == 0)
@@ -79,19 +47,6 @@ namespace logic {
             str += conj[i]->toSMTLIB(indentation + 3) + "\n";
         }
         str += std::string(indentation, ' ') + ")";
-        return str;
-    }
-    
-    std::string DisjunctionFormula::toTPTP() const
-    {
-        if (disj.size() == 0)
-            return "$false";
-        std::string str = "";
-        for (unsigned i = 0; i < disj.size(); i++) {
-            str += "(" + disj[i]->toTPTP() + ")";
-            
-            str += (i == disj.size() - 1) ? "" : " | ";
-        }
         return str;
     }
     
@@ -109,28 +64,12 @@ namespace logic {
         return str;
     }
     
-    std::string NegationFormula::toTPTP() const
-    {
-        return "~(" + f->toTPTP() + ")";
-    }
-    
     std::string NegationFormula::toSMTLIB(unsigned indentation) const
     {
         std::string str = std::string(indentation, ' ') + "(not\n";
         str += f->toSMTLIB(indentation + 3) + "\n";
         str += std::string(indentation, ' ') + ")";
         return  str;
-    }
-    
-    std::string ExistentialFormula::toTPTP() const
-    {
-        std::string str = "? [";
-        for (unsigned i = 0; i < vars.size(); i++) {
-            str += vars[i]->name + " : " + vars[i]->sort->toTPTP();
-            if (i != vars.size() - 1) { str += ", "; }
-        }
-        str += "] : (" + f->toTPTP() + ")";
-        return str;
     }
     
     std::string ExistentialFormula::toSMTLIB(unsigned indentation) const
@@ -149,17 +88,6 @@ namespace logic {
         str += f->toSMTLIB(indentation + 3) + "\n";
         
         str += std::string(indentation, ' ') + ")";
-        return str;
-    }
-    
-    std::string UniversalFormula::toTPTP() const
-    {
-        std::string str = "! [";
-        for (unsigned i = 0; i < vars.size(); i++) {
-            str += vars[i]->name + " : " + vars[i]->sort->toTPTP();
-            if (i != vars.size() - 1) { str += ", "; }
-        }
-        str += "] : (" + f->toTPTP() + ")";
         return str;
     }
 
@@ -182,11 +110,6 @@ namespace logic {
         return str;
     }
     
-    std::string ImplicationFormula::toTPTP() const
-    {
-        return "(" + f1->toTPTP() + ")" + " => (" + f2->toTPTP() + ")";
-    }
-    
     std::string ImplicationFormula::toSMTLIB(unsigned indentation) const
     {
         std::string str = std::string(indentation, ' ') + "(=>\n";
@@ -196,25 +119,6 @@ namespace logic {
         return  str;
     }
 
-//    std::shared_ptr<const Formula> Formula::quantify(bool univ) const
-//    {
-//        std::vector<std::shared_ptr<const LVariable>> vars = freeVariables();
-//
-//        if (vars.empty())
-//        {
-//            return std::make_shared<const Formula>(this);
-//        }
-//
-//        if (univ)
-//        {
-//            return std::make_shared<UniversalFormula>(vars, std::make_shared<const Formula>(this));
-//        }
-//        else
-//        {
-//            return std::make_shared<ExistentialFormula>(vars, std::make_shared<const Formula>(this));
-//        }
-//    }
-//
 //    std::vector<std::shared_ptr<const LVariable>> PredicateFormula::freeVariables() const
 //    {
 //        return p->freeVariables();

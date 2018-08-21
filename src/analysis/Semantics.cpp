@@ -9,9 +9,12 @@ namespace analysis {
     
     std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::Program& program)
     {
+        // Optimization to get a smaller encoding, which is easier to read:
+        // compute for each statement the first timepoint of the next statement
         const auto& map = computeEndLocations(program);
-        std::vector<std::shared_ptr<const logic::Formula>> conjuncts;
         
+        // generate semantics compositionally
+        std::vector<std::shared_ptr<const logic::Formula>> conjuncts;
         for(const auto& function : program.functions)
         {
             std::vector<std::shared_ptr<const logic::Formula>> conjunctsFunction;
@@ -169,14 +172,16 @@ namespace analysis {
         }
         conjuncts.push_back(logic::Formulas::universal({i}, logic::Formulas::conjunction(conjuncts2)));
         
-        // Part 3: Define last iteration: Loop condition holds always before n, doesn't hold at n
+        // Part 3: Define last iteration
+        // Loop condition holds always before n
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts3;
         auto iLessN = logic::Theory::timeSub(i, n);
         auto conditionAtI = whileStatement->condition->toFormula(i);
         auto imp = logic::Formulas::implication(iLessN, conditionAtI);
         conjuncts3.push_back(imp);
         conjuncts.push_back(logic::Formulas::universal({i}, logic::Formulas::conjunction(conjuncts3)));
-
+        
+        // loop condition doesn't hold at n
         auto negConditionAtN = logic::Formulas::negation(whileStatement->condition->toFormula(n));
         conjuncts.push_back(negConditionAtN);
         
@@ -188,10 +193,9 @@ namespace analysis {
 
         return logic::Formulas::conjunction(conjuncts);
     }
+    
     std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const std::shared_ptr<const program::SkipStatement> skipStatement, const EndLocationMap& map, std::vector<std::shared_ptr<const logic::Term>> iterators)
-    {
-        std::vector<std::shared_ptr<const logic::Formula>> conjuncts;
-        
+    {        
         auto l1 = startTimePoint(skipStatement, iterators);
         auto l2 = map.at(skipStatement);
 

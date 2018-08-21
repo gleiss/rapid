@@ -13,37 +13,43 @@
 namespace logic {
     
     class Symbol {
-        // we need each symbol to be defined in the signature
-        // We therefore use the Signature-class below as a manager-class for Symbol-objects
+        // we need each symbol to be either defined in the signature or to be a variable (which will be defined by the quantifier)
+        // We use the Signature-class below as a manager-class for symbols of the first kind
         friend class Signature;
         
     private:
-        Symbol(std::string name, Sort* rngSort, bool interpreted=false, bool colored=false) :
+        Symbol(std::string name, const Sort* rngSort, bool noDeclaration) :
         name(name),
         argSorts(),
         rngSort(rngSort),
-        interpreted(interpreted),
-        colored(colored)
+        noDeclaration(noDeclaration)
         {
             assert(!name.empty());
         }
         
-        Symbol(std::string name, std::initializer_list<Sort*> argSorts, Sort* rngSort, bool interpreted=false, bool colored=false) :
+        Symbol(std::string name, std::initializer_list<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration) :
         name(name),
         argSorts(argSorts),
         rngSort(rngSort),
-        interpreted(interpreted),
-        colored(colored)
+        noDeclaration(noDeclaration)
+        {
+            assert(!name.empty());
+        }
+        
+        Symbol(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration) :
+        name(name),
+        argSorts(std::move(argSorts)),
+        rngSort(rngSort),
+        noDeclaration(noDeclaration)
         {
             assert(!name.empty());
         }
      
     public:
         const std::string name;
-        const std::vector<Sort*> argSorts;
+        const std::vector<const Sort*> argSorts;
         const Sort* rngSort;
-        const bool interpreted; // true iff the symbol is interpreted, i.e. it is assumed to be already declared and defined
-        const bool colored;
+        const bool noDeclaration; // true iff the symbol needs no declaration (i.e. true only for interpreted symbols and variables)
 
         bool isPredicateSymbol() const { return rngSort == Sorts::boolSort(); }
          
@@ -88,8 +94,8 @@ namespace logic {
     {
     public:
         // construct new symbols
-        static Symbol* fetchOrDeclare(std::string name, Sort* rngSort, bool interpreted=false, bool colored=false);
-        static Symbol* fetchOrDeclare(std::string name, std::initializer_list<Sort*> argSorts, Sort* rngSort, bool interpreted=false, bool colored=false);
+        static Symbol* fetchOrAdd(std::string name, std::initializer_list<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration=false);
+        static Symbol* fetchOrAdd(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration=false);
 
         static const std::unordered_set<std::unique_ptr<Symbol>, SymbolPtrHash, SymbolPtrEquality>& signature(){return _signature;}
         

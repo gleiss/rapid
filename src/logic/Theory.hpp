@@ -27,7 +27,7 @@ namespace logic {
         static std::shared_ptr<const FuncTerm> timeZero();
         static std::shared_ptr<const FuncTerm> timeSucc(std::shared_ptr<const Term> term);
         static std::shared_ptr<const FuncTerm> timePre(std::shared_ptr<const Term> term);
-        static std::shared_ptr<const PredTerm> timeSub(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2);
+        static std::shared_ptr<const Formula> timeSub(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2);
     };
     
 }

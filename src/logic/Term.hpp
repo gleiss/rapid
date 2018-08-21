@@ -17,8 +17,10 @@ namespace logic {
     class Term
     {
     public:
-//        virtual std::vector<std::shared_ptr<const LVariable>> freeVariables() const = 0;
-
+        Term(const Symbol* symbol) : symbol(symbol) {}
+        
+        const Symbol* symbol;
+        
         virtual std::string toSMTLIB() const = 0;
         virtual std::string prettyString() const = 0;
     };
@@ -27,14 +29,10 @@ namespace logic {
     {
         friend class Terms;
         
-        LVariable(const Sort* s) : id(freshId++), sort(s), name("X" + std::to_string(id)){}
-        LVariable(const Sort* s, const std::string name) : id(freshId++), sort(s), name(name){}
+        LVariable(const Symbol* symbol) : Term(symbol), id(freshId++){}
+
     public:
         const unsigned id;
-        const Sort* sort;
-        const std::string name;
-        
-//        std::vector<std::shared_ptr<const LVariable>> freeVariables() const override;
 
         std::string toSMTLIB() const override;
         virtual std::string prettyString() const override;
@@ -48,22 +46,18 @@ namespace logic {
     class FuncTerm : public Term
     {
         friend class Terms;
-
-        FuncTerm(const Symbol* head, std::initializer_list<const std::shared_ptr<const Term>> subterms) :
-        head(head),
-        subterms(subterms)
+        FuncTerm(const Symbol* symbol, std::initializer_list<std::shared_ptr<const Term>> subterms) : Term(symbol), subterms(subterms)
         {
-            assert(head);
-            assert(!head->isPredicateSymbol());
-            assert(head->argSorts.size() == subterms.size());
+            assert(symbol->argSorts.size() == subterms.size());
+            for (int i=0; i < symbol->argSorts.size(); ++i)
+            {
+                assert(symbol->argSorts[i] == this->subterms[i]->symbol->rngSort);
+            }
         }
-    public:
-
-        const Symbol* const head;
-        const std::vector<const std::shared_ptr<const Term>> subterms;
         
-//        std::vector<std::shared_ptr<const LVariable>> freeVariables() const override;
-
+    public:
+        const std::vector<std::shared_ptr<const Term>> subterms;
+        
         std::string toSMTLIB() const override;
         virtual std::string prettyString() const override;
     };
@@ -72,21 +66,17 @@ namespace logic {
     class PredTerm : public Term
     {
         friend class Terms;
-
-        PredTerm(const Symbol* head, std::initializer_list<const std::shared_ptr<const Term>> subterms) :
-        head(head),
-        subterms(subterms)
+        PredTerm(const Symbol* symbol, std::initializer_list<std::shared_ptr<const Term>> subterms) : Term(symbol), subterms(subterms)
         {
-            assert(head);
-            assert(head->isPredicateSymbol());
-            assert(head->argSorts.size() == subterms.size());
+            assert(symbol->argSorts.size() == subterms.size());
+            for (int i=0; i < symbol->argSorts.size(); ++i)
+            {
+                assert(symbol->argSorts[i] == this->subterms[i]->symbol->rngSort);
+            }
         }
-    public:
 
-        const Symbol* head;
-        const std::vector<const std::shared_ptr<const Term>> subterms;
-        
-//        std::vector<std::shared_ptr<const LVariable>> freeVariables() const override;
+    public:
+        const std::vector<std::shared_ptr<const Term>> subterms;
         
         std::string toSMTLIB() const override;
         virtual std::string prettyString() const override;
@@ -103,10 +93,9 @@ namespace logic {
     public:
 
         // construct new terms
-        static std::shared_ptr<const LVariable> lVariable(const Sort* s);
         static std::shared_ptr<const LVariable> lVariable(const Sort* s, const std::string name);
-        static std::shared_ptr<const FuncTerm> funcTerm(const Symbol* head, std::initializer_list<const std::shared_ptr<const Term>> subterms);
-        static std::shared_ptr<const PredTerm> predTerm(const Symbol* head, std::initializer_list<const std::shared_ptr<const Term>> subterms);
+        static std::shared_ptr<const FuncTerm> funcTerm(const Sort* sort, std::string name, std::initializer_list<std::shared_ptr<const Term>> subterms, bool noDeclaration=false);
+        static std::shared_ptr<const PredTerm> predTerm(std::string name, std::initializer_list<std::shared_ptr<const Term>> subterms, bool noDeclaration=false);
     };
 }
 #endif

@@ -26,9 +26,13 @@ namespace program {
 
         const std::string name;
         
+        bool operator==(const IntVariable& rhs) const { return (name == rhs.name); }
+        bool operator!=(const IntVariable& rhs) const { return !operator==(rhs); }
+        
         std::string toString() const override;
         std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const logic::Term> index) const override;
     };
+    
     
     // hack needed for bison: std::vector has no overload for ostream, but these overloads are needed for bison
     std::ostream& operator<<(std::ostream& ostr, const std::vector< std::shared_ptr<const program::IntVariable>>& e);
@@ -40,6 +44,9 @@ namespace program {
         
         const std::string name;
         
+        bool operator==(const BoolVariable& rhs) const { return (name == rhs.name); }
+        bool operator!=(const BoolVariable& rhs) const { return !operator==(rhs); }
+        
         std::string toString() const override;
         std::shared_ptr<const logic::Formula> toFormula(std::shared_ptr<const logic::Term> index) const override;
     };
@@ -50,6 +57,9 @@ namespace program {
         IntArrayVariable(std::string& name) : name(name) {}
         
         const std::string name;
+        
+        bool operator==(const IntVariable& rhs) const { return (name == rhs.name); }
+        bool operator!=(const IntVariable& rhs) const { return !operator==(rhs); }
         
         std::string toString() const;
     };

@@ -14,10 +14,7 @@ namespace program {
     std::shared_ptr<const logic::Term> IntVariable::toTerm(std::shared_ptr<const logic::Term> i) const
     {
         assert(i != nullptr);
-        
-        auto sortToDescribeTime = (util::Configuration::instance().timepoints().getValue()) ? logic::Sorts::timeSort() : logic::Sorts::intSort();
-        auto s = logic::Signature::fetchOrDeclare(name, { sortToDescribeTime }, logic::Sorts::intSort(), false, true);
-        return logic::Terms::funcTerm(s, { i });
+        return logic::Terms::funcTerm(logic::Sorts::intSort(), name, { i });
     }
     
     // hack needed for bison: std::vector has no overload for ostream, but these overloads are needed for bison
@@ -26,20 +23,13 @@ namespace program {
     std::shared_ptr<const logic::Formula> BoolVariable::toFormula(std::shared_ptr<const logic::Term> i) const
     {
         assert(i != nullptr);
-        
-        auto sortToDescribeTime = (util::Configuration::instance().timepoints().getValue()) ? logic::Sorts::timeSort() : logic::Sorts::intSort();
-        auto s = logic::Signature::fetchOrDeclare(name, { sortToDescribeTime }, logic::Sorts::intSort(), false, true);
-        return logic::Formulas::predicateFormula(logic::Terms::predTerm(s, { i }));
+        return logic::Formulas::predicateFormula(logic::Terms::predTerm(name, { i }));
     }
     
     std::shared_ptr<const logic::Term> IntArrayApplication::toTerm(std::shared_ptr<const logic::Term> i) const
     {
         assert(i != nullptr);
-        
-        auto sortToDescribeTime = (util::Configuration::instance().timepoints().getValue()) ? logic::Sorts::timeSort() : logic::Sorts::intSort();
-        auto s = logic::Signature::fetchOrDeclare(array->name, { sortToDescribeTime, logic::Sorts::intSort() }, logic::Sorts::intSort(), false, true);
-        
-        return logic::Terms::funcTerm(s, { i, index->toTerm(i)});
+        return logic::Terms::funcTerm(logic::Sorts::intSort(), array->name, { i, index->toTerm(i)});
     }
     
     std::string IntVariable::toString() const

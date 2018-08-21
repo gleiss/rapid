@@ -8,32 +8,35 @@ namespace logic {
 
     std::string Symbol::declareSymbolSMTLIB() const
     {
-        // hack since Vampire currently doesn't add the sub-predicate itself
-        // declare and define the symbol time_sub
-        if (name == "time_sub")
+        if (noDeclaration)
         {
-            std::string ret = "(declare-fun Sub (Time Time) Bool)\n";
-            ret += "(assert (forall ((it Time)) (Sub it (s it))) )\n";
-            ret += "(assert (forall ((it1 Time)(it2 Time)) (=> (Sub it1 it2) (Sub it1 (s it2))) ))\n";
-            return ret;
-        }
-        if (interpreted)
-        {
-            return ""; // don't  need to declare symbols, which are already known to TPTP-solvers.
-        }
-        if (argSorts.size() == 0)
-        {
-            return "(declare-const " + toSMTLIB() + " " + rngSort->toSMTLIB() + ")\n";
+            // hack since Vampire currently doesn't add the sub-predicate itself
+            // declare and define the symbol time_sub
+            if (name == "time_sub")
+            {
+                std::string ret = "(declare-fun Sub (Time Time) Bool)\n";
+                ret += "(assert (forall ((it Time)) (Sub it (s it))) )\n";
+                ret += "(assert (forall ((it1 Time)(it2 Time)) (=> (Sub it1 it2) (Sub it1 (s it2))) ))\n";
+                return ret;
+            }
+            if (argSorts.size() == 0)
+            {
+                return "(declare-const " + toSMTLIB() + " " + rngSort->toSMTLIB() + ")\n";
+            }
+            else
+            {
+                std::string res = "(declare-fun " + toSMTLIB() + " (";
+                for (int i=0; i < argSorts.size(); ++i)
+                {
+                    res += argSorts[i]->toSMTLIB() + (i+1 == argSorts.size() ? "" : " ");
+                }
+                res += ") " + rngSort->toSMTLIB() + ")\n";
+                return res;
+            }
         }
         else
         {
-            std::string res = "(declare-fun " + toSMTLIB() + " (";
-            for (int i=0; i < argSorts.size(); ++i)
-            {
-                res += argSorts[i]->toSMTLIB() + (i+1 == argSorts.size() ? "" : " ");
-            }
-            res += ") " + rngSort->toSMTLIB() + ")\n";
-            return res;
+            return "";
         }
     }
     
@@ -122,7 +125,6 @@ namespace logic {
         }
         else
         {
-            assert(!interpreted);
             return name;
         }
     }
@@ -130,16 +132,16 @@ namespace logic {
 #pragma mark - Signature
     
     std::unordered_set<std::unique_ptr<Symbol>, SymbolPtrHash, SymbolPtrEquality> Signature::_signature;
-
-    Symbol* Signature::fetchOrDeclare(std::string name, Sort* rngSort, bool interpreted, bool colored)
+    
+    Symbol* Signature::fetchOrAdd(std::string name, std::initializer_list<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration)
     {
-        auto pair = _signature.insert(std::unique_ptr<Symbol>(new Symbol(name, rngSort, interpreted, colored)));
+        auto pair = _signature.insert(std::unique_ptr<Symbol>(new Symbol(name, argSorts, rngSort, noDeclaration)));
         return pair.first->get();
     }
     
-    Symbol* Signature::fetchOrDeclare(std::string name, std::initializer_list<Sort*> argSorts, Sort* rngSort, bool interpreted, bool colored)
+    Symbol* Signature::fetchOrAdd(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration)
     {
-        auto pair = _signature.insert(std::unique_ptr<Symbol>(new Symbol(name, argSorts, rngSort, interpreted, colored)));
+        auto pair = _signature.insert(std::unique_ptr<Symbol>(new Symbol(name, argSorts, rngSort, noDeclaration)));
         return pair.first->get();
     }
 

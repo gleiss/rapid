@@ -8,23 +8,23 @@ namespace logic {
 
     std::string LVariable::toSMTLIB() const
     {
-        return name;
+        return symbol->name;
     }
     
     std::string LVariable::prettyString() const
     {
-        return name;
+        return symbol->name;
     }
 
     std::string FuncTerm::toSMTLIB() const
     {
         if (subterms.size() == 0)
         {
-            return head->toSMTLIB();
+            return symbol->toSMTLIB();
         }
         else
         {
-            std::string str = "(" + head->toSMTLIB() + " ";
+            std::string str = "(" + symbol->toSMTLIB() + " ";
             for (unsigned i = 0; i < subterms.size(); i++)
             {
                 str += subterms[i]->toSMTLIB();
@@ -38,11 +38,11 @@ namespace logic {
     {
         if (subterms.size() == 0)
         {
-            return head->toSMTLIB();
+            return symbol->toSMTLIB();
         }
         else
         {
-            std::string str = head->toSMTLIB() + "(";
+            std::string str = symbol->toSMTLIB() + "(";
             for (unsigned i = 0; i < subterms.size(); i++) {
                 str += subterms[i]->toSMTLIB();
                 str += (i == subterms.size() - 1) ? ")" : ",";
@@ -55,11 +55,11 @@ namespace logic {
     {
         if (subterms.size() == 0)
         {
-            return head->toSMTLIB();
+            return symbol->toSMTLIB();
         }
         else
         {
-            std::string str = "(" + head->toSMTLIB() + " ";
+            std::string str = "(" + symbol->toSMTLIB() + " ";
             for (unsigned i = 0; i < subterms.size(); i++)
             {
                 str += subterms[i]->toSMTLIB();
@@ -76,11 +76,11 @@ namespace logic {
     {
         if (subterms.size() == 0)
         {
-            return head->toSMTLIB();
+            return symbol->toSMTLIB();
         }
         else
         {
-            std::string str = head->toSMTLIB() + "(";
+            std::string str = symbol->toSMTLIB() + "(";
             for (unsigned i = 0; i < subterms.size(); i++) {
                 str += subterms[i]->toSMTLIB();
                 str += (i == subterms.size() - 1) ? ")" : ",";
@@ -136,22 +136,33 @@ namespace logic {
     
 # pragma mark - Terms
     
-    std::shared_ptr<const LVariable> Terms::lVariable(const Sort* s)
+    // use this functions for quantified variables, which don't need to be declared (since they will be declared by the quantifiers)
+    std::shared_ptr<const LVariable> Terms::lVariable(const Sort* sort, std::string name)
     {
-        return std::shared_ptr<const LVariable>(new LVariable(s));
+        auto symbol = Signature::fetchOrAdd(name, {}, sort, true);
+        return std::shared_ptr<const LVariable>(new LVariable(symbol));
+    }
+
+    std::shared_ptr<const FuncTerm> Terms::funcTerm(const Sort* sort, std::string name, std::initializer_list<std::shared_ptr<const Term>> subterms, bool noDeclaration)
+    {
+        std::vector<const Sort*> subtermSorts;
+        for (const auto& subterm : subterms)
+        {
+            subtermSorts.push_back(subterm->symbol->rngSort);
+        }
+        auto symbol = Signature::fetchOrAdd(name, subtermSorts, sort, noDeclaration);
+        return std::shared_ptr<const FuncTerm>(new FuncTerm(symbol, subterms));
     }
     
-    std::shared_ptr<const LVariable> Terms::lVariable(const Sort* s, const std::string name)
+    std::shared_ptr<const PredTerm> Terms::predTerm(std::string name, std::initializer_list<std::shared_ptr<const Term>> subterms, bool noDeclaration)
     {
-        return std::shared_ptr<const LVariable>(new LVariable(s, name));
-    }
-    std::shared_ptr<const FuncTerm> Terms::funcTerm(const Symbol* head, std::initializer_list<const std::shared_ptr<const Term>> subterms)
-    {
-        return std::shared_ptr<const FuncTerm>(new FuncTerm(head, subterms));
-    }
-    std::shared_ptr<const PredTerm> Terms::predTerm(const Symbol* head, std::initializer_list<const std::shared_ptr<const Term>> subterms)
-    {
-        return std::shared_ptr<const PredTerm>(new PredTerm(head, subterms));
+        std::vector<const Sort*> subtermSorts;
+        for (const auto& subterm : subterms)
+        {
+            subtermSorts.push_back(subterm->symbol->rngSort);
+        }
+        auto symbol = Signature::fetchOrAdd(name, subtermSorts, Sorts::boolSort(), noDeclaration);
+        return std::shared_ptr<const PredTerm>(new PredTerm(symbol, subterms));
     }
 }
 

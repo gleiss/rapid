@@ -6,87 +6,77 @@ namespace logic {
     
     std::shared_ptr<const FuncTerm> Theory::intConstant(int i)
     {
-        auto s = Signature::fetchOrDeclare(std::to_string(i), Sorts::intSort(), true);
-        return Terms::funcTerm(s, {});
+        return Terms::funcTerm(Sorts::intSort(), std::to_string(i), {}, true);
     }
     
     std::shared_ptr<const FuncTerm> Theory::intAddition(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2)
     {
-        auto s = Signature::fetchOrDeclare("int_plus", { Sorts::intSort(), Sorts::intSort() }, Sorts::intSort(), true);
-        return Terms::funcTerm(s, {t1,t2});
+        return Terms::funcTerm(Sorts::intSort(), "int_plus", {t1,t2}, true);
     }
+    
     std::shared_ptr<const FuncTerm> Theory::intSubtraction(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2)
     {
-        auto s = Signature::fetchOrDeclare("int_minus", { Sorts::intSort(), Sorts::intSort() }, Sorts::intSort(), true);
-        return Terms::funcTerm(s, {t1,t2});
+        return Terms::funcTerm(Sorts::intSort(), "int_minus", {t1,t2}, true);
     }
+    
     std::shared_ptr<const FuncTerm> Theory::intMultiplication(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2)
     {
-        auto s = Signature::fetchOrDeclare("int_multiply", { Sorts::intSort(), Sorts::intSort() }, Sorts::intSort(), true);
-        return Terms::funcTerm(s, {t1,t2});
+        return Terms::funcTerm(Sorts::intSort(), "int_multiply", {t1,t2}, true);
     }
+    
     std::shared_ptr<const FuncTerm> Theory::intUnaryMinus(std::shared_ptr<const Term> t)
     {
-        auto s = Signature::fetchOrDeclare("int_unary_minus", { Sorts::intSort() } , Sorts::intSort(), true);
-        return Terms::funcTerm(s, {t});
+        return Terms::funcTerm(Sorts::intSort(), "int_unary_minus", {t}, true);
     }
     
     std::shared_ptr<const Formula> Theory::intLess(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2)
     {
-        auto s = Signature::fetchOrDeclare("int_less", { Sorts::intSort(), Sorts::intSort() }, Sorts::boolSort(), true);
-        return Formulas::predicateFormula(Terms::predTerm(s, {t1,t2}));
+        return Formulas::predicateFormula(Terms::predTerm("int_less", {t1,t2}, true));
     }
+    
     std::shared_ptr<const Formula> Theory::intLessEqual(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2)
     {
-        auto s = Signature::fetchOrDeclare("int_less_eq", { Sorts::intSort(), Sorts::intSort() }, Sorts::boolSort(), true);
-        return Formulas::predicateFormula(Terms::predTerm(s, {t1,t2}));
+        return Formulas::predicateFormula(Terms::predTerm("int_less_eq", {t1,t2}, true));
     }
 
     std::shared_ptr<const Formula> Theory::intGreater(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2)
     {
-        auto s = Signature::fetchOrDeclare("int_greater", { Sorts::intSort(), Sorts::intSort() }, Sorts::boolSort(), true);
-        return Formulas::predicateFormula(Terms::predTerm(s, {t1,t2}));
+        return Formulas::predicateFormula(Terms::predTerm("int_greater", {t1,t2}, true));
     }
+    
     std::shared_ptr<const Formula> Theory::intGreaterEqual(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2)
     {
-        auto s = Signature::fetchOrDeclare("int_greater_eq", { Sorts::intSort(), Sorts::intSort() }, Sorts::boolSort(), true);
-        return Formulas::predicateFormula(Terms::predTerm(s, {t1,t2}));
+        return Formulas::predicateFormula(Terms::predTerm("int_greater_eq", {t1,t2}, true));
     }
     
     std::shared_ptr<const Formula> Theory::boolTrue()
     {
-        auto s = Signature::fetchOrDeclare("bool_true", Sorts::boolSort(), true);
-        return Formulas::predicateFormula(Terms::predTerm(s, {}));
+        return Formulas::predicateFormula(Terms::predTerm("bool_true", {}, true));
     }
     
     std::shared_ptr<const Formula> Theory::boolFalse()
     {
-        auto s = Signature::fetchOrDeclare("bool_false", Sorts::boolSort(), true);
-        return Formulas::predicateFormula(Terms::predTerm(s, {}));
+        return Formulas::predicateFormula(Terms::predTerm("bool_false", {}, true));
     }
     
     std::shared_ptr<const FuncTerm> Theory::timeZero()
     {
-        auto s = Signature::fetchOrDeclare("time_zero", Sorts::timeSort(), true, true);
-        return Terms::funcTerm(s, {});
+        return Terms::funcTerm(Sorts::timeSort(), "time_zero", {}, true);
     }
     
     std::shared_ptr<const FuncTerm> Theory::timeSucc(std::shared_ptr<const Term> term)
     {
-        auto s = Signature::fetchOrDeclare("time_succ", {Sorts::timeSort()}, Sorts::timeSort(), true, true);
-        return Terms::funcTerm(s, {term});
+        return Terms::funcTerm(Sorts::timeSort(), "time_succ", {term}, true);
     }
     
     std::shared_ptr<const FuncTerm> Theory::timePre(std::shared_ptr<const Term> term)
     {
-        auto s = Signature::fetchOrDeclare("time_pre", {Sorts::timeSort()}, Sorts::timeSort(), true, true);
-        return Terms::funcTerm(s, {term});
+        return Terms::funcTerm(Sorts::timeSort(), "time_pre", {term}, true);
     }
     
-    std::shared_ptr<const PredTerm> Theory::timeSub(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2)
+    std::shared_ptr<const Formula> Theory::timeSub(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2)
     {
-        auto s = Signature::fetchOrDeclare("time_sub", {Sorts::timeSort(), Sorts::timeSort()}, Sorts::boolSort(), true, true);
-        return Terms::predTerm(s, {t1,t2});
+        return Formulas::predicateFormula(Terms::predTerm("time_sub", {t1,t2}, true));
     }
     
 }

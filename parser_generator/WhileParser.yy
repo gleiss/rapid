@@ -90,8 +90,9 @@ YY_DECL;
 %type < std::vector< std::shared_ptr<const program::Function>> > function_list
 %type < std::shared_ptr<const program::Function> > function
 
-%type < std::vector< std::shared_ptr<const program::IntVariable>> > var_definition_list
-%type < std::shared_ptr<const program::IntVariable> > var_definition
+%type < std::pair<std::vector< std::shared_ptr<const program::IntVariable>>, std::vector< std::shared_ptr<const program::IntArrayVariable>>> > var_definition_list
+%type < std::shared_ptr<const program::IntVariable> > int_var_definition
+%type < std::shared_ptr<const program::IntArrayVariable> > int_array_var_definition
 
 %type < std::vector<std::shared_ptr<const program::Statement>> > statement_list
 %type < std::shared_ptr<const program::IntAssignment> > assignment_statement
@@ -130,27 +131,56 @@ function_list:
 function:
   ID LPAR RPAR LCUR var_definition_list statement_list RCUR 
   {
-    $$ = std::shared_ptr<const program::Function>(new program::Function($1, std::move($5), std::move($6)));
+    $$ = std::shared_ptr<const program::Function>(new program::Function($1, std::move($5.first), std::move($5.second), std::move($6)));
   }
 ;
 
 var_definition_list:
-  %empty {$$ = std::vector<std::shared_ptr<const program::IntVariable>>();}
-| var_definition_list var_definition 
+  %empty {$$ = std::pair<std::vector<std::shared_ptr<const program::IntVariable>>, std::vector<std::shared_ptr<const program::IntArrayVariable>>>({},{});}
+| var_definition_list int_var_definition 
   {  
-    for(const auto& var : $1)
+    for(const auto& var : $1.first)
     {
       if(var->name == $2->name)
       {
         error(@2, "Variable with name " + var->name + " is already defined.");
       }
     }
-    $1.push_back(std::move($2)); $$ = std::move($1);
+    for(const auto& var : $1.second)
+    {
+      if(var->name == $2->name)
+      {
+        error(@2, "Array variable with name " + var->name + " is already defined.");
+      }
+    }
+    $1.first.push_back(std::move($2)); $$ = std::move($1);
+  }
+| var_definition_list int_array_var_definition
+  {  
+    for(const auto& var : $1.first)
+    {
+      if(var->name == $2->name)
+      {
+        error(@2, "Variable with name " + var->name + " is already defined.");
+      }
+    }
+    for(const auto& var : $1.second)
+    {
+      if(var->name == $2->name)
+      {
+        error(@2, "Array variable with name " + var->name + " is already defined.");
+      }
+    }
+    $1.second.push_back(std::move($2)); $$ = std::move($1);
   }
 ;
 
-var_definition:
+int_var_definition:
   TYPE ID SCOL {$$ = std::shared_ptr<const program::IntVariable>(new program::IntVariable($2));}
+;
+
+int_array_var_definition:
+  TYPE LBRA RBRA ID SCOL {$$ = std::shared_ptr<const program::IntArrayVariable>(new program::IntArrayVariable($4));}
 ;
 
 statement_list:
@@ -205,9 +235,17 @@ expr:
 ;
 
 location:
-  ID                { $$ = std::shared_ptr<const program::IntVariable>(new program::IntVariable($1));}
-| ID LBRA expr RBRA { auto formula = std::shared_ptr<const program::IntArrayVariable>(new IntArrayVariable($1));
-                      $$ = std::shared_ptr<const program::IntArrayApplication>(new IntArrayApplication(std::move(formula), std::move($3)));}
+  ID                
+  { 
+  	// TODO: add check that variable exists
+  	$$ = std::shared_ptr<const program::IntVariable>(new program::IntVariable($1));
+  }
+| ID LBRA expr RBRA 
+  { 
+  	// TODO: add check that variable exists
+	auto formula = std::shared_ptr<const program::IntArrayVariable>(new IntArrayVariable($1));
+	$$ = std::shared_ptr<const program::IntArrayApplication>(new IntArrayApplication(std::move(formula), std::move($3)));
+  }
 ;
 
 %%

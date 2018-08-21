@@ -6,9 +6,13 @@ namespace program
     {
         ostr << f.name << "()\n";
         ostr << "{\n";
-        for (const auto& intVariable : f.intVariables)
+        for (const auto& var : f.intVariables)
         {
-            ostr << std::string(3, ' ') << "int " << intVariable->name << "\n";
+            ostr << std::string(3, ' ') << "int " << var->name << "\n";
+        }
+        for (const auto& var : f.intArrayVariables)
+        {
+            ostr << std::string(3, ' ') << "int[] " << var->name << "\n";
         }
         ostr << "\n";
         for (const auto& statement : f.statements)

@@ -64,13 +64,18 @@ namespace program {
         std::string toString() const;
     };
     
+    // hack needed for bison: std::vector has no overload for ostream, but these overloads are needed for bison
+    std::ostream& operator<<(std::ostream& ostr, const std::vector< std::shared_ptr<const program::IntArrayVariable>>& e);
+    std::ostream& operator<<(std::ostream& ostr, const std::pair<std::vector<std::shared_ptr<const program::IntVariable>>, std::vector<std::shared_ptr<const program::IntArrayVariable>>>& e);
+
+    
     class IntArrayApplication : public IntExpression
     {
     public:
         IntArrayApplication(std::shared_ptr<const IntArrayVariable> array, std::shared_ptr<const IntExpression> index) : array(std::move(array)), index(std::move(index))
         {
-            assert(array != nullptr);
-            assert(index != nullptr);
+            assert(this->array != nullptr);
+            assert(this->index != nullptr);
         }
         
         const std::shared_ptr<const IntArrayVariable> array;

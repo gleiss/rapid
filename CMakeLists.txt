@@ -5,6 +5,7 @@ project (Spectre)
 ################################################################
 
 # require the compiler to use C++14
+# can't use C++17 since Bison requires the register storage, which is not compatible with C++17
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 

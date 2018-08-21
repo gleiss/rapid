@@ -6,12 +6,12 @@ namespace program
 
     std::string IntAssignment::toString(int indentation) const
     {
-        return std::string(indentation, ' ') + lhs->toString() + " = " + rhs->toString();
+        return std::string(indentation, ' ') + lhs->toString() + " = " + rhs->toString() + " @" + location;
     }
 
     std::string IfElse::toString(int indentation) const
     {
-        auto s = std::string(indentation, ' ') + "if (" + condition->toString() + ")\n";
+        auto s = std::string(indentation, ' ') + "if (" + condition->toString() + ") @" + location + "\n";
         s += std::string(indentation, ' ') + "{\n";
         for (const auto& statement : ifStatements)
         {
@@ -30,7 +30,7 @@ namespace program
     
     std::string WhileStatement::toString(int indentation) const
     {
-        auto s = std::string(indentation, ' ') + "while (" + condition->toString() + ")\n";
+        auto s = std::string(indentation, ' ') + "while (" + condition->toString() + ") @" + location + "\n";
         s += std::string(indentation, ' ') + "{\n";
         for (const auto& statement : bodyStatements)
         {
@@ -42,7 +42,7 @@ namespace program
     
     std::string SkipStatement::toString(int indentation) const
     {
-        return std::string(indentation, ' ') + "skip";
+        return std::string(indentation, ' ') + "skip @" + location;
     }
     
     // hack needed for bison: std::vector has no overload for ostream, but these overloads are needed for bison

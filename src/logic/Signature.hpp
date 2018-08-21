@@ -94,7 +94,6 @@ namespace logic {
     {
     public:
         // construct new symbols
-        static Symbol* fetchOrAdd(std::string name, std::initializer_list<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration=false);
         static Symbol* fetchOrAdd(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration=false);
 
         static const std::unordered_set<std::unique_ptr<Symbol>, SymbolPtrHash, SymbolPtrEquality>& signature(){return _signature;}

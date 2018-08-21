@@ -119,15 +119,15 @@ namespace program {
     }
     std::shared_ptr<const logic::Formula> BooleanAnd::toFormula(std::shared_ptr<const logic::Term> index) const
     {
-        return logic::Formulas::conjunctionFormula({child1->toFormula(index), child2->toFormula(index)});
+        return logic::Formulas::conjunction({child1->toFormula(index), child2->toFormula(index)});
     }
     std::shared_ptr<const logic::Formula> BooleanOr::toFormula(std::shared_ptr<const logic::Term> index) const
     {
-        return logic::Formulas::disjunctionFormula({child1->toFormula(index), child2->toFormula(index)});
+        return logic::Formulas::disjunction({child1->toFormula(index), child2->toFormula(index)});
     }
     std::shared_ptr<const logic::Formula> BooleanNot::toFormula(std::shared_ptr<const logic::Term> index) const
     {
-        return logic::Formulas::negationFormula(child->toFormula(index));
+        return logic::Formulas::negation(child->toFormula(index));
     }
     std::shared_ptr<const logic::Formula> ArithmeticComparison::toFormula(std::shared_ptr<const logic::Term> index) const
     {
@@ -150,7 +150,7 @@ namespace program {
         else
         {
             assert(kind == ArithmeticComparison::Kind::EQ);
-            return logic::Formulas::equalityFormula(true, child1->toTerm(index), child2->toTerm(index));
+            return logic::Formulas::equality(child1->toTerm(index), child2->toTerm(index));
         }
     }
     

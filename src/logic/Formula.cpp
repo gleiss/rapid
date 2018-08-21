@@ -405,7 +405,7 @@ namespace logic {
     }
     
 # pragma mark - Formulas
-    std::shared_ptr<const PredicateFormula> Formulas::predicateFormula(std::string name, std::initializer_list<std::shared_ptr<const Term>> subterms, bool noDeclaration)
+    std::shared_ptr<const PredicateFormula> Formulas::predicate(std::string name, std::initializer_list<std::shared_ptr<const Term>> subterms, bool noDeclaration)
     {
         std::vector<const Sort*> subtermSorts;
         for (const auto& subterm : subterms)
@@ -416,43 +416,49 @@ namespace logic {
         return std::shared_ptr<const PredicateFormula>(new PredicateFormula(symbol, subterms));
     }
 
-    std::shared_ptr<const EqualityFormula> Formulas::equalityFormula(bool polarity, std::shared_ptr<const Term> left, std::shared_ptr<const Term> right)
+    std::shared_ptr<const EqualityFormula> Formulas::equality(std::shared_ptr<const Term> left, std::shared_ptr<const Term> right)
     {
-        return std::shared_ptr<const EqualityFormula>(new EqualityFormula(polarity, left, right));
+        return std::shared_ptr<const EqualityFormula>(new EqualityFormula(true, left, right));
     }
     
-    std::shared_ptr<const NegationFormula>  Formulas::negationFormula(std::shared_ptr<const Formula> f)
+    std::shared_ptr<const NegationFormula> Formulas::disequality(std::shared_ptr<const Term> left, std::shared_ptr<const Term> right)
+    {
+        auto eq = std::shared_ptr<const EqualityFormula>(new EqualityFormula(false, left, right));
+        return std::shared_ptr<const NegationFormula>(new NegationFormula(eq));
+    }
+    
+    std::shared_ptr<const NegationFormula>  Formulas::negation(std::shared_ptr<const Formula> f)
     {
         return std::shared_ptr<const NegationFormula>(new NegationFormula(f));
     }
     
-    std::shared_ptr<const ConjunctionFormula> Formulas::conjunctionFormula(std::vector<std::shared_ptr<const Formula>> conj)
+    std::shared_ptr<const ConjunctionFormula> Formulas::conjunction(std::vector<std::shared_ptr<const Formula>> conj)
     {
         return std::shared_ptr<const ConjunctionFormula>(new ConjunctionFormula(conj));
     }
-    std::shared_ptr<const ConjunctionFormula> Formulas::conjunctionFormula(std::initializer_list<std::shared_ptr<const Formula>> conj)
+    std::shared_ptr<const ConjunctionFormula> Formulas::conjunction(std::initializer_list<std::shared_ptr<const Formula>> conj)
     {
         return std::shared_ptr<const ConjunctionFormula>(new ConjunctionFormula(conj));
     }
-    std::shared_ptr<const DisjunctionFormula> Formulas::disjunctionFormula(std::vector<std::shared_ptr<const Formula>> disj)
+    std::shared_ptr<const DisjunctionFormula> Formulas::disjunction(std::vector<std::shared_ptr<const Formula>> disj)
     {
         return std::shared_ptr<const DisjunctionFormula>(new DisjunctionFormula(disj));
     }
-    std::shared_ptr<const DisjunctionFormula> Formulas::disjunctionFormula(std::initializer_list<std::shared_ptr<const Formula>> disj)
+    std::shared_ptr<const DisjunctionFormula> Formulas::disjunction(std::initializer_list<std::shared_ptr<const Formula>> disj)
     {
         return std::shared_ptr<const DisjunctionFormula>(new DisjunctionFormula(disj));
     }
     
-    std::shared_ptr<const ImplicationFormula> Formulas::implicationFormula(std::shared_ptr<const Formula> f1, std::shared_ptr<const Formula> f2)
+    std::shared_ptr<const ImplicationFormula> Formulas::implication(std::shared_ptr<const Formula> f1, std::shared_ptr<const Formula> f2)
     {
         return std::shared_ptr<const ImplicationFormula>(new ImplicationFormula(f1, f2));
     }
     
-    std::shared_ptr<const ExistentialFormula> Formulas::existentialFormula(std::vector<std::shared_ptr<const LVariable>> vars, std::shared_ptr<const Formula> f)
+    std::shared_ptr<const ExistentialFormula> Formulas::existential(std::vector<std::shared_ptr<const LVariable>> vars, std::shared_ptr<const Formula> f)
     {
         return std::shared_ptr<const ExistentialFormula>(new ExistentialFormula(vars, f));
     }
-    std::shared_ptr<const UniversalFormula> Formulas::universalFormula(std::vector<std::shared_ptr<const LVariable>> vars, std::shared_ptr<const Formula> f)
+    std::shared_ptr<const UniversalFormula> Formulas::universal(std::vector<std::shared_ptr<const LVariable>> vars, std::shared_ptr<const Formula> f)
     {
         return std::shared_ptr<const UniversalFormula>(new UniversalFormula(vars, f));
     }

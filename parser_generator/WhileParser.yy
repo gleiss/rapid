@@ -29,7 +29,6 @@ namespace parser {
 }
 }
 
-
 // The parsing context.
 %param { parser::WhileParsingContext &context }
 %locations
@@ -163,20 +162,20 @@ statement_list:
 ;
 
 assignment_statement:
-  location ASSIGN expr SCOL { $$ = std::shared_ptr<const program::IntAssignment>(new program::IntAssignment(std::move($1), std::move($3)));}
+  location ASSIGN expr SCOL { $$ = std::shared_ptr<const program::IntAssignment>(new program::IntAssignment(@2.begin.line, std::move($1), std::move($3)));}
 ;
 
 if_else_statement:
   IF LPAR formula RPAR LCUR statement_list RCUR ELSE LCUR statement_list RCUR 
-  {$$ = std::shared_ptr<const program::IfElse>(new program::IfElse(std::move($3), std::move($6), std::move($10)));}
+  {$$ = std::shared_ptr<const program::IfElse>(new program::IfElse(@1.begin.line, std::move($3), std::move($6), std::move($10)));}
 ;
 
 while_statement:
-  WHILE formula LCUR statement_list RCUR {$$ = std::shared_ptr<const program::WhileStatement>(new program::WhileStatement(std::move($2), std::move($4)));}
+  WHILE formula LCUR statement_list RCUR {$$ = std::shared_ptr<const program::WhileStatement>(new program::WhileStatement(@1.begin.line, std::move($2), std::move($4)));}
 ;
 
 skip_statement:
-  SKIP {$$ = std::shared_ptr<const program::SkipStatement>(new program::SkipStatement());}
+  SKIP {$$ = std::shared_ptr<const program::SkipStatement>(new program::SkipStatement(@1.begin.line));}
 ;
 
 formula:

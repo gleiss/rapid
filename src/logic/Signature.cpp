@@ -133,16 +133,22 @@ namespace logic {
     
     std::unordered_set<std::unique_ptr<Symbol>, SymbolPtrHash, SymbolPtrEquality> Signature::_signature;
     
-    Symbol* Signature::fetchOrAdd(std::string name, std::initializer_list<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration)
-    {
-        auto pair = _signature.insert(std::unique_ptr<Symbol>(new Symbol(name, argSorts, rngSort, noDeclaration)));
-        return pair.first->get();
-    }
-    
     Symbol* Signature::fetchOrAdd(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration)
     {
         auto pair = _signature.insert(std::unique_ptr<Symbol>(new Symbol(name, argSorts, rngSort, noDeclaration)));
-        return pair.first->get();
+        auto symbol = pair.first->get();
+        // if a symbol with the name already exist, make sure it has the same sorts
+        if (!pair.second)
+        {
+            assert(argSorts.size() == symbol->argSorts.size());
+            for (int i=0; i < argSorts.size(); ++i)
+            {
+                assert(argSorts[i] == symbol->argSorts[i]);
+            }
+            assert(rngSort = symbol->rngSort);
+            assert(noDeclaration == symbol->noDeclaration);
+        }
+        return symbol;
     }
 
 }

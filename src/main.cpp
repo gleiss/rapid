@@ -8,6 +8,7 @@
 
 #include "parser/WhileParser.hpp"
 
+#include "analysis/Semantics.hpp"
 #include "analysis/Analyzer.hpp"
 #include "analysis/Properties.hpp"
 #include "analysis/PropertiesTime.hpp"
@@ -77,6 +78,14 @@ int main(int argc, char *argv[])
                 util::Output::stream() << *p;
                 util::Output::stream() << util::Output::nocomment;
 
+                analysis::Semantics s;
+                auto res = s.generateSemantics(*p);
+                util::Output::stream() << *res;
+//                auto map = s.computeEndLocations(*p);
+//                for (const auto& pair : map)
+//                {
+//                    util::Output::stream() << pair.first->location << ", " << pair.second << "\n";
+//                }
 //                // run lightweight analysis
 //                program::Analyzer a(*p);
 //                program::AnalyzerResult aRes = a.computeVariableProperties();

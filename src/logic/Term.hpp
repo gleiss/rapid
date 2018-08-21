@@ -46,12 +46,12 @@ namespace logic {
     class FuncTerm : public Term
     {
         friend class Terms;
-        FuncTerm(const Symbol* symbol, std::initializer_list<std::shared_ptr<const Term>> subterms) : Term(symbol), subterms(subterms)
+        FuncTerm(const Symbol* symbol, std::vector<std::shared_ptr<const Term>> subterms) : Term(symbol), subterms(std::move(subterms))
         {
-            assert(symbol->argSorts.size() == subterms.size());
-            for (int i=0; i < symbol->argSorts.size(); ++i)
+            assert(this->symbol->argSorts.size() == this->subterms.size());
+            for (int i=0; i < this->symbol->argSorts.size(); ++i)
             {
-                assert(symbol->argSorts[i] == this->subterms[i]->symbol->rngSort);
+                assert(this->symbol->argSorts[i] == this->subterms[i]->symbol->rngSort);
             }
         }
         
@@ -73,8 +73,8 @@ namespace logic {
     public:
 
         // construct new terms
-        static std::shared_ptr<const LVariable> lVariable(const Sort* s, const std::string name);
-        static std::shared_ptr<const FuncTerm> funcTerm(const Sort* sort, std::string name, std::initializer_list<std::shared_ptr<const Term>> subterms, bool noDeclaration=false);
+        static std::shared_ptr<const LVariable> var(const Sort* s, const std::string name);
+        static std::shared_ptr<const FuncTerm> func(const Sort* sort, std::string name, std::vector<std::shared_ptr<const Term>> subterms, bool noDeclaration=false);
     };
 }
 #endif

@@ -12,7 +12,11 @@ namespace program
     class Function
     {
     public:
-        Function(std::string name, std::vector<std::shared_ptr<const IntVariable>> intVariables, std::vector<std::shared_ptr<const Statement>> statements) : name(name), intVariables(std::move(intVariables)), statements(std::move(statements)) {}
+        Function(std::string name, std::vector<std::shared_ptr<const IntVariable>> intVariables, std::vector<std::shared_ptr<const Statement>> statements) : name(name), intVariables(std::move(intVariables)), statements(std::move(statements))
+        {
+            // TODO: add a skip-statement instead, maybe already during parsing (challenge: unique numbering)
+            assert(this->statements.size() > 0);
+        }
         
         const std::string name;
         const std::vector<std::shared_ptr<const IntVariable>> intVariables;
@@ -23,7 +27,11 @@ namespace program
     class Program
     {
     public:
-        Program(std::vector< std::shared_ptr<const Function>> functions) : functions(std::move(functions)) {}
+        Program(std::vector< std::shared_ptr<const Function>> functions) : functions(std::move(functions))
+        {
+            // TODO: enforce that one of the functions is called main
+            assert(this->functions.size() > 0);
+        }
         
         const std::vector< std::shared_ptr<const Function>> functions;
     };

@@ -62,26 +62,6 @@ namespace logic {
         virtual std::string prettyString() const override;
     };
     
-    // taking the FOOL approach, predicates are alse terms
-    class PredTerm : public Term
-    {
-        friend class Terms;
-        PredTerm(const Symbol* symbol, std::initializer_list<std::shared_ptr<const Term>> subterms) : Term(symbol), subterms(subterms)
-        {
-            assert(symbol->argSorts.size() == subterms.size());
-            for (int i=0; i < symbol->argSorts.size(); ++i)
-            {
-                assert(symbol->argSorts[i] == this->subterms[i]->symbol->rngSort);
-            }
-        }
-
-    public:
-        const std::vector<std::shared_ptr<const Term>> subterms;
-        
-        std::string toSMTLIB() const override;
-        virtual std::string prettyString() const override;
-    };
-    
     inline std::ostream& operator<<(std::ostream& ostr, const Term& e) { ostr << e.toSMTLIB(); return ostr; }
 
     
@@ -95,7 +75,6 @@ namespace logic {
         // construct new terms
         static std::shared_ptr<const LVariable> lVariable(const Sort* s, const std::string name);
         static std::shared_ptr<const FuncTerm> funcTerm(const Sort* sort, std::string name, std::initializer_list<std::shared_ptr<const Term>> subterms, bool noDeclaration=false);
-        static std::shared_ptr<const PredTerm> predTerm(std::string name, std::initializer_list<std::shared_ptr<const Term>> subterms, bool noDeclaration=false);
     };
 }
 #endif

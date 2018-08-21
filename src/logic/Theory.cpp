@@ -31,32 +31,32 @@ namespace logic {
     
     std::shared_ptr<const Formula> Theory::intLess(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2)
     {
-        return Formulas::predicateFormula(Terms::predTerm("int_less", {t1,t2}, true));
+        return Formulas::predicateFormula("int_less", {t1,t2}, true);
     }
     
     std::shared_ptr<const Formula> Theory::intLessEqual(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2)
     {
-        return Formulas::predicateFormula(Terms::predTerm("int_less_eq", {t1,t2}, true));
+        return Formulas::predicateFormula("int_less_eq", {t1,t2}, true);
     }
 
     std::shared_ptr<const Formula> Theory::intGreater(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2)
     {
-        return Formulas::predicateFormula(Terms::predTerm("int_greater", {t1,t2}, true));
+        return Formulas::predicateFormula("int_greater", {t1,t2}, true);
     }
     
     std::shared_ptr<const Formula> Theory::intGreaterEqual(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2)
     {
-        return Formulas::predicateFormula(Terms::predTerm("int_greater_eq", {t1,t2}, true));
+        return Formulas::predicateFormula("int_greater_eq", {t1,t2}, true);
     }
     
     std::shared_ptr<const Formula> Theory::boolTrue()
     {
-        return Formulas::predicateFormula(Terms::predTerm("bool_true", {}, true));
+        return Formulas::predicateFormula("bool_true", {}, true);
     }
     
     std::shared_ptr<const Formula> Theory::boolFalse()
     {
-        return Formulas::predicateFormula(Terms::predTerm("bool_false", {}, true));
+        return Formulas::predicateFormula("bool_false", {}, true);
     }
     
     std::shared_ptr<const FuncTerm> Theory::timeZero()
@@ -76,7 +76,7 @@ namespace logic {
     
     std::shared_ptr<const Formula> Theory::timeSub(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2)
     {
-        return Formulas::predicateFormula(Terms::predTerm("time_sub", {t1,t2}, true));
+        return Formulas::predicateFormula("time_sub", {t1,t2}, true);
     }
     
 }

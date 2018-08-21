@@ -50,44 +50,6 @@ namespace logic {
             return str;
         }
     }
-    
-    std::string PredTerm::toSMTLIB() const
-    {
-        if (subterms.size() == 0)
-        {
-            return symbol->toSMTLIB();
-        }
-        else
-        {
-            std::string str = "(" + symbol->toSMTLIB() + " ";
-            for (unsigned i = 0; i < subterms.size(); i++)
-            {
-                str += subterms[i]->toSMTLIB();
-                str += (i == subterms.size() - 1) ? ")" : " ";
-            }
-            return str;
-        }
-    }
-    
-    // TODO: refactor symbols so that the _head->name gives back a pretty string
-    // eg + instead of $add, >= instead of greaterEq
-    // switch also to infix for the usual infix-predicates
-    std::string PredTerm::prettyString() const
-    {
-        if (subterms.size() == 0)
-        {
-            return symbol->toSMTLIB();
-        }
-        else
-        {
-            std::string str = symbol->toSMTLIB() + "(";
-            for (unsigned i = 0; i < subterms.size(); i++) {
-                str += subterms[i]->toSMTLIB();
-                str += (i == subterms.size() - 1) ? ")" : ",";
-            }
-            return str;
-        }
-    }
 
     bool compareLVarPointers(const LVariable* p1, const LVariable* p2)
     {
@@ -152,17 +114,6 @@ namespace logic {
         }
         auto symbol = Signature::fetchOrAdd(name, subtermSorts, sort, noDeclaration);
         return std::shared_ptr<const FuncTerm>(new FuncTerm(symbol, subterms));
-    }
-    
-    std::shared_ptr<const PredTerm> Terms::predTerm(std::string name, std::initializer_list<std::shared_ptr<const Term>> subterms, bool noDeclaration)
-    {
-        std::vector<const Sort*> subtermSorts;
-        for (const auto& subterm : subterms)
-        {
-            subtermSorts.push_back(subterm->symbol->rngSort);
-        }
-        auto symbol = Signature::fetchOrAdd(name, subtermSorts, Sorts::boolSort(), noDeclaration);
-        return std::shared_ptr<const PredTerm>(new PredTerm(symbol, subterms));
     }
 }
 

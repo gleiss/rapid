@@ -20,9 +20,17 @@ namespace logic {
         friend class Formulas;
         
     public:
-        PredicateFormula(std::shared_ptr<const PredTerm> p) : p(p) {}
+        PredicateFormula(const Symbol* symbol, std::initializer_list<std::shared_ptr<const Term>> subterms) : symbol(symbol), subterms(subterms)
+        {
+            assert(symbol->argSorts.size() == subterms.size());
+            for (int i=0; i < symbol->argSorts.size(); ++i)
+            {
+                assert(symbol->argSorts[i] == this->subterms[i]->symbol->rngSort);
+            }
+        }
 
-        const std::shared_ptr<const PredTerm> p;
+        const Symbol* symbol;
+        const std::vector<std::shared_ptr<const Term>> subterms;
 
         std::string toSMTLIB(unsigned indentation = 0) const override;
         std::string prettyString(unsigned indentation = 0) const override;
@@ -143,7 +151,7 @@ namespace logic {
     public:
         
         // construct new terms
-        static std::shared_ptr<const PredicateFormula> predicateFormula(std::shared_ptr<const PredTerm> p);
+        static std::shared_ptr<const PredicateFormula> predicateFormula(std::string name, std::initializer_list<std::shared_ptr<const Term>> subterms, bool noDeclaration=false);
         static std::shared_ptr<const EqualityFormula> equalityFormula(bool polarity, std::shared_ptr<const Term> left, std::shared_ptr<const Term> right);
 
         static std::shared_ptr<const NegationFormula>  negationFormula(std::shared_ptr<const Formula> f);

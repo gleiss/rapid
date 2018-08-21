@@ -21,7 +21,21 @@ namespace logic {
 
     std::string PredicateFormula::toSMTLIB(unsigned indentation) const
     {
-        return std::string(indentation, ' ') + p->toSMTLIB();
+        auto str = std::string(indentation, ' ');
+        if (subterms.size() == 0)
+        {
+            str += symbol->toSMTLIB();
+        }
+        else
+        {
+            str += "(" + symbol->toSMTLIB() + " ";
+            for (unsigned i = 0; i < subterms.size(); i++)
+            {
+                str += subterms[i]->toSMTLIB();
+                str += (i == subterms.size() - 1) ? ")" : " ";
+            }
+        }
+        return str;
     }
 
     std::string EqualityFormula::toSMTLIB(unsigned indentation) const
@@ -293,10 +307,23 @@ namespace logic {
 //        
 //        return res;
 //    }
- 
+
     std::string PredicateFormula::prettyString(unsigned indentation) const
     {
-        return std::string(indentation, ' ') + p->prettyString();
+        auto str = std::string(indentation, ' ');
+        if (subterms.size() == 0)
+        {
+            str += symbol->toSMTLIB();
+        }
+        else
+        {
+            str += symbol->toSMTLIB() + "(";
+            for (unsigned i = 0; i < subterms.size(); i++) {
+                str += subterms[i]->toSMTLIB();
+                str += (i == subterms.size() - 1) ? ")" : ",";
+            }
+        }
+        return str;
     }
     
     std::string EqualityFormula::prettyString(unsigned indentation) const
@@ -378,11 +405,17 @@ namespace logic {
     }
     
 # pragma mark - Formulas
-    
-    std::shared_ptr<const PredicateFormula> Formulas::predicateFormula(std::shared_ptr<const PredTerm> p)
+    std::shared_ptr<const PredicateFormula> Formulas::predicateFormula(std::string name, std::initializer_list<std::shared_ptr<const Term>> subterms, bool noDeclaration)
     {
-        return std::shared_ptr<const PredicateFormula>(new PredicateFormula(p));
+        std::vector<const Sort*> subtermSorts;
+        for (const auto& subterm : subterms)
+        {
+            subtermSorts.push_back(subterm->symbol->rngSort);
+        }
+        auto symbol = Signature::fetchOrAdd(name, subtermSorts, Sorts::boolSort(), noDeclaration);
+        return std::shared_ptr<const PredicateFormula>(new PredicateFormula(symbol, subterms));
     }
+
     std::shared_ptr<const EqualityFormula> Formulas::equalityFormula(bool polarity, std::shared_ptr<const Term> left, std::shared_ptr<const Term> right)
     {
         return std::shared_ptr<const EqualityFormula>(new EqualityFormula(polarity, left, right));

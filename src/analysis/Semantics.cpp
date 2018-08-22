@@ -21,7 +21,7 @@ namespace analysis {
 
             for (const auto& statement : function->statements)
             {
-                auto semantics = generateSemantics(statement, map, function->intVariables, {});
+                auto semantics = generateSemantics(statement, map, function->intVariables, function->intArrayVariables, {});
                 conjunctsFunction.push_back(semantics);
             }
             conjuncts.push_back(logic::Formulas::conjunction(conjunctsFunction));
@@ -30,22 +30,26 @@ namespace analysis {
         return logic::Formulas::conjunction(conjuncts);
     }
     
-    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const std::shared_ptr<const program::Statement> statement, const EndLocationMap& map, const std::vector<std::shared_ptr<const program::IntVariable>>& variables, std::vector<std::shared_ptr<const logic::Term>> iterators)
+    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const std::shared_ptr<const program::Statement> statement,
+                                                                       const EndLocationMap& map,
+                                                                       const std::vector<std::shared_ptr<const program::IntVariable>>& intVars,
+                                                                       const std::vector<std::shared_ptr<const program::IntArrayVariable>>& intArrayVars,
+                                                                       std::vector<std::shared_ptr<const logic::Term>> iterators)
     {
         if (statement->type() == program::Statement::Type::IntAssignment)
         {
             auto castedStatement = std::static_pointer_cast<const program::IntAssignment>(statement);
-            return generateSemantics(castedStatement, map, variables, iterators);
+            return generateSemantics(castedStatement, map, intVars, intArrayVars, iterators);
         }
         else if (statement->type() == program::Statement::Type::IfElse)
         {
             auto castedStatement = std::static_pointer_cast<const program::IfElse>(statement);
-            return generateSemantics(castedStatement, map, variables, iterators);
+            return generateSemantics(castedStatement, map, intVars, intArrayVars, iterators);
         }
         else if (statement->type() == program::Statement::Type::WhileStatement)
         {
             auto castedStatement = std::static_pointer_cast<const program::WhileStatement>(statement);
-            return generateSemantics(castedStatement, map, variables, iterators);
+            return generateSemantics(castedStatement, map, intVars, intArrayVars, iterators);
         }
         else
         {
@@ -55,33 +59,87 @@ namespace analysis {
         }
     }
     
-    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const std::shared_ptr<const program::IntAssignment> intAssignment, const EndLocationMap& map, const std::vector<std::shared_ptr<const program::IntVariable>>& variables, std::vector<std::shared_ptr<const logic::Term>> iterators)
+    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const std::shared_ptr<const program::IntAssignment> intAssignment,
+                                                                       const EndLocationMap& map,
+                                                                       const std::vector<std::shared_ptr<const program::IntVariable>>& intVars,
+                                                                       const std::vector<std::shared_ptr<const program::IntArrayVariable>>& intArrayVars,
+                                                                       std::vector<std::shared_ptr<const logic::Term>> iterators)
     {
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts;
         
         auto l1 = startTimePoint(intAssignment, iterators);
         auto l2 = map.at(intAssignment);
 
-        // TODO: implement array-vars
-        auto castedLhs = std::static_pointer_cast<const program::IntVariable>(intAssignment->lhs);
-        
-        // lhs(l2) = rhs(l1)
-        auto eq = logic::Formulas::equality(castedLhs->toTerm(l2), intAssignment->rhs->toTerm(l1));
-        conjuncts.push_back(eq);
-    
-        // forall other variables: v(l2) = v(l1)
-        for (const auto& var : variables)
+        // case 1: assignment to int var
+        if (intAssignment->lhs->type() == program::IntExpression::Type::IntVariable)
         {
-            if (*var != *castedLhs)
+            auto castedLhs = std::static_pointer_cast<const program::IntVariable>(intAssignment->lhs);
+            
+            // lhs(l2) = rhs(l1)
+            auto eq = logic::Formulas::equality(castedLhs->toTerm(l2), intAssignment->rhs->toTerm(l1));
+            conjuncts.push_back(eq);
+            
+            // forall other int-variables: v(l2) = v(l1)
+            for (const auto& var : intVars)
+            {
+                if (*var != *castedLhs)
+                {
+                    auto eq = logic::Formulas::equality(var->toTerm(l2), var->toTerm(l1));
+                    conjuncts.push_back(eq);
+                }
+            }
+            // forall int-array-variables: forall p. v(l2,p) = v(l1,p)
+            for (const auto& var : intArrayVars)
+            {
+                auto p = logic::Terms::var(logic::Sorts::intSort(), "p");
+                auto conjunct = logic::Formulas::universal({p}, logic::Formulas::equality(var->toTerm(l2, p), var->toTerm(l1, p)));
+                conjuncts.push_back(conjunct);
+            }
+        }
+        // case 2: assignment to int-array var
+        else
+        {
+            assert(intAssignment->lhs->type() == program::IntExpression::Type::IntArrayApplication);
+            auto application = std::static_pointer_cast<const program::IntArrayApplication>(intAssignment->lhs);
+            
+            // a(l2, e(l1)) = rhs(l1)
+            auto eq1 = logic::Formulas::equality(application->toTerm(l2), intAssignment->rhs->toTerm(l1));
+            conjuncts.push_back(eq1);
+
+            // forall positions p. (p!=e(l1) => a(l2,p) = a(l1,p))
+            auto p = logic::Terms::var(logic::Sorts::intSort(), "p");
+            auto premise = logic::Formulas::disequality(p, intAssignment->rhs->toTerm(l1));
+            auto eq2 = logic::Formulas::equality(application->array->toTerm(l2, p), application->array->toTerm(l1, p));
+            auto conjunct = logic::Formulas::universal({p}, logic::Formulas::implication(premise, eq2));
+            conjuncts.push_back(conjunct);
+            
+            // forall int-variables: v(l2) = v(l1)
+            for (const auto& var : intVars)
             {
                 auto eq = logic::Formulas::equality(var->toTerm(l2), var->toTerm(l1));
                 conjuncts.push_back(eq);
             }
+            
+            // forall other int-array-variables: forall p. v(l2,p) = v(l1,p)
+            for (const auto& var : intArrayVars)
+            {
+                if (*var != *application->array)
+                {
+                    auto p = logic::Terms::var(logic::Sorts::intSort(), "p");
+                    auto conjunct = logic::Formulas::universal({p}, logic::Formulas::equality(var->toTerm(l2, p), var->toTerm(l1, p)));
+                    conjuncts.push_back(conjunct);
+                }
+            }
         }
+        
         return logic::Formulas::conjunction(conjuncts);
     }
     
-    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const std::shared_ptr<const program::IfElse> ifElse, const EndLocationMap& map, const std::vector<std::shared_ptr<const program::IntVariable>>& variables, std::vector<std::shared_ptr<const logic::Term>> iterators)
+    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const std::shared_ptr<const program::IfElse> ifElse,
+                                                                       const EndLocationMap& map,
+                                                                       const std::vector<std::shared_ptr<const program::IntVariable>>& intVars,
+                                                                       const std::vector<std::shared_ptr<const program::IntArrayVariable>>& intArrayVars,
+                                                                       std::vector<std::shared_ptr<const logic::Term>> iterators)
     {
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts;
 
@@ -94,23 +152,37 @@ namespace analysis {
         
         // Part 1: values at the beginning of any branch are the same as at the beginning of the ifElse-statement
         // TODO: sideconditions
-        for (const auto& var : variables)
+        for (const auto& var : intVars)
         {
             // v(lLeftStart) = v(lStart)
             auto eq = logic::Formulas::equality(var->toTerm(lLeftStart), var->toTerm(lStart));
             conjuncts.push_back(eq);
         }
-        for (const auto& var : variables)
+        for (const auto& var : intArrayVars)
+        {
+            // forall p. v(lLeftStart,p) = v(lStart,p)
+            auto p = logic::Terms::var(logic::Sorts::intSort(), "p");
+            auto conjunct = logic::Formulas::universal({p}, logic::Formulas::equality(var->toTerm(lLeftStart, p), var->toTerm(lStart, p)));
+            conjuncts.push_back(conjunct);
+        }
+        for (const auto& var : intVars)
         {
             // v(lRightStart) = v(lStart)
             auto eq = logic::Formulas::equality(var->toTerm(lRightStart), var->toTerm(lStart));
             conjuncts.push_back(eq);
         }
+        for (const auto& var : intArrayVars)
+        {
+            // forall p. v(lRightStart,p) = v(lStart,p)
+            auto p = logic::Terms::var(logic::Sorts::intSort(), "p");
+            auto conjunct = logic::Formulas::universal({p}, logic::Formulas::equality(var->toTerm(lRightStart, p), var->toTerm(lStart, p)));
+            conjuncts.push_back(conjunct);
+        }
         
         // Part 2: values at the end of the ifElse-statement are either values at the end of the left branch or the right branch,
         // depending on the branching condition
         auto c = ifElse->condition->toFormula(lStart);
-        for (const auto& var : variables)
+        for (const auto& var : intVars)
         {
             // condition(lStart) => v(lEnd)=v(lLeftEnd)
             auto eq1 = logic::Formulas::equality(var->toTerm(lEnd), var->toTerm(lLeftEnd));
@@ -120,23 +192,39 @@ namespace analysis {
             auto eq2 = logic::Formulas::equality(var->toTerm(lEnd), var->toTerm(lRightEnd));
             conjuncts.push_back(logic::Formulas::implication(logic::Formulas::negation(c), eq2));
         }
+        for (const auto& var : intArrayVars)
+        {
+            auto p = logic::Terms::var(logic::Sorts::intSort(), "p");
+
+            // condition(lStart) => forall p. v(lEnd,p) = v(lLeftEnd,p)
+            auto conclusion1 = logic::Formulas::universal({p}, logic::Formulas::equality(var->toTerm(lEnd, p), var->toTerm(lLeftEnd, p)));
+            conjuncts.push_back(logic::Formulas::implication(c, conclusion1));
+            
+            // not condition(lStart) => forall p. v(lEnd,p) = v(lLeftEnd,p)
+            auto conclusion2 = logic::Formulas::universal({p}, logic::Formulas::equality(var->toTerm(lEnd, p), var->toTerm(lRightEnd, p)));
+            conjuncts.push_back(logic::Formulas::implication(logic::Formulas::negation(c), conclusion2));
+        }
         
         // Part 3: collect all formulas describing semantics of branches
         for (const auto& statement : ifElse->ifStatements)
         {
-            auto conjunct = generateSemantics(statement, map, variables, iterators);
+            auto conjunct = generateSemantics(statement, map, intVars, intArrayVars, iterators);
             conjuncts.push_back(conjunct);
         }
         for (const auto& statement : ifElse->elseStatements)
         {
-            auto conjunct = generateSemantics(statement, map, variables, iterators);
+            auto conjunct = generateSemantics(statement, map, intVars, intArrayVars, iterators);
             conjuncts.push_back(conjunct);
         }
         
         return logic::Formulas::conjunction(conjuncts);
     }
     
-    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const std::shared_ptr<const program::WhileStatement> whileStatement, const EndLocationMap& map, const std::vector<std::shared_ptr<const program::IntVariable>>& variables, std::vector<std::shared_ptr<const logic::Term>> iterators)
+    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const std::shared_ptr<const program::WhileStatement> whileStatement,
+                                                                       const EndLocationMap& map,
+                                                                       const std::vector<std::shared_ptr<const program::IntVariable>>& intVars,
+                                                                       const std::vector<std::shared_ptr<const program::IntArrayVariable>>& intArrayVars,
+                                                                       std::vector<std::shared_ptr<const logic::Term>> iterators)
     {
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts;
 
@@ -155,11 +243,18 @@ namespace analysis {
         // Part 1: values at the beginning of body are the same as at the beginning of the while-statement
         // TODO: sideconditions
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts1;
-        for (const auto& var : variables)
+        for (const auto& var : intVars)
         {
-            // v(lBodyStartIt) = v(lStart(It))
+            // v(lBodyStartIt) = v(lStartIt)
             auto eq = logic::Formulas::equality(var->toTerm(lBodyStartIt), var->toTerm(lStartIt));
             conjuncts1.push_back(eq);
+        }
+        for (const auto& var : intArrayVars)
+        {
+            // forall p. v(lBodyStartIt,p) = v(lStartIt,p)
+            auto p = logic::Terms::var(logic::Sorts::intSort(), "p");
+            auto conjunct = logic::Formulas::universal({p}, logic::Formulas::equality(var->toTerm(lBodyStartIt, p), var->toTerm(lStartIt, p)));
+            conjuncts1.push_back(conjunct);
         }
         conjuncts.push_back(logic::Formulas::universal({i}, logic::Formulas::conjunction(conjuncts1)));
         
@@ -167,7 +262,7 @@ namespace analysis {
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts2;
         for (const auto& statement : whileStatement->bodyStatements)
         {
-            auto conjunct = generateSemantics(statement, map, variables, iteratorsIt);
+            auto conjunct = generateSemantics(statement, map, intVars, intArrayVars, iteratorsIt);
             conjuncts2.push_back(conjunct);
         }
         conjuncts.push_back(logic::Formulas::universal({i}, logic::Formulas::conjunction(conjuncts2)));
@@ -194,7 +289,9 @@ namespace analysis {
         return logic::Formulas::conjunction(conjuncts);
     }
     
-    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const std::shared_ptr<const program::SkipStatement> skipStatement, const EndLocationMap& map, std::vector<std::shared_ptr<const logic::Term>> iterators)
+    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const std::shared_ptr<const program::SkipStatement> skipStatement,
+                                                                       const EndLocationMap& map,
+                                                                       std::vector<std::shared_ptr<const logic::Term>> iterators)
     {        
         auto l1 = startTimePoint(skipStatement, iterators);
         auto l2 = map.at(skipStatement);

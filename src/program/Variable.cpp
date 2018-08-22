@@ -27,11 +27,16 @@ namespace program {
         assert(i != nullptr);
         return logic::Formulas::predicate(name, { i });
     }
-    
+
+    std::shared_ptr<const logic::Term> IntArrayVariable::toTerm(std::shared_ptr<const logic::Term> index, std::shared_ptr<const logic::Term> position) const
+    {
+        return logic::Terms::func(logic::Sorts::intSort(), name, {index, position});
+    }
+
     std::shared_ptr<const logic::Term> IntArrayApplication::toTerm(std::shared_ptr<const logic::Term> i) const
     {
         assert(i != nullptr);
-        return logic::Terms::func(logic::Sorts::intSort(), array->name, { i, index->toTerm(i)});
+        return array->toTerm(i, index->toTerm(i));
     }
     
     std::string IntVariable::toString() const

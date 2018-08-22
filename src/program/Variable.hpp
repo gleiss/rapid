@@ -26,6 +26,8 @@ namespace program {
 
         const std::string name;
         
+        IntExpression::Type type() const override {return IntExpression::Type::IntVariable;}
+        
         bool operator==(const IntVariable& rhs) const { return (name == rhs.name); }
         bool operator!=(const IntVariable& rhs) const { return !operator==(rhs); }
         
@@ -58,10 +60,11 @@ namespace program {
         
         const std::string name;
         
-        bool operator==(const IntVariable& rhs) const { return (name == rhs.name); }
-        bool operator!=(const IntVariable& rhs) const { return !operator==(rhs); }
+        bool operator==(const IntArrayVariable& rhs) const { return (name == rhs.name); }
+        bool operator!=(const IntArrayVariable& rhs) const { return !operator==(rhs); }
         
         std::string toString() const;
+        std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const logic::Term> index, std::shared_ptr<const logic::Term> position) const;
     };
     
     // hack needed for bison: std::vector has no overload for ostream, but these overloads are needed for bison
@@ -81,6 +84,8 @@ namespace program {
         const std::shared_ptr<const IntArrayVariable> array;
         const std::shared_ptr<const IntExpression> index;
         
+        IntExpression::Type type() const override {return IntExpression::Type::IntArrayApplication;}
+
         std::string toString() const override;
         std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const logic::Term> i) const override;
     };

@@ -16,11 +16,29 @@ namespace analysis {
         
         typedef std::unordered_map<const std::shared_ptr<const program::Statement>, std::shared_ptr<const logic::Term>, program::StatementSharedPtrHash> EndLocationMap;
 
-        std::shared_ptr<const logic::Formula> generateSemantics(const std::shared_ptr<const program::Statement> statement, const EndLocationMap& map, const std::vector<std::shared_ptr<const program::IntVariable>>& variables, std::vector<std::shared_ptr<const logic::Term>> iterators);
-        std::shared_ptr<const logic::Formula> generateSemantics(const std::shared_ptr<const program::IntAssignment> intAssignment, const EndLocationMap& map,  const std::vector<std::shared_ptr<const program::IntVariable>>& variables, std::vector<std::shared_ptr<const logic::Term>> iterators);
-        std::shared_ptr<const logic::Formula> generateSemantics(const std::shared_ptr<const program::IfElse> ifElse, const EndLocationMap& map, const std::vector<std::shared_ptr<const program::IntVariable>>& variables, std::vector<std::shared_ptr<const logic::Term>> iterators);
-        std::shared_ptr<const logic::Formula> generateSemantics(const std::shared_ptr<const program::WhileStatement> whileStatement, const EndLocationMap& map,  const std::vector<std::shared_ptr<const program::IntVariable>>& variables, std::vector<std::shared_ptr<const logic::Term>> iterators);
-        std::shared_ptr<const logic::Formula> generateSemantics(const std::shared_ptr<const program::SkipStatement> skipStatement, const EndLocationMap& map, std::vector<std::shared_ptr<const logic::Term>> iterators);
+        std::shared_ptr<const logic::Formula> generateSemantics(const std::shared_ptr<const program::Statement> statement,
+                                                                const EndLocationMap& map,
+                                                                const std::vector<std::shared_ptr<const program::IntVariable>>& intVars,
+                                                                const std::vector<std::shared_ptr<const program::IntArrayVariable>>& intArrayVars,
+                                                                std::vector<std::shared_ptr<const logic::Term>> iterators);
+        std::shared_ptr<const logic::Formula> generateSemantics(const std::shared_ptr<const program::IntAssignment> intAssignment,
+                                                                const EndLocationMap& map,
+                                                                const std::vector<std::shared_ptr<const program::IntVariable>>& intVars,
+                                                                const std::vector<std::shared_ptr<const program::IntArrayVariable>>& intArrayVars,
+                                                                std::vector<std::shared_ptr<const logic::Term>> iterators);
+        std::shared_ptr<const logic::Formula> generateSemantics(const std::shared_ptr<const program::IfElse> ifElse,
+                                                                const EndLocationMap& map,
+                                                                const std::vector<std::shared_ptr<const program::IntVariable>>& intVars,
+                                                                const std::vector<std::shared_ptr<const program::IntArrayVariable>>& intArrayVars,
+                                                                std::vector<std::shared_ptr<const logic::Term>> iterators);
+        std::shared_ptr<const logic::Formula> generateSemantics(const std::shared_ptr<const program::WhileStatement> whileStatement,
+                                                                const EndLocationMap& map,
+                                                                const std::vector<std::shared_ptr<const program::IntVariable>>& intVars,
+                                                                const std::vector<std::shared_ptr<const program::IntArrayVariable>>& intArrayVars,
+                                                                std::vector<std::shared_ptr<const logic::Term>> iterators);
+        std::shared_ptr<const logic::Formula> generateSemantics(const std::shared_ptr<const program::SkipStatement> skipStatement,
+                                                                const EndLocationMap& map,
+                                                                std::vector<std::shared_ptr<const logic::Term>> iterators);
 
         std::shared_ptr<const logic::Term> startTimePoint(std::shared_ptr<const program::Statement> statement, std::vector<std::shared_ptr<const logic::Term>> iterators);
 

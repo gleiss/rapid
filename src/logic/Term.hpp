@@ -2,7 +2,6 @@
 #define __Term__
 
 #include <cassert>
-#include <initializer_list>
 #include <list>
 #include <ostream>
 #include <string>

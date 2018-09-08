@@ -1,7 +1,6 @@
 #ifndef __Options__
 #define __Options__
 
-#include <initializer_list>
 #include <map>
 #include <vector>
 #include <string>
@@ -55,7 +54,7 @@ namespace util {
     
     class MultiChoiceOption : public Option {
     public:
-        MultiChoiceOption(std::string name, std::initializer_list<std::string> choices, std::string defaultValue) :
+        MultiChoiceOption(std::string name, std::vector<std::string> choices, std::string defaultValue) :
         Option(name),
         _value(defaultValue),
         _choices(choices)

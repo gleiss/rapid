@@ -1,7 +1,6 @@
 #ifndef __Formula__
 #define __Formula__
 
-#include <initializer_list>
 #include <ostream>
 #include "Term.hpp"
 
@@ -20,7 +19,7 @@ namespace logic {
         friend class Formulas;
         
     public:
-        PredicateFormula(const Symbol* symbol, std::initializer_list<std::shared_ptr<const Term>> subterms) : symbol(symbol), subterms(subterms)
+        PredicateFormula(const Symbol* symbol, std::vector<std::shared_ptr<const Term>> subterms) : symbol(symbol), subterms(subterms)
         {
             assert(symbol->argSorts.size() == subterms.size());
             for (int i=0; i < symbol->argSorts.size(); ++i)
@@ -61,7 +60,6 @@ namespace logic {
         
     public:
         ConjunctionFormula(std::vector<std::shared_ptr<const Formula>> conj) : conj(conj){}
-        ConjunctionFormula(std::initializer_list<std::shared_ptr<const Formula>> conj) : conj(conj){}
         
         const std::vector<std::shared_ptr<const Formula>> conj;
 
@@ -75,7 +73,6 @@ namespace logic {
         
     public:
         DisjunctionFormula(std::vector<std::shared_ptr<const Formula>> disj) : disj(disj){}
-        DisjunctionFormula(std::initializer_list<std::shared_ptr<const Formula>> disj) : disj(disj){}
         
         const std::vector<std::shared_ptr<const Formula>> disj;
 
@@ -103,7 +100,6 @@ namespace logic {
         
     public:
         ExistentialFormula(std::vector<std::shared_ptr<const LVariable>> vars, std::shared_ptr<const Formula> f) : vars(vars), f(f){}
-        ExistentialFormula(std::initializer_list<std::shared_ptr<const LVariable>> vars, std::shared_ptr<const Formula> f) : vars(vars), f(f){}
         
         const std::vector<std::shared_ptr<const LVariable>> vars;
         const std::shared_ptr<const Formula> f;
@@ -118,7 +114,6 @@ namespace logic {
         
     public:
         UniversalFormula(std::vector<std::shared_ptr<const LVariable>> vars, std::shared_ptr<const Formula> f) : vars(vars), f(f){}
-        UniversalFormula(std::initializer_list<std::shared_ptr<const LVariable>> vars, std::shared_ptr<const Formula> f) : vars(vars), f(f){}
 
         const std::vector<std::shared_ptr<const LVariable>> vars;
         const std::shared_ptr<const Formula> f;
@@ -151,7 +146,7 @@ namespace logic {
     public:
         
         // construct new terms
-        static std::shared_ptr<const PredicateFormula> predicate(std::string name, std::initializer_list<std::shared_ptr<const Term>> subterms, bool noDeclaration=false);
+        static std::shared_ptr<const PredicateFormula> predicate(std::string name, std::vector<std::shared_ptr<const Term>> subterms, bool noDeclaration=false);
         
         static std::shared_ptr<const EqualityFormula> equality(std::shared_ptr<const Term> left, std::shared_ptr<const Term> right);
         static std::shared_ptr<const NegationFormula> disequality(std::shared_ptr<const Term> left, std::shared_ptr<const Term> right);
@@ -159,9 +154,7 @@ namespace logic {
         static std::shared_ptr<const NegationFormula>  negation(std::shared_ptr<const Formula> f);
 
         static std::shared_ptr<const ConjunctionFormula> conjunction(std::vector<std::shared_ptr<const Formula>> conj);
-        static std::shared_ptr<const ConjunctionFormula> conjunction(std::initializer_list<std::shared_ptr<const Formula>> conj);
         static std::shared_ptr<const DisjunctionFormula> disjunction(std::vector<std::shared_ptr<const Formula>> disj);
-        static std::shared_ptr<const DisjunctionFormula> disjunction(std::initializer_list<std::shared_ptr<const Formula>> disj);
         
         static std::shared_ptr<const ImplicationFormula> implication(std::shared_ptr<const Formula> f1, std::shared_ptr<const Formula> f2);
         

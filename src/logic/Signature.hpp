@@ -2,7 +2,6 @@
 #define __Signature__
 
 #include <cassert>
-#include <initializer_list>
 #include <unordered_set>
 #include <string>
 #include <vector>
@@ -26,16 +25,7 @@ namespace logic {
         {
             assert(!name.empty());
         }
-        
-        Symbol(std::string name, std::initializer_list<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration) :
-        name(name),
-        argSorts(argSorts),
-        rngSort(rngSort),
-        noDeclaration(noDeclaration)
-        {
-            assert(!name.empty());
-        }
-        
+
         Symbol(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration) :
         name(name),
         argSorts(std::move(argSorts)),

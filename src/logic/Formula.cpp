@@ -405,7 +405,7 @@ namespace logic {
     }
     
 # pragma mark - Formulas
-    std::shared_ptr<const PredicateFormula> Formulas::predicate(std::string name, std::initializer_list<std::shared_ptr<const Term>> subterms, bool noDeclaration)
+    std::shared_ptr<const PredicateFormula> Formulas::predicate(std::string name, std::vector<std::shared_ptr<const Term>> subterms, bool noDeclaration)
     {
         std::vector<const Sort*> subtermSorts;
         for (const auto& subterm : subterms)
@@ -436,15 +436,7 @@ namespace logic {
     {
         return std::shared_ptr<const ConjunctionFormula>(new ConjunctionFormula(conj));
     }
-    std::shared_ptr<const ConjunctionFormula> Formulas::conjunction(std::initializer_list<std::shared_ptr<const Formula>> conj)
-    {
-        return std::shared_ptr<const ConjunctionFormula>(new ConjunctionFormula(conj));
-    }
     std::shared_ptr<const DisjunctionFormula> Formulas::disjunction(std::vector<std::shared_ptr<const Formula>> disj)
-    {
-        return std::shared_ptr<const DisjunctionFormula>(new DisjunctionFormula(disj));
-    }
-    std::shared_ptr<const DisjunctionFormula> Formulas::disjunction(std::initializer_list<std::shared_ptr<const Formula>> disj)
     {
         return std::shared_ptr<const DisjunctionFormula>(new DisjunctionFormula(disj));
     }

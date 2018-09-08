@@ -6,27 +6,27 @@ namespace logic {
     
     std::shared_ptr<const FuncTerm> Theory::intConstant(int i)
     {
-        return Terms::func(Sorts::intSort(), std::to_string(i), {}, true);
+        return Terms::func(std::to_string(i), {}, Sorts::intSort(), true);
     }
     
     std::shared_ptr<const FuncTerm> Theory::intAddition(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2)
     {
-        return Terms::func(Sorts::intSort(), "int_plus", {t1,t2}, true);
+        return Terms::func("int_plus", {t1,t2}, Sorts::intSort(), true);
     }
     
     std::shared_ptr<const FuncTerm> Theory::intSubtraction(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2)
     {
-        return Terms::func(Sorts::intSort(), "int_minus", {t1,t2}, true);
+        return Terms::func("int_minus", {t1,t2}, Sorts::intSort(), true);
     }
     
     std::shared_ptr<const FuncTerm> Theory::intMultiplication(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2)
     {
-        return Terms::func(Sorts::intSort(), "int_multiply", {t1,t2}, true);
+        return Terms::func("int_multiply", {t1,t2}, Sorts::intSort(), true);
     }
     
     std::shared_ptr<const FuncTerm> Theory::intUnaryMinus(std::shared_ptr<const Term> t)
     {
-        return Terms::func(Sorts::intSort(), "int_unary_minus", {t}, true);
+        return Terms::func("int_unary_minus", {t}, Sorts::intSort(), true);
     }
     
     std::shared_ptr<const Formula> Theory::intLess(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2)
@@ -61,17 +61,17 @@ namespace logic {
     
     std::shared_ptr<const FuncTerm> Theory::timeZero()
     {
-        return Terms::func(Sorts::timeSort(), "time_zero", {}, true);
+        return Terms::func("time_zero", {}, Sorts::timeSort(), true);
     }
     
     std::shared_ptr<const FuncTerm> Theory::timeSucc(std::shared_ptr<const Term> term)
     {
-        return Terms::func(Sorts::timeSort(), "time_succ", {term}, true);
+        return Terms::func("time_succ", {term}, Sorts::timeSort(), true);
     }
     
     std::shared_ptr<const FuncTerm> Theory::timePre(std::shared_ptr<const Term> term)
     {
-        return Terms::func(Sorts::timeSort(), "time_pre", {term}, true);
+        return Terms::func("time_pre", {term}, Sorts::timeSort(), true);
     }
     
     std::shared_ptr<const Formula> Theory::timeSub(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2)

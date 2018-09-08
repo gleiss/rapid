@@ -91,7 +91,7 @@ namespace analysis {
             // forall int-array-variables: forall p. v(l2,p) = v(l1,p)
             for (const auto& var : intArrayVars)
             {
-                auto p = logic::Terms::var(logic::Sorts::intSort(), "p");
+                auto p = logic::Terms::var("p", logic::Sorts::intSort());
                 auto conjunct = logic::Formulas::universal({p}, logic::Formulas::equality(var->toTerm(l2, p), var->toTerm(l1, p)));
                 conjuncts.push_back(conjunct);
             }
@@ -107,7 +107,7 @@ namespace analysis {
             conjuncts.push_back(eq1);
 
             // forall positions p. (p!=e(l1) => a(l2,p) = a(l1,p))
-            auto p = logic::Terms::var(logic::Sorts::intSort(), "p");
+            auto p = logic::Terms::var("p", logic::Sorts::intSort());
             auto premise = logic::Formulas::disequality(p, intAssignment->rhs->toTerm(l1));
             auto eq2 = logic::Formulas::equality(application->array->toTerm(l2, p), application->array->toTerm(l1, p));
             auto conjunct = logic::Formulas::universal({p}, logic::Formulas::implication(premise, eq2));
@@ -125,7 +125,7 @@ namespace analysis {
             {
                 if (*var != *application->array)
                 {
-                    auto p = logic::Terms::var(logic::Sorts::intSort(), "p");
+                    auto p = logic::Terms::var("p", logic::Sorts::intSort());
                     auto conjunct = logic::Formulas::universal({p}, logic::Formulas::equality(var->toTerm(l2, p), var->toTerm(l1, p)));
                     conjuncts.push_back(conjunct);
                 }
@@ -161,7 +161,7 @@ namespace analysis {
         for (const auto& var : intArrayVars)
         {
             // forall p. v(lLeftStart,p) = v(lStart,p)
-            auto p = logic::Terms::var(logic::Sorts::intSort(), "p");
+            auto p = logic::Terms::var("p", logic::Sorts::intSort());
             auto conjunct = logic::Formulas::universal({p}, logic::Formulas::equality(var->toTerm(lLeftStart, p), var->toTerm(lStart, p)));
             conjuncts.push_back(conjunct);
         }
@@ -174,7 +174,7 @@ namespace analysis {
         for (const auto& var : intArrayVars)
         {
             // forall p. v(lRightStart,p) = v(lStart,p)
-            auto p = logic::Terms::var(logic::Sorts::intSort(), "p");
+            auto p = logic::Terms::var("p", logic::Sorts::intSort());
             auto conjunct = logic::Formulas::universal({p}, logic::Formulas::equality(var->toTerm(lRightStart, p), var->toTerm(lStart, p)));
             conjuncts.push_back(conjunct);
         }
@@ -194,7 +194,7 @@ namespace analysis {
         }
         for (const auto& var : intArrayVars)
         {
-            auto p = logic::Terms::var(logic::Sorts::intSort(), "p");
+            auto p = logic::Terms::var("p", logic::Sorts::intSort());
 
             // condition(lStart) => forall p. v(lEnd,p) = v(lLeftEnd,p)
             auto conclusion1 = logic::Formulas::universal({p}, logic::Formulas::equality(var->toTerm(lEnd, p), var->toTerm(lLeftEnd, p)));
@@ -235,7 +235,7 @@ namespace analysis {
         iteratorsIt.push_back(i);
         
         auto lStart0 = startTimePoint(whileStatement, iterators);
-        auto lStartIt = logic::Terms::func(logic::Sorts::timeSort(), whileStatement->location, iteratorsIt);
+        auto lStartIt = logic::Terms::func(whileStatement->location, iteratorsIt, logic::Sorts::timeSort());
         auto lBodyStartIt = startTimePoint(whileStatement->bodyStatements.front(), iteratorsIt);
         auto lEnd = map.at(whileStatement);
         
@@ -252,7 +252,7 @@ namespace analysis {
         for (const auto& var : intArrayVars)
         {
             // forall p. v(lBodyStartIt,p) = v(lStartIt,p)
-            auto p = logic::Terms::var(logic::Sorts::intSort(), "p");
+            auto p = logic::Terms::var("p", logic::Sorts::intSort());
             auto conjunct = logic::Formulas::universal({p}, logic::Formulas::equality(var->toTerm(lBodyStartIt, p), var->toTerm(lStartIt, p)));
             conjuncts1.push_back(conjunct);
         }
@@ -282,7 +282,7 @@ namespace analysis {
         
         // Part 4: The end-timepoint of the while-statement is the timepoint with location lStart and iteration n
         iterators.push_back(n);
-        auto lStartN = logic::Terms::func(logic::Sorts::timeSort(), whileStatement->location, iterators);
+        auto lStartN = logic::Terms::func(whileStatement->location, iterators, logic::Sorts::timeSort());
         auto eq = logic::Formulas::equality(lEnd, lStartN);
         conjuncts.push_back(eq);
 
@@ -309,7 +309,7 @@ namespace analysis {
         {
             iterators.push_back(logic::Theory::timeZero());
         }
-        return logic::Terms::func(logic::Sorts::timeSort(), statement->location, iterators);
+        return logic::Terms::func(statement->location, iterators, logic::Sorts::timeSort());
     }
 
 # pragma mark - End location computation
@@ -335,7 +335,7 @@ namespace analysis {
                 map[lastStatement] = startTimePoint(currentStatement, {});
             }
             // for the last statement, set the end-location to be the end-location of the function.
-            auto t = logic::Terms::func(logic::Sorts::timeSort(), function->name + "_end", {});
+            auto t = logic::Terms::func(function->name + "_end", {}, logic::Sorts::timeSort());
             map[function->statements.back()] = t;
             
             // recurse on the statements
@@ -379,7 +379,7 @@ namespace analysis {
             map[lastStatement] = startTimePoint(currentStatement, iterators);
         }
         // use a new location as end location for last statement of the left branch
-        auto t1 = logic::Terms::func(logic::Sorts::timeSort(), ifElse->location + "_lEnd", iterators);
+        auto t1 = logic::Terms::func(ifElse->location + "_lEnd", iterators, logic::Sorts::timeSort());
         map[ifElse->ifStatements.back()] = t1;
         
         // for each statement in the right branch except the first, set the end-location of the previous statement to the begin-location of this statement
@@ -391,7 +391,7 @@ namespace analysis {
             map[lastStatement] = startTimePoint(currentStatement, iterators);
         }
         // use a new location as end location for last statement of the right branch
-        auto t2 = logic::Terms::func(logic::Sorts::timeSort(), ifElse->location + "_rEnd", iterators);
+        auto t2 = logic::Terms::func(ifElse->location + "_rEnd", iterators, logic::Sorts::timeSort());
         map[ifElse->elseStatements.back()] = t2;
 
         // recurse on the statements
@@ -413,7 +413,7 @@ namespace analysis {
         auto t2 = logic::Theory::timeSucc(t1);
         iteratorsCopy.push_back(t2);
         
-        auto t3 = logic::Terms::func(logic::Sorts::timeSort(), whileStatement->location, iteratorsCopy);
+        auto t3 = logic::Terms::func(whileStatement->location, iteratorsCopy, logic::Sorts::timeSort());
         map[whileStatement->bodyStatements.back()] = t3;
         
         // for each statement in the body except the first, set the end-location of the previous statement to the begin-location of this statement
@@ -436,11 +436,11 @@ namespace analysis {
     
     std::shared_ptr<const logic::LVariable> Semantics::loopIterator(std::shared_ptr<const program::WhileStatement> whileStatement)
     {
-        return logic::Terms::var(logic::Sorts::timeSort(), "It" + whileStatement->location);
+        return logic::Terms::var("It" + whileStatement->location, logic::Sorts::timeSort());
     }
     
     std::shared_ptr<const logic::FuncTerm> Semantics::lastIteration(std::shared_ptr<const program::WhileStatement> whileStatement)
     {
-        return logic::Terms::func(logic::Sorts::timeSort(), "n" + whileStatement->location, {});
+        return logic::Terms::func("n" + whileStatement->location, {}, logic::Sorts::timeSort());
     }
 }

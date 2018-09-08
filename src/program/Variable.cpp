@@ -14,7 +14,7 @@ namespace program {
     std::shared_ptr<const logic::Term> IntVariable::toTerm(std::shared_ptr<const logic::Term> i) const
     {
         assert(i != nullptr);
-        return logic::Terms::func(logic::Sorts::intSort(), name, { i });
+        return logic::Terms::func(name, { i }, logic::Sorts::intSort());
     }
     
     // hack needed for bison: std::vector has no overload for ostream, but these overloads are needed for bison
@@ -30,7 +30,7 @@ namespace program {
 
     std::shared_ptr<const logic::Term> IntArrayVariable::toTerm(std::shared_ptr<const logic::Term> index, std::shared_ptr<const logic::Term> position) const
     {
-        return logic::Terms::func(logic::Sorts::intSort(), name, {index, position});
+        return logic::Terms::func(name, {index, position}, logic::Sorts::intSort());
     }
 
     std::shared_ptr<const logic::Term> IntArrayApplication::toTerm(std::shared_ptr<const logic::Term> i) const

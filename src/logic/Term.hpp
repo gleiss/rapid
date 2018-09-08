@@ -11,7 +11,7 @@
 #include "Sort.hpp"
 
 namespace logic {
-        
+    
     class Term
     {
     public:
@@ -71,8 +71,8 @@ namespace logic {
     public:
 
         // construct new terms
-        static std::shared_ptr<const LVariable> var(const Sort* s, const std::string name);
-        static std::shared_ptr<const FuncTerm> func(const Sort* sort, std::string name, std::vector<std::shared_ptr<const Term>> subterms, bool noDeclaration=false);
+        static std::shared_ptr<const LVariable> var(const std::string name, const Sort* s);
+        static std::shared_ptr<const FuncTerm> func(std::string name, std::vector<std::shared_ptr<const Term>> subterms, const Sort* sort, bool noDeclaration=false);
     };
 }
 #endif

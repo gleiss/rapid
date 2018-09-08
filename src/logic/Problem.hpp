@@ -11,6 +11,7 @@ namespace logic {
     // for now sorts and signatures are not part of Problem, maybe should be refactored.
     class Problem
     {
+    public:
         Problem() : axioms(), conjecture(nullptr), lemmas() {}
         
         std::vector<std::pair<std::string, std::shared_ptr<const Formula>>> axioms;

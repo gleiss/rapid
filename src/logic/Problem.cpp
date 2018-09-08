@@ -30,6 +30,7 @@ namespace logic {
         }
         
         // output conjecture
+        assert(conjecture != nullptr);
         ostr << conjecture->declareSMTLIB("conjecture", true) << std::endl;
     }
 

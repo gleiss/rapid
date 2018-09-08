@@ -2,6 +2,9 @@
 #include <iostream>
 #include <string>
 
+#include "logic/Theory.hpp"
+#include "logic/Problem.hpp"
+
 #include "parser/WhileParsingContext.hpp"
 #include "util/Options.hpp"
 #include "util/Output.hpp"
@@ -78,9 +81,14 @@ int main(int argc, char *argv[])
                 util::Output::stream() << *p;
                 util::Output::stream() << util::Output::nocomment;
 
+                logic::Problem problem;
+
                 analysis::Semantics s;
-                auto res = s.generateSemantics(*p);
-                util::Output::stream() << *res;
+                auto semantics = s.generateSemantics(*p);
+                problem.axioms = {std::make_pair("semantics", semantics)};
+                problem.conjecture = logic::Theory::boolTrue();
+                problem.outputSMTLIB(util::Output::stream());
+                
 //                auto map = s.computeEndLocations(*p);
 //                for (const auto& pair : map)
 //                {

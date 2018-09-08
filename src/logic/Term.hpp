@@ -11,9 +11,7 @@
 #include "Sort.hpp"
 
 namespace logic {
-    
-    class LVariable;
-    
+        
     class Term
     {
     public:

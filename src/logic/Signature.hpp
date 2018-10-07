@@ -2,7 +2,7 @@
 #define __Signature__
 
 #include <cassert>
-#include <unordered_set>
+#include <unordered_map>
 #include <string>
 #include <vector>
 #include "Sort.hpp"
@@ -39,7 +39,7 @@ namespace logic {
         const std::string name;
         const std::vector<const Sort*> argSorts;
         const Sort* rngSort;
-        const bool noDeclaration; // true iff the symbol needs no declaration (i.e. true only for interpreted symbols and variables)
+        const bool noDeclaration; // true iff the symbol needs no declaration in smtlib (i.e. true only for interpreted symbols and variables)
 
         bool isPredicateSymbol() const { return rngSort == Sorts::boolSort(); }
          
@@ -84,13 +84,15 @@ namespace logic {
     {
     public:
         // construct new symbols
+        static Symbol* add(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration=false);
+        static Symbol* fetch(std::string name);
         static Symbol* fetchOrAdd(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration=false);
 
-        static const std::unordered_set<std::unique_ptr<Symbol>, SymbolPtrHash, SymbolPtrEquality>& signature(){return _signature;}
+        static const std::unordered_map<std::string, std::unique_ptr<Symbol>>& signature(){return _signature;}
         
     private:
         // _signature collects all symbols used so far.
-        static std::unordered_set<std::unique_ptr<Symbol>, SymbolPtrHash, SymbolPtrEquality> _signature;
+        static std::unordered_map<std::string, std::unique_ptr<Symbol>> _signature;
     };
 }
 #endif

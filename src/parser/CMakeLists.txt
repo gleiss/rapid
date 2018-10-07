@@ -2,10 +2,12 @@ set(SPECTRE_PARSER_SOURCES
     WhileParser.cpp
     WhileScanner.cpp
     WhileParsingContext.cpp
+    WhileParserPostComputation.cpp
 )
 set(SPECTRE_PARSER_HEADERS
     WhileParser.hpp
 	WhileParsingContext.hpp
+	WhileParserPostComputation.hpp
 )
 
 add_library(parser ${SPECTRE_PARSER_SOURCES} ${SPECTRE_PARSER_HEADERS})

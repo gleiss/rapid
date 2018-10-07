@@ -16,18 +16,18 @@ namespace logic {
         static std::shared_ptr<const FuncTerm> intMultiplication(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2);
         static std::shared_ptr<const FuncTerm> intUnaryMinus(std::shared_ptr<const Term> t);
 
-        static std::shared_ptr<const Formula> intLess(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2);
-        static std::shared_ptr<const Formula> intLessEqual(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2);
-        static std::shared_ptr<const Formula> intGreater(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2);
-        static std::shared_ptr<const Formula> intGreaterEqual(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2);
+        static std::shared_ptr<const Formula> intLess(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2, std::string label="");
+        static std::shared_ptr<const Formula> intLessEqual(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2, std::string label="");
+        static std::shared_ptr<const Formula> intGreater(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2, std::string label="");
+        static std::shared_ptr<const Formula> intGreaterEqual(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2, std::string label="");
         
-        static std::shared_ptr<const Formula> boolTrue();
-        static std::shared_ptr<const Formula> boolFalse();
+        static std::shared_ptr<const Formula> boolTrue(std::string label="");
+        static std::shared_ptr<const Formula> boolFalse(std::string label="");
 
         static std::shared_ptr<const FuncTerm> timeZero();
         static std::shared_ptr<const FuncTerm> timeSucc(std::shared_ptr<const Term> term);
         static std::shared_ptr<const FuncTerm> timePre(std::shared_ptr<const Term> term);
-        static std::shared_ptr<const Formula> timeSub(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2);
+        static std::shared_ptr<const Formula> timeSub(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2, std::string label="");
     };
     
 }

@@ -12,26 +12,27 @@ namespace logic {
         }
         
         // output symbol definitions
-        for (const auto& symbol : Signature::signature())
+        for (const auto& pairStringSymbol : Signature::signature())
         {
-            ostr << symbol->declareSymbolSMTLIB();
+            ostr << pairStringSymbol.second->declareSymbolSMTLIB();
         }
         
         // output each axiom
         for (const auto& axiom : axioms)
         {
-            ostr << axiom.second->declareSMTLIB(axiom.first) << std::endl;
+            ostr << "(assert\n" << axiom->toSMTLIB(3) + "\n)\n";
         }
 
         // output each lemma
         for (const auto& lemma : lemmas)
         {
-            ostr << lemma.second->declareSMTLIB(lemma.first) << std::endl;
+            // TODO: improve handling for lemmas:
+            // custom smtlib-extension
+            ostr << "(assert\n" << lemma->toSMTLIB(3) + "\n)\n";
         }
         
         // output conjecture
         assert(conjecture != nullptr);
-        ostr << conjecture->declareSMTLIB("conjecture", true) << std::endl;
+        ostr << "(assert-not\n" << conjecture->toSMTLIB(3) + "\n)\n";
     }
-
 }

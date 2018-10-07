@@ -4,6 +4,10 @@
 
 namespace logic {
 
+    // hack needed for bison: std::vector has no overload for ostream, but these overloads are needed for bison
+    std::ostream& operator<<(std::ostream& ostr, const std::vector<std::shared_ptr<const logic::Term>>& t){ostr << "not implemented"; return ostr;}
+    std::ostream& operator<<(std::ostream& ostr, const std::vector<std::shared_ptr<const logic::LVariable>>& v){ostr << "not implemented"; return ostr;}
+
   unsigned LVariable::freshId = 0;
 
     std::string LVariable::toSMTLIB() const
@@ -113,6 +117,11 @@ namespace logic {
             subtermSorts.push_back(subterm->symbol->rngSort);
         }
         auto symbol = Signature::fetchOrAdd(name, subtermSorts, sort, noDeclaration);
+        return std::shared_ptr<const FuncTerm>(new FuncTerm(symbol, subterms));
+    }
+    
+    std::shared_ptr<const FuncTerm> Terms::func(const Symbol* symbol, std::vector<std::shared_ptr<const Term>> subterms)
+    {
         return std::shared_ptr<const FuncTerm>(new FuncTerm(symbol, subterms));
     }
 }

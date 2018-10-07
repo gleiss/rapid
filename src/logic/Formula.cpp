@@ -6,22 +6,15 @@
 
 namespace logic {
     
-    std::string Formula::declareSMTLIB(std::string decl, bool conjecture) const
-    {
-        if (conjecture)
-        {
-            // custom vampire smtlib-extension for asserting conjectures.
-            return "; " + decl + "\n" + "(assert-not\n" + toSMTLIB(3) + "\n)\n";
-        }
-        else
-        {
-            return "; " + decl + "\n" + "(assert\n" + toSMTLIB(3) + "\n)\n";
-        }
-    }
+    // hack needed for bison: std::vector has no overload for ostream, but these overloads are needed for bison
+    std::ostream& operator<<(std::ostream& ostr, const std::vector<std::shared_ptr<const logic::Formula>>& f){ostr << "not implemented"; return ostr;}
+    
+
 
     std::string PredicateFormula::toSMTLIB(unsigned indentation) const
     {
-        auto str = std::string(indentation, ' ');
+        auto str = ";" + label;
+        str +=std::string(indentation, ' ');
         if (subterms.size() == 0)
         {
             str += symbol->toSMTLIB();
@@ -405,7 +398,7 @@ namespace logic {
     }
     
 # pragma mark - Formulas
-    std::shared_ptr<const PredicateFormula> Formulas::predicate(std::string name, std::vector<std::shared_ptr<const Term>> subterms, bool noDeclaration)
+    std::shared_ptr<const PredicateFormula> Formulas::predicate(std::string name, std::vector<std::shared_ptr<const Term>> subterms, std::string label, bool noDeclaration)
     {
         std::vector<const Sort*> subtermSorts;
         for (const auto& subterm : subterms)
@@ -413,46 +406,46 @@ namespace logic {
             subtermSorts.push_back(subterm->symbol->rngSort);
         }
         auto symbol = Signature::fetchOrAdd(name, subtermSorts, Sorts::boolSort(), noDeclaration);
-        return std::shared_ptr<const PredicateFormula>(new PredicateFormula(symbol, subterms));
+        return std::shared_ptr<const PredicateFormula>(new PredicateFormula(symbol, subterms, label));
     }
 
-    std::shared_ptr<const EqualityFormula> Formulas::equality(std::shared_ptr<const Term> left, std::shared_ptr<const Term> right)
+    std::shared_ptr<const EqualityFormula> Formulas::equality(std::shared_ptr<const Term> left, std::shared_ptr<const Term> right, std::string label)
     {
-        return std::shared_ptr<const EqualityFormula>(new EqualityFormula(true, left, right));
+        return std::shared_ptr<const EqualityFormula>(new EqualityFormula(true, left, right, label));
     }
     
-    std::shared_ptr<const NegationFormula> Formulas::disequality(std::shared_ptr<const Term> left, std::shared_ptr<const Term> right)
+    std::shared_ptr<const NegationFormula> Formulas::disequality(std::shared_ptr<const Term> left, std::shared_ptr<const Term> right, std::string label)
     {
         auto eq = std::shared_ptr<const EqualityFormula>(new EqualityFormula(false, left, right));
-        return std::shared_ptr<const NegationFormula>(new NegationFormula(eq));
+        return std::shared_ptr<const NegationFormula>(new NegationFormula(eq, label));
     }
     
-    std::shared_ptr<const NegationFormula>  Formulas::negation(std::shared_ptr<const Formula> f)
+    std::shared_ptr<const NegationFormula>  Formulas::negation(std::shared_ptr<const Formula> f, std::string label)
     {
-        return std::shared_ptr<const NegationFormula>(new NegationFormula(f));
+        return std::shared_ptr<const NegationFormula>(new NegationFormula(f, label));
     }
     
-    std::shared_ptr<const ConjunctionFormula> Formulas::conjunction(std::vector<std::shared_ptr<const Formula>> conj)
+    std::shared_ptr<const ConjunctionFormula> Formulas::conjunction(std::vector<std::shared_ptr<const Formula>> conj, std::string label)
     {
-        return std::shared_ptr<const ConjunctionFormula>(new ConjunctionFormula(conj));
+        return std::shared_ptr<const ConjunctionFormula>(new ConjunctionFormula(conj, label));
     }
-    std::shared_ptr<const DisjunctionFormula> Formulas::disjunction(std::vector<std::shared_ptr<const Formula>> disj)
+    std::shared_ptr<const DisjunctionFormula> Formulas::disjunction(std::vector<std::shared_ptr<const Formula>> disj, std::string label)
     {
-        return std::shared_ptr<const DisjunctionFormula>(new DisjunctionFormula(disj));
-    }
-    
-    std::shared_ptr<const ImplicationFormula> Formulas::implication(std::shared_ptr<const Formula> f1, std::shared_ptr<const Formula> f2)
-    {
-        return std::shared_ptr<const ImplicationFormula>(new ImplicationFormula(f1, f2));
+        return std::shared_ptr<const DisjunctionFormula>(new DisjunctionFormula(disj, label));
     }
     
-    std::shared_ptr<const ExistentialFormula> Formulas::existential(std::vector<std::shared_ptr<const LVariable>> vars, std::shared_ptr<const Formula> f)
+    std::shared_ptr<const ImplicationFormula> Formulas::implication(std::shared_ptr<const Formula> f1, std::shared_ptr<const Formula> f2, std::string label)
     {
-        return std::shared_ptr<const ExistentialFormula>(new ExistentialFormula(vars, f));
+        return std::shared_ptr<const ImplicationFormula>(new ImplicationFormula(f1, f2, label));
     }
-    std::shared_ptr<const UniversalFormula> Formulas::universal(std::vector<std::shared_ptr<const LVariable>> vars, std::shared_ptr<const Formula> f)
+    
+    std::shared_ptr<const ExistentialFormula> Formulas::existential(std::vector<std::shared_ptr<const LVariable>> vars, std::shared_ptr<const Formula> f, std::string label)
     {
-        return std::shared_ptr<const UniversalFormula>(new UniversalFormula(vars, f));
+        return std::shared_ptr<const ExistentialFormula>(new ExistentialFormula(vars, f, label));
+    }
+    std::shared_ptr<const UniversalFormula> Formulas::universal(std::vector<std::shared_ptr<const LVariable>> vars, std::shared_ptr<const Formula> f, std::string label)
+    {
+        return std::shared_ptr<const UniversalFormula>(new UniversalFormula(vars, f, label));
     }
 }
 

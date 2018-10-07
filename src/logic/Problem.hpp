@@ -14,10 +14,10 @@ namespace logic {
     public:
         Problem() : axioms(), conjecture(nullptr), lemmas() {}
         
-        std::vector<std::pair<std::string, std::shared_ptr<const Formula>>> axioms;
+        std::vector<std::shared_ptr<const Formula>> axioms;
         std::shared_ptr<const Formula> conjecture;
         
-        std::vector<std::pair<std::string, std::shared_ptr<const Formula>>> lemmas;
+        std::vector<std::shared_ptr<const Formula>> lemmas;
         
         void outputSMTLIB(std::ostream& ostr);
     };

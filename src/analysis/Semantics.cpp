@@ -7,12 +7,8 @@
 
 namespace analysis {
     
-    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::Program& program)
+    std::shared_ptr<const logic::Formula> Semantics::generateSemantics()
     {
-        // Optimization to get a smaller encoding, which is easier to read:
-        // compute for each statement the first timepoint of the next statement
-        const auto& map = computeEndLocations(program);
-        
         // generate semantics compositionally
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts;
         for(const auto& function : program.functions)
@@ -21,7 +17,7 @@ namespace analysis {
 
             for (const auto& statement : function->statements)
             {
-                auto semantics = generateSemantics(statement, map, function->intVariables, function->intArrayVariables, {});
+                auto semantics = generateSemantics(statement.get(), function->intVariables, function->intArrayVariables);
                 conjunctsFunction.push_back(semantics);
             }
             conjuncts.push_back(logic::Formulas::conjunction(conjunctsFunction));
@@ -30,45 +26,41 @@ namespace analysis {
         return logic::Formulas::conjunction(conjuncts);
     }
     
-    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const std::shared_ptr<const program::Statement> statement,
-                                                                       const EndLocationMap& map,
+    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::Statement* statement,
                                                                        const std::vector<std::shared_ptr<const program::IntVariable>>& intVars,
-                                                                       const std::vector<std::shared_ptr<const program::IntArrayVariable>>& intArrayVars,
-                                                                       std::vector<std::shared_ptr<const logic::Term>> iterators)
+                                                                       const std::vector<std::shared_ptr<const program::IntArrayVariable>>& intArrayVars)
     {
         if (statement->type() == program::Statement::Type::IntAssignment)
         {
-            auto castedStatement = std::static_pointer_cast<const program::IntAssignment>(statement);
-            return generateSemantics(castedStatement, map, intVars, intArrayVars, iterators);
+            auto castedStatement = static_cast<const program::IntAssignment*>(statement);
+            return generateSemantics(castedStatement, intVars, intArrayVars);
         }
         else if (statement->type() == program::Statement::Type::IfElse)
         {
-            auto castedStatement = std::static_pointer_cast<const program::IfElse>(statement);
-            return generateSemantics(castedStatement, map, intVars, intArrayVars, iterators);
+            auto castedStatement = static_cast<const program::IfElse*>(statement);
+            return generateSemantics(castedStatement, intVars, intArrayVars);
         }
         else if (statement->type() == program::Statement::Type::WhileStatement)
         {
-            auto castedStatement = std::static_pointer_cast<const program::WhileStatement>(statement);
-            return generateSemantics(castedStatement, map, intVars, intArrayVars, iterators);
+            auto castedStatement = static_cast<const program::WhileStatement*>(statement);
+            return generateSemantics(castedStatement, intVars, intArrayVars);
         }
         else
         {
             assert(statement->type() == program::Statement::Type::SkipStatement);
-            auto castedStatement = std::static_pointer_cast<const program::SkipStatement>(statement);
-            return generateSemantics(castedStatement, map, iterators);
+            auto castedStatement = static_cast<const program::SkipStatement*>(statement);
+            return generateSemantics(castedStatement);
         }
     }
     
-    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const std::shared_ptr<const program::IntAssignment> intAssignment,
-                                                                       const EndLocationMap& map,
+    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::IntAssignment* intAssignment,
                                                                        const std::vector<std::shared_ptr<const program::IntVariable>>& intVars,
-                                                                       const std::vector<std::shared_ptr<const program::IntArrayVariable>>& intArrayVars,
-                                                                       std::vector<std::shared_ptr<const logic::Term>> iterators)
+                                                                       const std::vector<std::shared_ptr<const program::IntArrayVariable>>& intArrayVars)
     {
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts;
         
-        auto l1 = startTimePoint(intAssignment, iterators);
-        auto l2 = map.at(intAssignment);
+        auto l1 = startTimePointMap.at(intAssignment);
+        auto l2 = endTimePointMap.at(intAssignment);
 
         // case 1: assignment to int var
         if (intAssignment->lhs->type() == program::IntExpression::Type::IntVariable)
@@ -135,20 +127,19 @@ namespace analysis {
         return logic::Formulas::conjunction(conjuncts);
     }
     
-    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const std::shared_ptr<const program::IfElse> ifElse,
-                                                                       const EndLocationMap& map,
+    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::IfElse* ifElse,
                                                                        const std::vector<std::shared_ptr<const program::IntVariable>>& intVars,
-                                                                       const std::vector<std::shared_ptr<const program::IntArrayVariable>>& intArrayVars,
-                                                                       std::vector<std::shared_ptr<const logic::Term>> iterators)
+                                                                       const std::vector<std::shared_ptr<const program::IntArrayVariable>>& intArrayVars)
     {
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts;
 
-        auto lStart = startTimePoint(ifElse, iterators);
-        auto lEnd = map.at(ifElse);
-        auto lLeftStart = startTimePoint(ifElse->ifStatements.front(), iterators);
-        auto lLeftEnd = map.at(ifElse->ifStatements.back());
-        auto lRightStart = startTimePoint(ifElse->elseStatements.front(), iterators);
-        auto lRightEnd = map.at(ifElse->elseStatements.back());
+        auto lStart = startTimePointMap.at(ifElse);
+        auto lLeftStart = startTimePointMap.at(ifElse->ifStatements.front().get());
+        auto lRightStart = startTimePointMap.at(ifElse->elseStatements.front().get());
+
+        auto lEnd = endTimePointMap.at(ifElse);
+        auto lLeftEnd = endTimePointMap.at(ifElse->ifStatements.back().get());
+        auto lRightEnd = endTimePointMap.at(ifElse->elseStatements.back().get());
         
         // Part 1: values at the beginning of any branch are the same as at the beginning of the ifElse-statement
         // TODO: sideconditions
@@ -208,38 +199,41 @@ namespace analysis {
         // Part 3: collect all formulas describing semantics of branches
         for (const auto& statement : ifElse->ifStatements)
         {
-            auto conjunct = generateSemantics(statement, map, intVars, intArrayVars, iterators);
+            auto conjunct = generateSemantics(statement.get(), intVars, intArrayVars);
             conjuncts.push_back(conjunct);
         }
         for (const auto& statement : ifElse->elseStatements)
         {
-            auto conjunct = generateSemantics(statement, map, intVars, intArrayVars, iterators);
+            auto conjunct = generateSemantics(statement.get(), intVars, intArrayVars);
             conjuncts.push_back(conjunct);
         }
         
         return logic::Formulas::conjunction(conjuncts);
     }
     
-    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const std::shared_ptr<const program::WhileStatement> whileStatement,
-                                                                       const EndLocationMap& map,
+    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::WhileStatement* whileStatement,
                                                                        const std::vector<std::shared_ptr<const program::IntVariable>>& intVars,
-                                                                       const std::vector<std::shared_ptr<const program::IntArrayVariable>>& intArrayVars,
-                                                                       std::vector<std::shared_ptr<const logic::Term>> iterators)
+                                                                       const std::vector<std::shared_ptr<const program::IntArrayVariable>>& intArrayVars)
     {
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts;
 
-        auto i = loopIterator(whileStatement);
-        auto n = lastIteration(whileStatement);
+        auto i = iteratorMap.at(whileStatement);
+        auto n = lastIterationMap.at(whileStatement);
 
-        auto iteratorsIt = iterators;
+        auto lStart0 = startTimePointMap.at(whileStatement);
+
+        auto iteratorsIt = enclosingIteratorsMap.at(whileStatement);
         iteratorsIt.push_back(i);
+        auto lStartIt = logic::Terms::func(locationSymbolMap.at(whileStatement), iteratorsIt);
         
-        auto lStart0 = startTimePoint(whileStatement, iterators);
-        auto lStartIt = logic::Terms::func(whileStatement->location, iteratorsIt, logic::Sorts::timeSort());
-        auto lBodyStartIt = startTimePoint(whileStatement->bodyStatements.front(), iteratorsIt);
-        auto lEnd = map.at(whileStatement);
+        auto iteratorsN = enclosingIteratorsMap.at(whileStatement);
+        iteratorsN.push_back(n);
+        auto lStartN = logic::Terms::func(locationSymbolMap.at(whileStatement), iteratorsN);
         
-
+        auto lBodyStartIt = startTimePointMap.at(whileStatement->bodyStatements.front().get());
+        
+        auto lEnd = endTimePointMap.at(whileStatement);
+        
         // Part 1: values at the beginning of body are the same as at the beginning of the while-statement
         // TODO: sideconditions
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts1;
@@ -262,7 +256,7 @@ namespace analysis {
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts2;
         for (const auto& statement : whileStatement->bodyStatements)
         {
-            auto conjunct = generateSemantics(statement, map, intVars, intArrayVars, iteratorsIt);
+            auto conjunct = generateSemantics(statement.get(), intVars, intArrayVars);
             conjuncts2.push_back(conjunct);
         }
         conjuncts.push_back(logic::Formulas::universal({i}, logic::Formulas::conjunction(conjuncts2)));
@@ -281,166 +275,20 @@ namespace analysis {
         conjuncts.push_back(negConditionAtN);
         
         // Part 4: The end-timepoint of the while-statement is the timepoint with location lStart and iteration n
-        iterators.push_back(n);
-        auto lStartN = logic::Terms::func(whileStatement->location, iterators, logic::Sorts::timeSort());
+
         auto eq = logic::Formulas::equality(lEnd, lStartN);
         conjuncts.push_back(eq);
 
         return logic::Formulas::conjunction(conjuncts);
     }
     
-    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const std::shared_ptr<const program::SkipStatement> skipStatement,
-                                                                       const EndLocationMap& map,
-                                                                       std::vector<std::shared_ptr<const logic::Term>> iterators)
+    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::SkipStatement* skipStatement)
     {        
-        auto l1 = startTimePoint(skipStatement, iterators);
-        auto l2 = map.at(skipStatement);
+        auto l1 = startTimePointMap.at(skipStatement);
+        auto l2 = endTimePointMap.at(skipStatement);
 
         // identify startTimePoint and endTimePoint
         auto eq = logic::Formulas::equality(l1, l2);
         return eq;
-    }
-    
-# pragma mark - Start locations
-    
-    std::shared_ptr<const logic::Term> Semantics::startTimePoint(std::shared_ptr<const program::Statement> statement, std::vector<std::shared_ptr<const logic::Term>> iterators)
-    {
-        if (statement->type() == program::Statement::Type::WhileStatement)
-        {
-            iterators.push_back(logic::Theory::timeZero());
-        }
-        return logic::Terms::func(statement->location, iterators, logic::Sorts::timeSort());
-    }
-
-# pragma mark - End location computation
-    
-    typedef std::unordered_map<const std::shared_ptr<const program::Statement>, std::shared_ptr<const logic::Term>, program::StatementSharedPtrHash> EndLocationMap;
-
-    /*
-     * compute end locations for each statement (used later for semantics)
-     * first compute end location of statement, then recurse on children (since their end location could depend on end location of statement)
-     */
-    EndLocationMap Semantics::computeEndLocations(const program::Program& program)
-    {
-        EndLocationMap map;
-        
-        for(const auto& function : program.functions)
-        {
-            // for each statement except the first, set the end-location of the previous statement to the begin-location of this statement
-            for(int i=1; i < function->statements.size(); ++i)
-            {
-                const auto& currentStatement = function->statements[i];
-                const auto& lastStatement = function->statements[i-1];
-                
-                map[lastStatement] = startTimePoint(currentStatement, {});
-            }
-            // for the last statement, set the end-location to be the end-location of the function.
-            auto t = logic::Terms::func(function->name + "_end", {}, logic::Sorts::timeSort());
-            map[function->statements.back()] = t;
-            
-            // recurse on the statements
-            for(const auto& statement : function->statements)
-            {
-                computeEndLocations(statement, map, {});
-            }
-        }
-        
-        return map;
-    }
-    
-    void Semantics::computeEndLocations(const std::shared_ptr<const program::Statement> statement, EndLocationMap& map, std::vector<std::shared_ptr<const logic::Term>> iterators)
-    {
-        if (statement->type() == program::Statement::Type::IfElse)
-        {
-            auto castedStatement = std::static_pointer_cast<const program::IfElse>(statement);
-            computeEndLocations(castedStatement, map, iterators);
-        }
-        else if (statement->type() == program::Statement::Type::WhileStatement)
-        {
-            auto castedStatement = std::static_pointer_cast<const program::WhileStatement>(statement);
-            computeEndLocations(castedStatement, map, iterators);
-        }
-        else
-        {
-            // no recursion needed for these statements
-            assert(statement->type() == program::Statement::Type::IntAssignment ||
-                   statement->type() == program::Statement::Type::SkipStatement);
-        }
-    }
-
-    void Semantics::computeEndLocations(const std::shared_ptr<const program::IfElse> ifElse, EndLocationMap& map, std::vector<std::shared_ptr<const logic::Term>> iterators)
-    {
-        // for each statement in the left branch except the first, set the end-location of the previous statement to the begin-location of this statement
-        for(int i=1; i < ifElse->ifStatements.size(); ++i)
-        {
-            const auto& currentStatement = ifElse->ifStatements[i];
-            const auto& lastStatement = ifElse->ifStatements[i-1];
-            
-            map[lastStatement] = startTimePoint(currentStatement, iterators);
-        }
-        // use a new location as end location for last statement of the left branch
-        auto t1 = logic::Terms::func(ifElse->location + "_lEnd", iterators, logic::Sorts::timeSort());
-        map[ifElse->ifStatements.back()] = t1;
-        
-        // for each statement in the right branch except the first, set the end-location of the previous statement to the begin-location of this statement
-        for(int i=1; i < ifElse->elseStatements.size(); ++i)
-        {
-            const auto& currentStatement = ifElse->elseStatements[i];
-            const auto& lastStatement = ifElse->elseStatements[i-1];
-            
-            map[lastStatement] = startTimePoint(currentStatement, iterators);
-        }
-        // use a new location as end location for last statement of the right branch
-        auto t2 = logic::Terms::func(ifElse->location + "_rEnd", iterators, logic::Sorts::timeSort());
-        map[ifElse->elseStatements.back()] = t2;
-
-        // recurse on the statements
-        for(const auto& statement : ifElse->ifStatements)
-        {
-            computeEndLocations(statement, map, iterators);
-        }
-        for(const auto& statement : ifElse->elseStatements)
-        {
-            computeEndLocations(statement, map, iterators);
-        }
-    }
-    
-    void Semantics::computeEndLocations(const std::shared_ptr<const program::WhileStatement> whileStatement, EndLocationMap& map, std::vector<std::shared_ptr<const logic::Term>> iterators)
-    {
-        // for the last statement in the body, set the end-location to be the start-location of the while-statement in the next iteration
-        auto iteratorsCopy = iterators;
-        auto t1 = loopIterator(whileStatement);
-        auto t2 = logic::Theory::timeSucc(t1);
-        iteratorsCopy.push_back(t2);
-        
-        auto t3 = logic::Terms::func(whileStatement->location, iteratorsCopy, logic::Sorts::timeSort());
-        map[whileStatement->bodyStatements.back()] = t3;
-        
-        // for each statement in the body except the first, set the end-location of the previous statement to the begin-location of this statement
-        iterators.push_back(loopIterator(whileStatement));
-        
-        for(int i=1; i < whileStatement->bodyStatements.size(); ++i)
-        {
-            const auto& currentStatement = whileStatement->bodyStatements[i];
-            const auto& lastStatement = whileStatement->bodyStatements[i-1];
-            
-            map[lastStatement] = startTimePoint(currentStatement, iterators);
-        }
-        
-        // recurse on the statements
-        for(const auto& statement : whileStatement->bodyStatements)
-        {
-            computeEndLocations(statement, map, iterators);
-        }
-    }
-    
-    std::shared_ptr<const logic::LVariable> Semantics::loopIterator(std::shared_ptr<const program::WhileStatement> whileStatement)
-    {
-        return logic::Terms::var("It" + whileStatement->location, logic::Sorts::timeSort());
-    }
-    
-    std::shared_ptr<const logic::FuncTerm> Semantics::lastIteration(std::shared_ptr<const program::WhileStatement> whileStatement)
-    {
-        return logic::Terms::func("n" + whileStatement->location, {}, logic::Sorts::timeSort());
     }
 }

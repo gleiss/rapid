@@ -2,13 +2,15 @@
 
 #include <algorithm>
 
+#include <iostream>
+
 namespace logic {
     
 #pragma mark - Symbol
 
     std::string Symbol::declareSymbolSMTLIB() const
     {
-        if (noDeclaration)
+        if (!noDeclaration)
         {
             // hack since Vampire currently doesn't add the sub-predicate itself
             // declare and define the symbol time_sub
@@ -131,12 +133,32 @@ namespace logic {
     
 #pragma mark - Signature
     
-    std::unordered_set<std::unique_ptr<Symbol>, SymbolPtrHash, SymbolPtrEquality> Signature::_signature;
+    std::unordered_map<std::string, std::unique_ptr<Symbol>> Signature::_signature;
+    
+    Symbol* Signature::fetch(std::string name)
+    {
+        auto it = _signature.find(name);
+        assert(it != _signature.end());
+        
+        return it->second.get();
+    }
+    
+    Symbol* Signature::add(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration)
+    {
+        // there must be no symbol with name name already added
+        assert(_signature.count(name) == 0);
+        
+        auto pair = _signature.insert(std::make_pair(name,std::unique_ptr<Symbol>(new Symbol(name, argSorts, rngSort, noDeclaration))));
+        assert(pair.second); // must succeed since we checked that no such symbols existed before the insertion
+        return pair.first->second.get();
+    }
     
     Symbol* Signature::fetchOrAdd(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration)
     {
-        auto pair = _signature.insert(std::unique_ptr<Symbol>(new Symbol(name, argSorts, rngSort, noDeclaration)));
-        auto symbol = pair.first->get();
+        
+        auto pair = _signature.insert(std::make_pair(name, std::unique_ptr<Symbol>(new Symbol(name, argSorts, rngSort, noDeclaration))));
+        
+        auto symbol = pair.first->second.get();
         // if a symbol with the name already exist, make sure it has the same sorts
         if (!pair.second)
         {

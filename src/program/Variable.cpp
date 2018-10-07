@@ -6,11 +6,28 @@
 #include "Variable.hpp"
 
 #include "Sort.hpp"
+#include "Signature.hpp"
 #include "Theory.hpp"
 #include "Options.hpp"
 
+#include <iostream>
 namespace program {
     
+    void IntVariable::addSymbolToSignature() const
+    {
+        logic::Signature::add(name, {logic::Sorts::timeSort()}, logic::Sorts::intSort());
+    }
+    
+    void BoolVariable::addSymbolToSignature() const
+    {
+        logic::Signature::add(name, {logic::Sorts::timeSort()}, logic::Sorts::boolSort());
+    }
+
+    void IntArrayVariable::addSymbolToSignature() const
+    {
+        logic::Signature::add(name, {logic::Sorts::timeSort(), logic::Sorts::intSort()}, logic::Sorts::intSort());
+    }
+
     std::shared_ptr<const logic::Term> IntVariable::toTerm(std::shared_ptr<const logic::Term> i) const
     {
         assert(i != nullptr);

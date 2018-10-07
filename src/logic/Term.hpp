@@ -61,7 +61,10 @@ namespace logic {
     
     inline std::ostream& operator<<(std::ostream& ostr, const Term& e) { ostr << e.toSMTLIB(); return ostr; }
 
-    
+    // hack needed for bison: std::vector has no overload for ostream, but these overloads are needed for bison
+    std::ostream& operator<<(std::ostream& ostr, const std::vector<std::shared_ptr<const logic::Term>>& t);
+    std::ostream& operator<<(std::ostream& ostr, const std::vector<std::shared_ptr<const logic::LVariable>>& v);
+
 # pragma mark - Terms
     
     // We use Terms as a manager-class for Term-instances
@@ -72,6 +75,7 @@ namespace logic {
         // construct new terms
         static std::shared_ptr<const LVariable> var(const std::string name, const Sort* s);
         static std::shared_ptr<const FuncTerm> func(std::string name, std::vector<std::shared_ptr<const Term>> subterms, const Sort* sort, bool noDeclaration=false);
+        static std::shared_ptr<const FuncTerm> func(const Symbol* symbol, std::vector<std::shared_ptr<const Term>> subterms);
     };
 }
 #endif

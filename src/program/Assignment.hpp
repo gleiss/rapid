@@ -4,12 +4,13 @@
 #include "Expression.hpp"
 #include "Variable.hpp"
 
+#include <iostream>
 namespace program
 {
     class Statement
     {
     public:
-        Statement(unsigned lineNumber) : location("L" + std::to_string(lineNumber)){}
+        Statement(unsigned lineNumber) : location("l" + std::to_string(lineNumber)){}
         
         const std::string location;
         

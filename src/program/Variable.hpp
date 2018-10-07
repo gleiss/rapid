@@ -17,53 +17,62 @@
 #include "Formula.hpp"
 #include "Signature.hpp"
 
+#include <iostream>
 namespace program {
     
-    class IntVariable : public IntExpression
+    class Variable
     {
     public:
-        IntVariable(std::string& name) : name(name) {}
-
+        Variable(std::string name) : name(name) {}
+        
         const std::string name;
         
-        IntExpression::Type type() const override {return IntExpression::Type::IntVariable;}
+        virtual void addSymbolToSignature() const = 0;
+    };
+    
+    class IntVariable : public IntExpression, public Variable
+    {
+    public:
+        IntVariable(std::string name) : IntExpression(), Variable(name) {}
         
         bool operator==(const IntVariable& rhs) const { return (name == rhs.name); }
         bool operator!=(const IntVariable& rhs) const { return !operator==(rhs); }
         
+        IntExpression::Type type() const override {return IntExpression::Type::IntVariable;}
+        
         std::string toString() const override;
+        
+        virtual void addSymbolToSignature() const override;
         std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const logic::Term> index) const override;
     };
-    
     
     // hack needed for bison: std::vector has no overload for ostream, but these overloads are needed for bison
     std::ostream& operator<<(std::ostream& ostr, const std::vector< std::shared_ptr<const program::IntVariable>>& e);
 
-    class BoolVariable : public BoolExpression
+    class BoolVariable : public BoolExpression, public Variable
     {
     public:
-        BoolVariable(std::string& name) : name(name) {}
-        
-        const std::string name;
-        
+        BoolVariable(std::string name) : BoolExpression(), Variable(name) {}
+
         bool operator==(const BoolVariable& rhs) const { return (name == rhs.name); }
         bool operator!=(const BoolVariable& rhs) const { return !operator==(rhs); }
         
         std::string toString() const override;
+        
+        virtual void addSymbolToSignature() const override;
         std::shared_ptr<const logic::Formula> toFormula(std::shared_ptr<const logic::Term> index) const override;
     };
     
-    class IntArrayVariable
+    class IntArrayVariable : public Variable
     {
     public:
-        IntArrayVariable(std::string& name) : name(name) {}
-        
-        const std::string name;
-        
+        IntArrayVariable(std::string name) : Variable(name) {}
         bool operator==(const IntArrayVariable& rhs) const { return (name == rhs.name); }
         bool operator!=(const IntArrayVariable& rhs) const { return !operator==(rhs); }
         
         std::string toString() const;
+        
+        virtual void addSymbolToSignature() const override;
         std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const logic::Term> index, std::shared_ptr<const logic::Term> position) const;
     };
     
@@ -71,7 +80,6 @@ namespace program {
     std::ostream& operator<<(std::ostream& ostr, const std::vector< std::shared_ptr<const program::IntArrayVariable>>& e);
     std::ostream& operator<<(std::ostream& ostr, const std::pair<std::vector<std::shared_ptr<const program::IntVariable>>, std::vector<std::shared_ptr<const program::IntArrayVariable>>>& e);
 
-    
     class IntArrayApplication : public IntExpression
     {
     public:

@@ -58,7 +58,7 @@ namespace parser
         else if (statement->type() == program::Statement::Type::WhileStatement)
         {
             auto castedStatement = static_cast<const program::WhileStatement*>(statement);
-            iteratorMap[castedStatement] = logic::Terms::var("It" + castedStatement->location, logic::Sorts::timeSort());
+            iteratorMap[castedStatement] = logic::Signature::varSymbol("It" + castedStatement->location, logic::Sorts::timeSort());
             for (const auto& statement : castedStatement->bodyStatements)
             {
                 addIteratorsForStatement(statement.get(), iteratorMap);
@@ -121,7 +121,7 @@ namespace parser
         return enclosingIteratorsMap;
     }
 
-    void WhileParserPostComputation::addEnclosingIteratorsForStatement(const program::Statement* statement, const IteratorMap& iteratorMap, std::vector<std::shared_ptr<const logic::Term>> enclosingIterators, EnclosingIteratorsMap& enclosingIteratorsMap)
+    void WhileParserPostComputation::addEnclosingIteratorsForStatement(const program::Statement* statement, const IteratorMap& iteratorMap, std::vector<std::shared_ptr<const logic::Symbol>> enclosingIterators, EnclosingIteratorsMap& enclosingIteratorsMap)
     {
         if (statement->type() == program::Statement::Type::IntAssignment)
         {
@@ -183,7 +183,7 @@ namespace parser
         auto enclosingIteratorTypes = std::vector<const logic::Sort*>();
         for (const auto& enclosingIterator : enclosingIteratorsMap.at(statement))
         {
-            enclosingIteratorTypes.push_back(enclosingIterator->symbol->rngSort);
+            enclosingIteratorTypes.push_back(enclosingIterator->rngSort);
         }
         if (statement->type() == program::Statement::Type::WhileStatement)
         {
@@ -236,11 +236,17 @@ namespace parser
                                                                    StartTimePointMap& startTimePointMap)
     {
         auto enclosingIterators = enclosingIteratorsMap.at(statement);
+        auto enclosingIteratorTerms = std::vector<std::shared_ptr<const logic::Term>>();
+        for (const auto& enclosingIterator : enclosingIterators)
+        {
+            enclosingIteratorTerms.push_back(logic::Terms::var(enclosingIterator.get()));
+        }
+        
         if (statement->type() == program::Statement::Type::WhileStatement)
         {
-            enclosingIterators.push_back(logic::Theory::timeZero());
+            enclosingIteratorTerms.push_back(logic::Theory::timeZero());
         }
-        startTimePointMap[statement] = logic::Terms::func(locationSymbolMap.at(statement), enclosingIterators);
+        startTimePointMap[statement] = logic::Terms::func(locationSymbolMap.at(statement), enclosingIteratorTerms);
         
         if (statement->type() == program::Statement::Type::IfElse)
         {
@@ -330,7 +336,14 @@ namespace parser
         }
         // use a new location as end location for last statement of the left branch
         auto lastStatementLeft = ifElse->ifStatements.back().get();
-        auto lLeftEnd = logic::Terms::func(ifElse->location + "_lEnd", enclosingIteratorsMap.at(ifElse), logic::Sorts::timeSort());
+        
+        auto enclosingIteratorTerms = std::vector<std::shared_ptr<const logic::Term>>();
+        for (const auto& enclosingIterator : enclosingIteratorsMap.at(ifElse))
+        {
+            enclosingIteratorTerms.push_back(logic::Terms::var(enclosingIterator.get()));
+        }
+        
+        auto lLeftEnd = logic::Terms::func(ifElse->location + "_lEnd", enclosingIteratorTerms, logic::Sorts::timeSort());
         endTimePointMap[lastStatementLeft] = lLeftEnd;
 
         // for each statement in the right branch except the first, set the end-location of the previous statement to the begin-location of this statement
@@ -343,7 +356,14 @@ namespace parser
         }
         // use a new location as end location for last statement of the right branch
         auto lastStatementRight = ifElse->elseStatements.back().get();
-        auto lRightEnd = logic::Terms::func(ifElse->location + "_rEnd", enclosingIteratorsMap.at(ifElse), logic::Sorts::timeSort());
+
+        auto enclosingIteratorTermsRight = std::vector<std::shared_ptr<const logic::Term>>();
+        for (const auto& enclosingIterator : enclosingIteratorsMap.at(ifElse))
+        {
+            enclosingIteratorTermsRight.push_back(logic::Terms::var(enclosingIterator.get()));
+        }
+
+        auto lRightEnd = logic::Terms::func(ifElse->location + "_rEnd", enclosingIteratorTerms, logic::Sorts::timeSort());
         endTimePointMap[lastStatementRight] = lRightEnd;
 
         // recurse on the statements
@@ -366,11 +386,15 @@ namespace parser
         // for the last statement in the body, set as end-timepoint the start-location of the while-statement in the next iteration
         auto lastStatement = whileStatement->bodyStatements.back().get();
 
-        auto iteratorsCopy = enclosingIteratorsMap.at(whileStatement);
-        auto t1 = iteratorMap.at(whileStatement);
+        auto enclosingIteratorTerms = std::vector<std::shared_ptr<const logic::Term>>();
+        for (const auto& enclosingIterator : enclosingIteratorsMap.at(whileStatement))
+        {
+            enclosingIteratorTerms.push_back(logic::Terms::var(enclosingIterator.get()));
+        }
+        auto t1 = logic::Terms::var(iteratorMap.at(whileStatement).get());
         auto t2 = logic::Theory::timeSucc(t1);
-        iteratorsCopy.push_back(t2);
-        auto t3 = logic::Terms::func(whileStatement->location, iteratorsCopy, logic::Sorts::timeSort());
+        enclosingIteratorTerms.push_back(t2);
+        auto t3 = logic::Terms::func(whileStatement->location, enclosingIteratorTerms, logic::Sorts::timeSort());
         
         endTimePointMap[lastStatement] = t3;
 

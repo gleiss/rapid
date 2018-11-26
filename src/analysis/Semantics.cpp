@@ -83,8 +83,9 @@ namespace analysis {
             // forall int-array-variables: forall p. v(l2,p) = v(l1,p)
             for (const auto& var : intArrayVars)
             {
-                auto p = logic::Terms::var("p", logic::Sorts::intSort());
-                auto conjunct = logic::Formulas::universal({p}, logic::Formulas::equality(var->toTerm(l2, p), var->toTerm(l1, p)));
+                auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
+                auto p = logic::Terms::var(pSymbol.get());
+                auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(var->toTerm(l2, p), var->toTerm(l1, p)));
                 conjuncts.push_back(conjunct);
             }
         }
@@ -99,10 +100,12 @@ namespace analysis {
             conjuncts.push_back(eq1);
 
             // forall positions p. (p!=e(l1) => a(l2,p) = a(l1,p))
-            auto p = logic::Terms::var("p", logic::Sorts::intSort());
+            auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
+            auto p = logic::Terms::var(pSymbol.get());
+            
             auto premise = logic::Formulas::disequality(p, intAssignment->rhs->toTerm(l1));
             auto eq2 = logic::Formulas::equality(application->array->toTerm(l2, p), application->array->toTerm(l1, p));
-            auto conjunct = logic::Formulas::universal({p}, logic::Formulas::implication(premise, eq2));
+            auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::implication(premise, eq2));
             conjuncts.push_back(conjunct);
             
             // forall int-variables: v(l2) = v(l1)
@@ -117,8 +120,9 @@ namespace analysis {
             {
                 if (*var != *application->array)
                 {
-                    auto p = logic::Terms::var("p", logic::Sorts::intSort());
-                    auto conjunct = logic::Formulas::universal({p}, logic::Formulas::equality(var->toTerm(l2, p), var->toTerm(l1, p)));
+                    auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
+                    auto p = logic::Terms::var(pSymbol.get());
+                    auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(var->toTerm(l2, p), var->toTerm(l1, p)));
                     conjuncts.push_back(conjunct);
                 }
             }
@@ -152,8 +156,9 @@ namespace analysis {
         for (const auto& var : intArrayVars)
         {
             // forall p. v(lLeftStart,p) = v(lStart,p)
-            auto p = logic::Terms::var("p", logic::Sorts::intSort());
-            auto conjunct = logic::Formulas::universal({p}, logic::Formulas::equality(var->toTerm(lLeftStart, p), var->toTerm(lStart, p)));
+            auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
+            auto p = logic::Terms::var(pSymbol.get());
+            auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(var->toTerm(lLeftStart, p), var->toTerm(lStart, p)));
             conjuncts.push_back(conjunct);
         }
         for (const auto& var : intVars)
@@ -165,8 +170,9 @@ namespace analysis {
         for (const auto& var : intArrayVars)
         {
             // forall p. v(lRightStart,p) = v(lStart,p)
-            auto p = logic::Terms::var("p", logic::Sorts::intSort());
-            auto conjunct = logic::Formulas::universal({p}, logic::Formulas::equality(var->toTerm(lRightStart, p), var->toTerm(lStart, p)));
+            auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
+            auto p = logic::Terms::var(pSymbol.get());
+            auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(var->toTerm(lRightStart, p), var->toTerm(lStart, p)));
             conjuncts.push_back(conjunct);
         }
         
@@ -185,14 +191,15 @@ namespace analysis {
         }
         for (const auto& var : intArrayVars)
         {
-            auto p = logic::Terms::var("p", logic::Sorts::intSort());
+            auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
+            auto p = logic::Terms::var(pSymbol.get());
 
             // condition(lStart) => forall p. v(lEnd,p) = v(lLeftEnd,p)
-            auto conclusion1 = logic::Formulas::universal({p}, logic::Formulas::equality(var->toTerm(lEnd, p), var->toTerm(lLeftEnd, p)));
+            auto conclusion1 = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(var->toTerm(lEnd, p), var->toTerm(lLeftEnd, p)));
             conjuncts.push_back(logic::Formulas::implication(c, conclusion1));
             
             // not condition(lStart) => forall p. v(lEnd,p) = v(lLeftEnd,p)
-            auto conclusion2 = logic::Formulas::universal({p}, logic::Formulas::equality(var->toTerm(lEnd, p), var->toTerm(lRightEnd, p)));
+            auto conclusion2 = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(var->toTerm(lEnd, p), var->toTerm(lRightEnd, p)));
             conjuncts.push_back(logic::Formulas::implication(logic::Formulas::negation(c), conclusion2));
         }
         
@@ -217,18 +224,24 @@ namespace analysis {
     {
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts;
 
-        auto i = iteratorMap.at(whileStatement);
+        auto iSymbol = iteratorMap.at(whileStatement);
+        auto i = logic::Terms::var(iSymbol.get());
         auto n = lastIterationMap.at(whileStatement);
 
         auto lStart0 = startTimePointMap.at(whileStatement);
 
-        auto iteratorsIt = enclosingIteratorsMap.at(whileStatement);
-        iteratorsIt.push_back(i);
-        auto lStartIt = logic::Terms::func(locationSymbolMap.at(whileStatement), iteratorsIt);
-        
-        auto iteratorsN = enclosingIteratorsMap.at(whileStatement);
-        iteratorsN.push_back(n);
-        auto lStartN = logic::Terms::func(locationSymbolMap.at(whileStatement), iteratorsN);
+        auto iteratorsItTerms = std::vector<std::shared_ptr<const logic::Term>>();
+        auto iteratorsNTerms = std::vector<std::shared_ptr<const logic::Term>>();
+        for (const auto& iteratorIt : enclosingIteratorsMap.at(whileStatement))
+        {
+            iteratorsItTerms.push_back(logic::Terms::var(iteratorIt.get()));
+            iteratorsNTerms.push_back(logic::Terms::var(iteratorIt.get()));
+        }
+        iteratorsItTerms.push_back(i);
+        iteratorsItTerms.push_back(n);
+
+        auto lStartIt = logic::Terms::func(locationSymbolMap.at(whileStatement), iteratorsItTerms);
+        auto lStartN = logic::Terms::func(locationSymbolMap.at(whileStatement), iteratorsNTerms);
         
         auto lBodyStartIt = startTimePointMap.at(whileStatement->bodyStatements.front().get());
         
@@ -246,11 +259,12 @@ namespace analysis {
         for (const auto& var : intArrayVars)
         {
             // forall p. v(lBodyStartIt,p) = v(lStartIt,p)
-            auto p = logic::Terms::var("p", logic::Sorts::intSort());
-            auto conjunct = logic::Formulas::universal({p}, logic::Formulas::equality(var->toTerm(lBodyStartIt, p), var->toTerm(lStartIt, p)));
+            auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
+            auto p = logic::Terms::var(pSymbol.get());
+            auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(var->toTerm(lBodyStartIt, p), var->toTerm(lStartIt, p)));
             conjuncts1.push_back(conjunct);
         }
-        conjuncts.push_back(logic::Formulas::universal({i}, logic::Formulas::conjunction(conjuncts1)));
+        conjuncts.push_back(logic::Formulas::universal({iSymbol}, logic::Formulas::conjunction(conjuncts1)));
         
         // Part 2: collect all formulas describing semantics of body
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts2;
@@ -259,7 +273,7 @@ namespace analysis {
             auto conjunct = generateSemantics(statement.get(), intVars, intArrayVars);
             conjuncts2.push_back(conjunct);
         }
-        conjuncts.push_back(logic::Formulas::universal({i}, logic::Formulas::conjunction(conjuncts2)));
+        conjuncts.push_back(logic::Formulas::universal({iSymbol}, logic::Formulas::conjunction(conjuncts2)));
         
         // Part 3: Define last iteration
         // Loop condition holds always before n
@@ -268,7 +282,7 @@ namespace analysis {
         auto conditionAtI = whileStatement->condition->toFormula(i);
         auto imp = logic::Formulas::implication(iLessN, conditionAtI);
         conjuncts3.push_back(imp);
-        conjuncts.push_back(logic::Formulas::universal({i}, logic::Formulas::conjunction(conjuncts3)));
+        conjuncts.push_back(logic::Formulas::universal({iSymbol}, logic::Formulas::conjunction(conjuncts3)));
         
         // loop condition doesn't hold at n
         auto negConditionAtN = logic::Formulas::negation(whileStatement->condition->toFormula(n));

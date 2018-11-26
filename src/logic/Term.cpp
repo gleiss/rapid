@@ -102,13 +102,11 @@ namespace logic {
     
 # pragma mark - Terms
     
-    // use this functions for quantified variables, which don't need to be declared (since they will be declared by the quantifiers)
-    std::shared_ptr<const LVariable> Terms::var(std::string name, const Sort* sort)
+    std::shared_ptr<const LVariable> Terms::var(const Symbol* symbol)
     {
-        auto symbol = Signature::fetchOrAdd(name, {}, sort, true);
         return std::shared_ptr<const LVariable>(new LVariable(symbol));
     }
-
+    
     std::shared_ptr<const FuncTerm> Terms::func(std::string name, std::vector<std::shared_ptr<const Term>> subterms, const Sort* sort, bool noDeclaration)
     {
         std::vector<const Sort*> subtermSorts;

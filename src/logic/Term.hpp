@@ -73,7 +73,7 @@ namespace logic {
     public:
 
         // construct new terms
-        static std::shared_ptr<const LVariable> var(const std::string name, const Sort* s);
+        static std::shared_ptr<const LVariable> var(const Symbol* symbol);
         static std::shared_ptr<const FuncTerm> func(std::string name, std::vector<std::shared_ptr<const Term>> subterms, const Sort* sort, bool noDeclaration=false);
         static std::shared_ptr<const FuncTerm> func(const Symbol* symbol, std::vector<std::shared_ptr<const Term>> subterms);
     };

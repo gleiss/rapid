@@ -133,9 +133,9 @@ namespace logic {
     
 #pragma mark - Signature
     
-    std::unordered_map<std::string, std::unique_ptr<Symbol>> Signature::_signature;
+    std::unordered_map<std::string, std::unique_ptr<const Symbol>> Signature::_signature;
     
-    Symbol* Signature::fetch(std::string name)
+    const Symbol* Signature::fetch(std::string name)
     {
         auto it = _signature.find(name);
         assert(it != _signature.end());
@@ -143,7 +143,7 @@ namespace logic {
         return it->second.get();
     }
     
-    Symbol* Signature::add(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration)
+    const Symbol* Signature::add(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration)
     {
         // there must be no symbol with name name already added
         assert(_signature.count(name) == 0);
@@ -153,7 +153,7 @@ namespace logic {
         return pair.first->second.get();
     }
     
-    Symbol* Signature::fetchOrAdd(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration)
+    const Symbol* Signature::fetchOrAdd(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration)
     {
         
         auto pair = _signature.insert(std::make_pair(name, std::unique_ptr<Symbol>(new Symbol(name, argSorts, rngSort, noDeclaration))));
@@ -171,6 +171,14 @@ namespace logic {
             assert(noDeclaration == symbol->noDeclaration);
         }
         return symbol;
+    }
+    
+    std::shared_ptr<const Symbol> Signature::varSymbol(std::string name, const Sort* rngSort)
+    {
+        // there must be no symbol with name name already added
+        assert(_signature.count(name) == 0);
+        
+        return std::shared_ptr<Symbol>(new Symbol(name, rngSort, true));
     }
 
 }

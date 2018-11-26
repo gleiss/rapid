@@ -87,7 +87,7 @@ namespace logic {
         str += "(";
         for (const auto& var : vars)
         {
-            str += "(" + var->symbol->name + " " + var->symbol->rngSort->toSMTLIB() + ")";
+            str += "(" + var->name + " " + var->rngSort->toSMTLIB() + ")";
         }
         str += ")\n";
         
@@ -106,7 +106,7 @@ namespace logic {
         str += "(";
         for (const auto& var : vars)
         {
-            str += "(" + var->symbol->name + " " + var->symbol->rngSort->toSMTLIB() + ")";
+            str += "(" + var->name + " " + var->rngSort->toSMTLIB() + ")";
         }
         str += ")\n";
         
@@ -370,7 +370,7 @@ namespace logic {
     {
         std::string str = std::string(indentation, ' ') + "EXISTS ";
         for (unsigned i = 0; i < vars.size(); i++) {
-            str += vars[i]->symbol->name + " : " + vars[i]->symbol->rngSort->name;
+            str += vars[i]->name + " : " + vars[i]->rngSort->name;
             if (i != vars.size() - 1) { str += ", "; }
         }
         str += ".\n" + f->prettyString(indentation + 3);
@@ -381,7 +381,7 @@ namespace logic {
     {
         std::string str = std::string(indentation, ' ') + "FORALL ";
         for (unsigned i = 0; i < vars.size(); i++) {
-            str += vars[i]->symbol->name + " : " + vars[i]->symbol->rngSort->name;
+            str += vars[i]->name + " : " + vars[i]->rngSort->name;
             if (i != vars.size() - 1) { str += ", "; }
         }
         str += ".\n";
@@ -439,13 +439,13 @@ namespace logic {
         return std::shared_ptr<const ImplicationFormula>(new ImplicationFormula(f1, f2, label));
     }
     
-    std::shared_ptr<const ExistentialFormula> Formulas::existential(std::vector<std::shared_ptr<const LVariable>> vars, std::shared_ptr<const Formula> f, std::string label)
+    std::shared_ptr<const ExistentialFormula> Formulas::existential(std::vector<std::shared_ptr<const Symbol>> vars, std::shared_ptr<const Formula> f, std::string label)
     {
-        return std::shared_ptr<const ExistentialFormula>(new ExistentialFormula(vars, f, label));
+        return std::shared_ptr<const ExistentialFormula>(new ExistentialFormula(std::move(vars), f, label));
     }
-    std::shared_ptr<const UniversalFormula> Formulas::universal(std::vector<std::shared_ptr<const LVariable>> vars, std::shared_ptr<const Formula> f, std::string label)
+    std::shared_ptr<const UniversalFormula> Formulas::universal(std::vector<std::shared_ptr<const Symbol>> vars, std::shared_ptr<const Formula> f, std::string label)
     {
-        return std::shared_ptr<const UniversalFormula>(new UniversalFormula(vars, f, label));
+        return std::shared_ptr<const UniversalFormula>(new UniversalFormula(std::move(vars), f, label));
     }
 }
 

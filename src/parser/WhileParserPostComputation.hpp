@@ -33,7 +33,7 @@ namespace parser
         static program::EnclosingIteratorsMap computeEnclosingIteratorsMap(const program::Program& program, const program::IteratorMap& iteratorMap);
         static void addEnclosingIteratorsForStatement(const program::Statement* statement,
                                                       const program::IteratorMap& iteratorMap,
-                                                      std::vector<std::shared_ptr<const logic::Term>> enclosingIterators,
+                                                      std::vector<std::shared_ptr<const logic::Symbol>> enclosingIterators,
                                                       program::EnclosingIteratorsMap& enclosingIteratorsMap);
 
         static program::LocationSymbolMap computeLocationSymbolMap(const program::Program& program, const program::EnclosingIteratorsMap& enclosingIteratorsMap);

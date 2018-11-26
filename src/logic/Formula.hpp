@@ -104,10 +104,16 @@ namespace logic {
         friend class Formulas;
         
     public:
-        ExistentialFormula(std::vector<std::shared_ptr<const LVariable>> vars, std::shared_ptr<const Formula> f, std::string label = "")
-        : Formula(label), vars(vars), f(f){}
+        ExistentialFormula(std::vector<std::shared_ptr<const Symbol>> vars, std::shared_ptr<const Formula> f, std::string label = "")
+        : Formula(label), vars(std::move(vars)), f(f)
+        {
+            for (const auto& var : vars)
+            {
+                assert(var->argSorts.empty());
+            }
+        }
         
-        const std::vector<std::shared_ptr<const LVariable>> vars;
+        const std::vector<std::shared_ptr<const Symbol>> vars;
         const std::shared_ptr<const Formula> f;
         
         std::string toSMTLIB(unsigned indentation = 0) const override;
@@ -119,10 +125,16 @@ namespace logic {
         friend class Formulas;
         
     public:
-        UniversalFormula(std::vector<std::shared_ptr<const LVariable>> vars, std::shared_ptr<const Formula> f, std::string label = "")
-        : Formula(label), vars(vars), f(f){}
+        UniversalFormula(std::vector<std::shared_ptr<const Symbol>> vars, std::shared_ptr<const Formula> f, std::string label = "")
+        : Formula(label), vars(std::move(vars)), f(f)
+        {
+            for (const auto& var : vars)
+            {
+                assert(var->argSorts.empty());
+            }
+        }
 
-        const std::vector<std::shared_ptr<const LVariable>> vars;
+        const std::vector<std::shared_ptr<const Symbol>> vars;
         const std::shared_ptr<const Formula> f;
         
         std::string toSMTLIB(unsigned indentation = 0) const override;
@@ -166,8 +178,8 @@ namespace logic {
         
         static std::shared_ptr<const ImplicationFormula> implication(std::shared_ptr<const Formula> f1, std::shared_ptr<const Formula> f2, std::string label = "");
         
-        static std::shared_ptr<const ExistentialFormula> existential(std::vector<std::shared_ptr<const LVariable>> vars, std::shared_ptr<const Formula> f, std::string label = "");
-        static std::shared_ptr<const UniversalFormula> universal(std::vector<std::shared_ptr<const LVariable>> vars, std::shared_ptr<const Formula> f, std::string label = "");
+        static std::shared_ptr<const ExistentialFormula> existential(std::vector<std::shared_ptr<const Symbol>> vars, std::shared_ptr<const Formula> f, std::string label = "");
+        static std::shared_ptr<const UniversalFormula> universal(std::vector<std::shared_ptr<const Symbol>> vars, std::shared_ptr<const Formula> f, std::string label = "");
     };
 }
 

@@ -45,6 +45,8 @@ YY_DECL;
 # define YY_USER_ACTION  loc.columns (yyleng);
 %}
 
+%s programstate smtlibstate
+
 %%
 
 %{
@@ -61,7 +63,7 @@ if           { return parser::WhileParser::make_IF(loc); }
 else         { return parser::WhileParser::make_ELSE(loc); }
 while        { return parser::WhileParser::make_WHILE(loc); }
 skip         { return parser::WhileParser::make_SKIP(loc); }
-func         { return parser::WhileParser::make_FUNC(loc); }
+func         { BEGIN(programstate); return parser::WhileParser::make_FUNC(loc);}
 
 and         	{ return parser::WhileParser::make_ANDSMTLIB(loc); }
 or         		{ return parser::WhileParser::make_ORSMTLIB(loc); }
@@ -69,7 +71,7 @@ not         	{ return parser::WhileParser::make_NOTSMTLIB(loc); }
 "=>"         	{ return parser::WhileParser::make_IMPSMTLIB(loc); }
 forall      	{ return parser::WhileParser::make_FORALLSMTLIB(loc); }
 exists      	{ return parser::WhileParser::make_EXISTSSMTLIB(loc); }
-"assert-not"    { return parser::WhileParser::make_ASSERTNOT(loc); }
+"assert-not"  { BEGIN(smtlibstate); return parser::WhileParser::make_ASSERTNOT(loc);}
 
 
 "("          { return parser::WhileParser::make_LPAR(loc); }
@@ -98,7 +100,8 @@ exists      	{ return parser::WhileParser::make_EXISTSSMTLIB(loc); }
 
 "Int"|"Bool" { return parser::WhileParser::make_TYPE(yytext, loc); }
 
-{IDENT}      { return parser::WhileParser::make_ID(yytext, loc); }
+<programstate>{IDENT}     { return parser::WhileParser::make_PROGRAM_ID(yytext, loc); }
+<smtlibstate>{IDENT}      { return parser::WhileParser::make_SMTLIB_ID(yytext, loc); }
 {NUM}        {
   errno = 0;
   long n = strtol (yytext, NULL, 10);

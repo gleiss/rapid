@@ -95,7 +95,8 @@ YY_DECL;
   EXISTSSMTLIB  "exists"
   ASSERTNOT     "assert-not"
 ;
-%token <std::string> ID "identifier"
+%token <std::string> PROGRAM_ID "program identifier"
+%token <std::string> SMTLIB_ID "smtlib identifier"
 %token <std::string> TYPE "type identifier"
 %token <int> INTEGER "number"
 
@@ -163,8 +164,7 @@ smtlib_formula_list:
 ;
 
 smtlib_formula:
-LPAR ID smtlib_term_list RPAR                { $$ = logic::Formulas::predicate($2, std::move($3));}
-| TRUE                                       { $$ = logic::Theory::boolTrue();}
+  TRUE                                       { $$ = logic::Theory::boolTrue();}
 | FALSE                                      { $$ = logic::Theory::boolFalse();}
 | LPAR ASSIGN smtlib_term smtlib_term RPAR       { $$ = logic::Formulas::equality(std::move($3), std::move($4));}
 | LPAR GT smtlib_term smtlib_term RPAR       { $$ = logic::Theory::intLess(std::move($3), std::move($4));}
@@ -185,7 +185,7 @@ smtlib_quantvar_list:
 ;
 
 smtlib_quantvar:
-  LPAR ID TYPE RPAR 
+  LPAR SMTLIB_ID TYPE RPAR 
   { 
     if($3 == "Int")
     { 
@@ -207,14 +207,14 @@ smtlib_quantvar:
 ;
 
 smtlib_term_list:
-  %empty {$$ = std::vector<std::shared_ptr<const logic::Term>>();}
+  smtlib_term {$$ = std::vector<std::shared_ptr<const logic::Term>>(); $$.push_back($1);}
 | smtlib_term_list smtlib_term {$1.push_back(std::move($2)); $$ = std::move($1);}
 ;
 
 smtlib_term:
-  ID                                      {auto symbol = logic::Signature::fetch($1); $$ = logic::Terms::func(symbol, std::vector<std::shared_ptr<const logic::Term>>());}
+  SMTLIB_ID                               {std::cout << "parsing smtlib const " << std::string($1) << "\n"; auto symbol = logic::Signature::fetch($1); $$ = logic::Terms::func(symbol, std::vector<std::shared_ptr<const logic::Term>>());}
 | INTEGER                                 {$$ = logic::Theory::intConstant($1);}
-| LPAR ID smtlib_term_list RPAR           {auto symbol = logic::Signature::fetch($2); $$ = logic::Terms::func(symbol, std::move($3));}
+| LPAR SMTLIB_ID smtlib_term_list RPAR    {std::cout << "parsing smtlib term " << std::string($2) << "\n"; auto symbol = logic::Signature::fetch($2); $$ = logic::Terms::func(symbol, std::move($3));}
 | LPAR PLUS  smtlib_term smtlib_term RPAR {$$ = logic::Theory::intAddition(std::move($3), std::move($4));}
 | LPAR MINUS smtlib_term smtlib_term RPAR {$$ = logic::Theory::intSubtraction(std::move($3), std::move($4));}
 | LPAR MUL   smtlib_term smtlib_term RPAR {$$ = logic::Theory::intMultiplication(std::move($3), std::move($4));}
@@ -227,7 +227,7 @@ function_list:
 ;
 
 function:
-  FUNC ID LPAR RPAR LCUR var_definition_list statement_list RCUR 
+  FUNC PROGRAM_ID LPAR RPAR LCUR var_definition_list statement_list RCUR 
   {
   	$$ = std::shared_ptr<const program::Function>(new program::Function($2, std::move($6.first), std::move($6.second), std::move($7)));
   }
@@ -271,16 +271,18 @@ var_definition_list:
         error(@2, "Array variable with name " + var->name + " is already defined.");
       }
     }
+    // add the symbol after error handling
+    $2->addSymbolToSignature();
     $1.second.push_back(std::move($2)); $$ = std::move($1);
   }
 ;
 
 int_var_definition:
-  TYPE ID SCOL {$$ = std::shared_ptr<const program::IntVariable>(new program::IntVariable($2));}
+  TYPE PROGRAM_ID SCOL {$$ = std::shared_ptr<const program::IntVariable>(new program::IntVariable($2));}
 ;
 
 int_array_var_definition:
-  TYPE LBRA RBRA ID SCOL {$$ = std::shared_ptr<const program::IntArrayVariable>(new program::IntArrayVariable($4));}
+  TYPE LBRA RBRA PROGRAM_ID SCOL {$$ = std::shared_ptr<const program::IntArrayVariable>(new program::IntArrayVariable($4));}
 ;
 
 statement_list:
@@ -335,12 +337,13 @@ expr:
 ;
 
 location:
-  ID                
+  PROGRAM_ID                
   { 
   	// TODO: add check that variable exists
+    std::cout << "parsing program id " << std::string($1) << "\n";
   	$$ = std::shared_ptr<const program::IntVariable>(new program::IntVariable($1));
   }
-| ID LBRA expr RBRA 
+| PROGRAM_ID LBRA expr RBRA 
   { 
   	// TODO: add check that variable exists
 	auto formula = std::shared_ptr<const program::IntArrayVariable>(new IntArrayVariable($1));

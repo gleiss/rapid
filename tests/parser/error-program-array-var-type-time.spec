@@ -5,5 +5,5 @@ func main()
 }
 
 (assert-not
-	True
+	(= 2 2)
 )

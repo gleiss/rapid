@@ -489,7 +489,7 @@ location:
   PROGRAM_ID                
   { 
   	// TODO: add check that variable exists
-    std::cout << "parsing program id " << std::string($1) << "\n";
+    // std::cout << "parsing program id " << std::string($1) << "\n";
   	$$ = std::shared_ptr<const program::IntVariable>(new program::IntVariable($1));
   }
 | PROGRAM_ID LBRA expr RBRA 

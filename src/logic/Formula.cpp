@@ -9,12 +9,20 @@ namespace logic {
     // hack needed for bison: std::vector has no overload for ostream, but these overloads are needed for bison
     std::ostream& operator<<(std::ostream& ostr, const std::vector<std::shared_ptr<const logic::Formula>>& f){ostr << "not implemented"; return ostr;}
     
-
+    std::string Formula::stringForLabel(unsigned indentation) const
+    {
+        std::string str = "";
+        if (!label.empty())
+        {
+            str += std::string(indentation, ' ') + ";" + label + "\n";
+        }
+        return str;
+    }
 
     std::string PredicateFormula::toSMTLIB(unsigned indentation) const
     {
-        auto str = ";" + label;
-        str +=std::string(indentation, ' ');
+        std::string str = stringForLabel(indentation);
+        str += std::string(indentation, ' ');
         if (subterms.size() == 0)
         {
             str += symbol->toSMTLIB();
@@ -33,23 +41,27 @@ namespace logic {
 
     std::string EqualityFormula::toSMTLIB(unsigned indentation) const
     {
+        std::string str = stringForLabel(indentation);
+        str += std::string(indentation, ' ');
         if (polarity)
         {
-            return std::string(indentation, ' ') + "(= " + left->toSMTLIB() + " " + right->toSMTLIB() + ")";
+            str += "(= " + left->toSMTLIB() + " " + right->toSMTLIB() + ")";
         }
         else
         {
-            return std::string(indentation, ' ')  + "(not (= " + left->toSMTLIB() + " " + right->toSMTLIB() + "))";
+            str += "(not (= " + left->toSMTLIB() + " " + right->toSMTLIB() + "))";
         }
+        return str;
     }
 
     std::string ConjunctionFormula::toSMTLIB(unsigned indentation) const
     {
+        std::string str = stringForLabel(indentation);
         if (conj.size() == 0)
         {
-            return std::string(indentation, ' ') + "true";
+            return str + std::string(indentation, ' ') + "true";
         }
-        std::string str = std::string(indentation, ' ') + "(and\n";
+        str += std::string(indentation, ' ') + "(and\n";
         for (unsigned i = 0; i < conj.size(); i++) {
             str += conj[i]->toSMTLIB(indentation + 3) + "\n";
         }
@@ -59,11 +71,12 @@ namespace logic {
     
     std::string DisjunctionFormula::toSMTLIB(unsigned indentation) const
     {
+        std::string str = stringForLabel(indentation);
         if (disj.size() == 0)
         {
-            return std::string(indentation, ' ') + "false";
+            return str + std::string(indentation, ' ') + "false";
         }
-        std::string str = std::string(indentation, ' ') + "(or\n";
+        str = std::string(indentation, ' ') + "(or\n";
         for (unsigned i = 0; i < disj.size(); i++) {
             str += disj[i]->toSMTLIB(indentation + 3) + "\n";
         }
@@ -73,7 +86,8 @@ namespace logic {
     
     std::string NegationFormula::toSMTLIB(unsigned indentation) const
     {
-        std::string str = std::string(indentation, ' ') + "(not\n";
+        std::string str = stringForLabel(indentation);
+        str += std::string(indentation, ' ') + "(not\n";
         str += f->toSMTLIB(indentation + 3) + "\n";
         str += std::string(indentation, ' ') + ")";
         return  str;
@@ -81,7 +95,8 @@ namespace logic {
     
     std::string ExistentialFormula::toSMTLIB(unsigned indentation) const
     {
-        std::string str = std::string(indentation, ' ') + "(exists ";
+        std::string str = stringForLabel(indentation);
+        str += std::string(indentation, ' ') + "(exists ";
         
         //list of quantified variables
         str += "(";
@@ -100,7 +115,8 @@ namespace logic {
 
     std::string UniversalFormula::toSMTLIB(unsigned indentation) const
     {
-        std::string str = std::string(indentation, ' ') + "(forall ";
+        std::string str = stringForLabel(indentation);
+        str += std::string(indentation, ' ') + "(forall ";
         
         //list of quantified variables
         str += "(";
@@ -119,7 +135,9 @@ namespace logic {
     
     std::string ImplicationFormula::toSMTLIB(unsigned indentation) const
     {
-        std::string str = std::string(indentation, ' ') + "(=>\n";
+        std::string str = stringForLabel(indentation);
+
+        str += std::string(indentation, ' ') + "(=>\n";
         str += f1->toSMTLIB(indentation + 3) + "\n";
         str += f2->toSMTLIB(indentation + 3) + "\n";
         str += std::string(indentation, ' ') + ")";

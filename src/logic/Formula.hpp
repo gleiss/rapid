@@ -17,6 +17,9 @@ namespace logic {
         
         virtual std::string toSMTLIB(unsigned indentation = 0) const = 0;
         virtual std::string prettyString(unsigned indentation = 0) const = 0;
+        
+    protected:
+        std::string stringForLabel(unsigned indentation) const;
     };
     
     // hack needed for bison: std::vector has no overload for ostream, but these overloads are needed for bison

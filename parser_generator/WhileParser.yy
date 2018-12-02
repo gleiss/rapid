@@ -235,7 +235,8 @@ smtlib_formula:
     for (const auto& quantifiedVar : $4)
     {
       quantVarPointers.push_back(quantifiedVar.get());
-    } 
+    }
+    // TODO: propagate existing-var-error to parser and raise error
     context.pushQuantifiedVars(quantVarPointers);
   } 
   smtlib_formula RPAR 
@@ -250,6 +251,7 @@ smtlib_formula:
     {
       quantVarPointers.push_back(quantifiedVar.get());
     } 
+    // TODO: propagate existing-var-error to parser and raise error
     context.pushQuantifiedVars(quantVarPointers);
   } 
   smtlib_formula RPAR 
@@ -279,7 +281,7 @@ smtlib_quantvar:
     {
       if($3 != "Time")
       {
-        error(@3, "Currently only the sorts Int, Bool and Time are supported");
+        error(@3, "Only the sorts Int, Bool and Time are supported");
       }
       $$ = logic::Signature::varSymbol($2, logic::Sorts::timeSort());
     }
@@ -292,13 +294,66 @@ smtlib_term_list:
 ;
 
 smtlib_term:
-  SMTLIB_ID                               {std::cout << "parsing smtlib const " << std::string($1) << "\n"; auto symbol = context.fetch($1); $$ = logic::Terms::func(symbol, std::vector<std::shared_ptr<const logic::Term>>());}
+SMTLIB_ID                               
+{
+  // std::cout << "parsing smtlib const " << std::string($1) << "\n"; 
+  // TODO: propagate nonexisting-definition-error to parser and raise error
+  auto symbol = context.fetch($1); 
+  $$ = logic::Terms::func(symbol, std::vector<std::shared_ptr<const logic::Term>>());
+}
 | INTEGER                                 {$$ = logic::Theory::intConstant($1);}
-| LPAR SMTLIB_ID smtlib_term_list RPAR    {std::cout << "parsing smtlib term " << std::string($2) << "\n"; auto symbol = context.fetch($2); $$ = logic::Terms::func(symbol, std::move($3));}
-| LPAR PLUS  smtlib_term smtlib_term RPAR {$$ = logic::Theory::intAddition(std::move($3), std::move($4));}
-| LPAR MINUS smtlib_term smtlib_term RPAR {$$ = logic::Theory::intSubtraction(std::move($3), std::move($4));}
-| LPAR MUL   smtlib_term smtlib_term RPAR {$$ = logic::Theory::intMultiplication(std::move($3), std::move($4));}
-| LPAR MINUS smtlib_term RPAR             {$$ = logic::Theory::intUnaryMinus(std::move($3));}
+| LPAR SMTLIB_ID smtlib_term_list RPAR    
+{
+  // std::cout << "parsing smtlib term " << std::string($2) << "\n"; 
+  // TODO: propagate nonexisting-definition-error to parser and raise error
+  // TODO: propagate wrong-argument-sort(s)-error to parser and raise error
+  auto symbol = context.fetch($2); 
+  $$ = logic::Terms::func(symbol, std::move($3));
+}
+| LPAR PLUS smtlib_term smtlib_term RPAR 
+{
+  if($3->symbol->rngSort != logic::Sorts::intSort())
+  {
+    error(@3, "Left argument type needs to be Int");
+  }
+  if($4->symbol->rngSort != logic::Sorts::intSort())
+  {
+    error(@4, "Right argument type needs to be Int");
+  } 
+  $$ = logic::Theory::intAddition(std::move($3), std::move($4));
+}
+| LPAR MINUS smtlib_term smtlib_term RPAR 
+{
+  if($3->symbol->rngSort != logic::Sorts::intSort())
+  {
+    error(@3, "Left argument type needs to be Int");
+  }
+  if($4->symbol->rngSort != logic::Sorts::intSort())
+  {
+    error(@4, "Right argument type needs to be Int");
+  } 
+  $$ = logic::Theory::intSubtraction(std::move($3), std::move($4));
+}
+| LPAR MUL smtlib_term smtlib_term RPAR 
+{
+  if($3->symbol->rngSort != logic::Sorts::intSort())
+  {
+    error(@3, "Left argument type needs to be Int");
+  }
+  if($4->symbol->rngSort != logic::Sorts::intSort())
+  {
+    error(@4, "Right argument type needs to be Int");
+  } 
+  $$ = logic::Theory::intMultiplication(std::move($3), std::move($4));
+}
+| LPAR MINUS smtlib_term RPAR
+  {
+    if($3->symbol->rngSort != logic::Sorts::intSort())
+    {
+      error(@3, "Argument type needs to be Int");
+    }
+    $$ = logic::Theory::intUnaryMinus(std::move($3));
+  }
 ;
 
 function_list:
@@ -358,11 +413,21 @@ var_definition_list:
 ;
 
 int_var_definition:
-  TYPE PROGRAM_ID SCOL {$$ = std::shared_ptr<const program::IntVariable>(new program::IntVariable($2));}
+  TYPE PROGRAM_ID SCOL 
+  {
+    // TODO: check that TYPE is not Time
+    // TODO: support Bool or check that TYPE is not Bool
+    $$ = std::shared_ptr<const program::IntVariable>(new program::IntVariable($2));
+  }
 ;
 
 int_array_var_definition:
-  TYPE LBRA RBRA PROGRAM_ID SCOL {$$ = std::shared_ptr<const program::IntArrayVariable>(new program::IntArrayVariable($4));}
+  TYPE LBRA RBRA PROGRAM_ID SCOL 
+  {
+    // TODO: check that TYPE is not Time
+    // TODO: support Bool or check that TYPE is not Bool
+    $$ = std::shared_ptr<const program::IntArrayVariable>(new program::IntArrayVariable($4));
+  }
 ;
 
 statement_list:
@@ -374,7 +439,11 @@ statement_list:
 ;
 
 assignment_statement:
-  location ASSIGN expr SCOL {$$ = std::shared_ptr<const program::IntAssignment>(new program::IntAssignment(@2.begin.line, std::move($1), std::move($3)));}
+  location ASSIGN expr SCOL 
+  {
+    // TODO: check that location and expr have the same type (need refactoring first so that IntExpression and BoolExpression have a common superclass)
+    $$ = std::shared_ptr<const program::IntAssignment>(new program::IntAssignment(@2.begin.line, std::move($1), std::move($3)));
+  }
 ;
 
 if_else_statement:

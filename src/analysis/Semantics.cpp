@@ -238,7 +238,7 @@ namespace analysis {
             iteratorsNTerms.push_back(logic::Terms::var(iteratorIt.get()));
         }
         iteratorsItTerms.push_back(i);
-        iteratorsItTerms.push_back(n);
+        iteratorsNTerms.push_back(n);
 
         auto lStartIt = logic::Terms::func(locationSymbolMap.at(whileStatement), iteratorsItTerms);
         auto lStartN = logic::Terms::func(locationSymbolMap.at(whileStatement), iteratorsNTerms);

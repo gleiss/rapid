@@ -103,8 +103,8 @@ YY_DECL;
 %type < std::shared_ptr<const logic::Formula> > smtlib_conjecture
 %type < std::vector<std::shared_ptr<const logic::Formula>> > smtlib_formula_list
 %type < std::shared_ptr<const logic::Formula> > smtlib_formula
-%type < std::vector<std::shared_ptr<const logic::LVariable>> > smtlib_quantvar_list
-%type < std::shared_ptr<const logic::LVariable> > smtlib_quantvar
+%type < std::vector<std::shared_ptr<const logic::Symbol>> > smtlib_quantvar_list
+%type < std::shared_ptr<const logic::Symbol> > smtlib_quantvar
 %type < std::vector<std::shared_ptr<const logic::Term>> > smtlib_term_list
 %type < std::shared_ptr<const logic::Term> > smtlib_term
 
@@ -175,12 +175,38 @@ smtlib_formula:
 | LPAR ORSMTLIB smtlib_formula_list RPAR     { $$ = logic::Formulas::disjunction(std::move($3));}
 | LPAR NOT smtlib_formula RPAR               { $$ = logic::Formulas::negation(std::move($3));}
 | LPAR IMPSMTLIB smtlib_formula smtlib_formula RPAR  { $$ = logic::Formulas::implication(std::move($3), std::move($4));}
-| LPAR FORALLSMTLIB LPAR smtlib_quantvar_list RPAR smtlib_formula RPAR       { $$ = logic::Formulas::universal(std::move($4), std::move($6));}
-| LPAR EXISTSSMTLIB LPAR smtlib_quantvar_list RPAR smtlib_formula RPAR       { $$ = logic::Formulas::existential(std::move($4), std::move($6));}
+| LPAR FORALLSMTLIB LPAR smtlib_quantvar_list RPAR 
+  {
+    std::vector<const logic::Symbol*> quantVarPointers; 
+    for (const auto& quantifiedVar : $4)
+    {
+      quantVarPointers.push_back(quantifiedVar.get());
+    } 
+    context.pushQuantifiedVars(quantVarPointers);
+  } 
+  smtlib_formula RPAR 
+  { 
+    context.popQuantifiedVars();
+    $$ = logic::Formulas::universal(std::move($4), std::move($7));
+  }
+| LPAR EXISTSSMTLIB LPAR smtlib_quantvar_list RPAR 
+  {
+    std::vector<const logic::Symbol*> quantVarPointers;
+    for (const auto& quantifiedVar : $4)
+    {
+      quantVarPointers.push_back(quantifiedVar.get());
+    } 
+    context.pushQuantifiedVars(quantVarPointers);
+  } 
+  smtlib_formula RPAR 
+  { 
+    context.popQuantifiedVars();
+    $$ = logic::Formulas::existential(std::move($4), std::move($7));
+  }
 ;
 
 smtlib_quantvar_list:
-  smtlib_quantvar {auto vec = std::vector<std::shared_ptr<const logic::LVariable>>(); vec.push_back(std::move($1)); $$ = std::move(vec);}
+  smtlib_quantvar {auto vec = std::vector<std::shared_ptr<const logic::Symbol>>(); vec.push_back(std::move($1)); $$ = std::move(vec);}
 | smtlib_quantvar_list smtlib_quantvar {$1.push_back(std::move($2)); $$ = std::move($1);}
 ;
 
@@ -189,11 +215,11 @@ smtlib_quantvar:
   { 
     if($3 == "Int")
     { 
-      $$ = logic::Terms::var($2, logic::Sorts::intSort());
+      $$ = logic::Signature::varSymbol($2, logic::Sorts::intSort());
     }
     else if($3 == "Bool")
     {
-      $$ = logic::Terms::var($2, logic::Sorts::boolSort());
+      $$ = logic::Signature::varSymbol($2, logic::Sorts::boolSort());
     }
     else
     {
@@ -201,7 +227,7 @@ smtlib_quantvar:
       {
         error(@3, "Currently only the sorts Int, Bool and Time are supported");
       }
-      $$ = logic::Terms::var($2, logic::Sorts::timeSort());
+      $$ = logic::Signature::varSymbol($2, logic::Sorts::timeSort());
     }
   }
 ;
@@ -212,9 +238,9 @@ smtlib_term_list:
 ;
 
 smtlib_term:
-  SMTLIB_ID                               {std::cout << "parsing smtlib const " << std::string($1) << "\n"; auto symbol = logic::Signature::fetch($1); $$ = logic::Terms::func(symbol, std::vector<std::shared_ptr<const logic::Term>>());}
+  SMTLIB_ID                               {std::cout << "parsing smtlib const " << std::string($1) << "\n"; auto symbol = context.fetch($1); $$ = logic::Terms::func(symbol, std::vector<std::shared_ptr<const logic::Term>>());}
 | INTEGER                                 {$$ = logic::Theory::intConstant($1);}
-| LPAR SMTLIB_ID smtlib_term_list RPAR    {std::cout << "parsing smtlib term " << std::string($2) << "\n"; auto symbol = logic::Signature::fetch($2); $$ = logic::Terms::func(symbol, std::move($3));}
+| LPAR SMTLIB_ID smtlib_term_list RPAR    {std::cout << "parsing smtlib term " << std::string($2) << "\n"; auto symbol = context.fetch($2); $$ = logic::Terms::func(symbol, std::move($3));}
 | LPAR PLUS  smtlib_term smtlib_term RPAR {$$ = logic::Theory::intAddition(std::move($3), std::move($4));}
 | LPAR MINUS smtlib_term smtlib_term RPAR {$$ = logic::Theory::intSubtraction(std::move($3), std::move($4));}
 | LPAR MUL   smtlib_term smtlib_term RPAR {$$ = logic::Theory::intMultiplication(std::move($3), std::move($4));}

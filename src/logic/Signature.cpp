@@ -8,6 +8,8 @@ namespace logic {
     
 #pragma mark - Symbol
 
+    std::ostream& operator<<(std::ostream& ostr, const std::vector<std::shared_ptr<const logic::Symbol>>& f){ostr << "not implemented"; return ostr;}
+    
     std::string Symbol::declareSymbolSMTLIB() const
     {
         if (!noDeclaration)

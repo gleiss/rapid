@@ -49,6 +49,10 @@ namespace logic {
         
         bool operator==(const Symbol &s) const {return name == s.name;}
     };
+    
+    // hack needed for bison: std::vector has no overload for ostream, but these overloads are needed for bison
+    std::ostream& operator<<(std::ostream& ostr, const std::vector<std::shared_ptr<const logic::Symbol>>& f);
+    
 }
 
 namespace std

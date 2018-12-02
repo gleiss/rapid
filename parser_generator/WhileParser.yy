@@ -166,11 +166,65 @@ smtlib_formula_list:
 smtlib_formula:
   TRUE                                       { $$ = logic::Theory::boolTrue();}
 | FALSE                                      { $$ = logic::Theory::boolFalse();}
-| LPAR ASSIGN smtlib_term smtlib_term RPAR       { $$ = logic::Formulas::equality(std::move($3), std::move($4));}
-| LPAR GT smtlib_term smtlib_term RPAR       { $$ = logic::Theory::intLess(std::move($3), std::move($4));}
-| LPAR GE smtlib_term smtlib_term RPAR       { $$ = logic::Theory::intLess(std::move($3), std::move($4));}
-| LPAR LT smtlib_term smtlib_term RPAR       { $$ = logic::Theory::intLess(std::move($3), std::move($4));}
-| LPAR LE smtlib_term smtlib_term RPAR       { $$ = logic::Theory::intLess(std::move($3), std::move($4));}
+| LPAR ASSIGN smtlib_term smtlib_term RPAR   
+  { 
+    auto leftSort = $3->symbol->rngSort;
+    auto rightSort = $4->symbol->rngSort;
+    
+    if(leftSort != rightSort)
+    {
+      error(@4, "Argument types " + leftSort->name + " and " + rightSort->name + " don't match!");
+    }
+    $$ = logic::Formulas::equality(std::move($3), std::move($4));
+  }
+| LPAR GT smtlib_term smtlib_term RPAR       
+{
+  if($3->symbol->rngSort != logic::Sorts::intSort())
+  {
+    error(@3, "Left argument type needs to be Int");
+  }
+  if($4->symbol->rngSort != logic::Sorts::intSort())
+  {
+    error(@4, "Right argument type needs to be Int");
+  }
+  $$ = logic::Theory::intGreater(std::move($3), std::move($4));
+}
+| LPAR GE smtlib_term smtlib_term RPAR       
+{
+  if($3->symbol->rngSort != logic::Sorts::intSort())
+  {
+    error(@3, "Left argument type needs to be Int");
+  }
+  if($4->symbol->rngSort != logic::Sorts::intSort())
+  {
+    error(@4, "Right argument type needs to be Int");
+  } 
+  $$ = logic::Theory::intGreaterEqual(std::move($3), std::move($4));
+}
+| LPAR LT smtlib_term smtlib_term RPAR      
+{ 
+  if($3->symbol->rngSort != logic::Sorts::intSort())
+  {
+    error(@3, "Left argument type needs to be Int");
+  }
+  if($4->symbol->rngSort != logic::Sorts::intSort())
+  {
+    error(@4, "Right argument type needs to be Int");
+  } 
+  $$ = logic::Theory::intLess(std::move($3), std::move($4));
+}
+| LPAR LE smtlib_term smtlib_term RPAR      
+{ 
+  if($3->symbol->rngSort != logic::Sorts::intSort())
+  {
+    error(@3, "Left argument type needs to be Int");
+  }
+  if($4->symbol->rngSort != logic::Sorts::intSort())
+  {
+    error(@4, "Right argument type needs to be Int");
+  } 
+  $$ = logic::Theory::intLessEqual(std::move($3), std::move($4));
+}
 | LPAR ANDSMTLIB smtlib_formula_list RPAR    { $$ = logic::Formulas::conjunction(std::move($3));}
 | LPAR ORSMTLIB smtlib_formula_list RPAR     { $$ = logic::Formulas::disjunction(std::move($3));}
 | LPAR NOT smtlib_formula RPAR               { $$ = logic::Formulas::negation(std::move($3));}

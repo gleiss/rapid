@@ -98,7 +98,7 @@ exists      	{ return parser::WhileParser::make_EXISTSSMTLIB(loc); }
 "true"       { return parser::WhileParser::make_TRUE(loc); }
 "false"      { return parser::WhileParser::make_FALSE(loc); }
 
-"Int"|"Bool" { return parser::WhileParser::make_TYPE(yytext, loc); }
+"Int"|"Bool"|"Time" { return parser::WhileParser::make_TYPE(yytext, loc); }
 
 <programstate>{IDENT}     { return parser::WhileParser::make_PROGRAM_ID(yytext, loc); }
 <smtlibstate>{IDENT}      { return parser::WhileParser::make_SMTLIB_ID(yytext, loc); }

@@ -20,7 +20,7 @@ namespace logic {
         // output each axiom
         for (const auto& axiom : axioms)
         {
-            ostr << "(assert\n" << axiom->toSMTLIB(3) + "\n)\n";
+            ostr << "\n(assert\n" << axiom->toSMTLIB(3) + "\n)\n";
         }
 
         // output each lemma
@@ -28,11 +28,11 @@ namespace logic {
         {
             // TODO: improve handling for lemmas:
             // custom smtlib-extension
-            ostr << "(assert\n" << lemma->toSMTLIB(3) + "\n)\n";
+            ostr << "\n(assert\n" << lemma->toSMTLIB(3) + "\n)\n";
         }
         
         // output conjecture
         assert(conjecture != nullptr);
-        ostr << "(assert-not\n" << conjecture->toSMTLIB(3) + "\n)\n";
+        ostr << "\n(assert-not\n" << conjecture->toSMTLIB(3) + "\n)\n";
     }
 }

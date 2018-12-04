@@ -51,6 +51,7 @@ namespace logic {
         friend class Formulas;
         
     public:
+        // TODO: refactor polarity into explicit negation everywhere
         EqualityFormula(bool polarity, std::shared_ptr<const Term> left, std::shared_ptr<const Term> right, std::string label = "")
         : Formula(label), polarity(polarity), left(left), right(right) {}
 

@@ -21,7 +21,7 @@ namespace analysis {
         startTimePointMap(maps.startTimePointMap),
         endTimePointMap(maps.endTimePointMap){}
         
-        std::shared_ptr<const logic::Formula> generateSemantics();
+        std::vector<std::shared_ptr<const logic::Formula>> generateSemantics();
         
     private:
         const program::Program& program;

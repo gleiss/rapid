@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
 
                 analysis::Semantics s(*context.program, *context.programGlobalProperties);
                 
-                problem.axioms = {s.generateSemantics()};
+                problem.axioms = s.generateSemantics();
                 problem.conjecture = std::move(context.conjecture);
                 problem.outputSMTLIB(util::Output::stream());
                 

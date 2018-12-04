@@ -434,7 +434,7 @@ namespace logic {
     
     std::shared_ptr<const NegationFormula> Formulas::disequality(std::shared_ptr<const Term> left, std::shared_ptr<const Term> right, std::string label)
     {
-        auto eq = std::shared_ptr<const EqualityFormula>(new EqualityFormula(false, left, right));
+        auto eq = std::shared_ptr<const EqualityFormula>(new EqualityFormula(true, left, right));
         return std::shared_ptr<const NegationFormula>(new NegationFormula(eq, label));
     }
     

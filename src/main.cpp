@@ -85,6 +85,9 @@ int main(int argc, char *argv[])
                 
                 problem.axioms = s.generateSemantics();
                 problem.conjecture = std::move(context.conjecture);
+                
+                analysis::TraceLemmas generator(*context.program, *context.programGlobalProperties);
+                problem.lemmas = generator.generate();
                 problem.outputSMTLIB(util::Output::stream());
                 
 //                auto map = s.computeEndLocations(*p);

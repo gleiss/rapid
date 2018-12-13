@@ -104,7 +104,7 @@ namespace analysis {
             auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
             auto p = logic::Terms::var(pSymbol.get());
             
-            auto premise = logic::Formulas::disequality(p, intAssignment->rhs->toTerm(l1));
+            auto premise = logic::Formulas::disequality(p, application->index->toTerm(l1));
             auto eq2 = logic::Formulas::equality(application->array->toTerm(l2, p), application->array->toTerm(l1, p));
             auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::implication(premise, eq2));
             conjuncts.push_back(conjunct);

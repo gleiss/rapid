@@ -97,7 +97,9 @@ namespace analysis {
             auto application = std::static_pointer_cast<const program::IntArrayApplication>(intAssignment->lhs);
             
             // a(l2, e(l1)) = rhs(l1)
-            auto eq1 = logic::Formulas::equality(application->toTerm(l2), intAssignment->rhs->toTerm(l1));
+            auto eq1Lhs = application->array->toTerm(l2, application->index->toTerm(l1));
+            auto eq1Rhs = intAssignment->rhs->toTerm(l1);
+            auto eq1 = logic::Formulas::equality(eq1Lhs, eq1Rhs);
             conjuncts.push_back(eq1);
 
             // forall positions p. (p!=e(l1) => a(l2,p) = a(l1,p))

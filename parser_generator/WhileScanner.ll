@@ -92,8 +92,9 @@ exists      	{ return parser::WhileParser::make_EXISTSSMTLIB(loc); }
 "<="         { return parser::WhileParser::make_LE(loc); }
 "=="         { return parser::WhileParser::make_EQ(loc); }
 "!="         { return parser::WhileParser::make_NEQ(loc); }
-"||"          { return parser::WhileParser::make_OR(loc); }
-"&&"          { return parser::WhileParser::make_AND(loc); }
+"||"         { return parser::WhileParser::make_OR(loc); }
+"&&"         { return parser::WhileParser::make_AND(loc); }
+"!"          { return parser::WhileParser::make_NOT(loc); }
 
 "true"       { return parser::WhileParser::make_TRUE(loc); }
 "false"      { return parser::WhileParser::make_FALSE(loc); }

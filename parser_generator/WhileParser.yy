@@ -227,7 +227,7 @@ smtlib_formula:
 }
 | LPAR ANDSMTLIB smtlib_formula_list RPAR    { $$ = logic::Formulas::conjunction(std::move($3));}
 | LPAR ORSMTLIB smtlib_formula_list RPAR     { $$ = logic::Formulas::disjunction(std::move($3));}
-| LPAR NOT smtlib_formula RPAR               { $$ = logic::Formulas::negation(std::move($3));}
+| LPAR NOTSMTLIB smtlib_formula RPAR         { $$ = logic::Formulas::negation(std::move($3));}
 | LPAR IMPSMTLIB smtlib_formula smtlib_formula RPAR  { $$ = logic::Formulas::implication(std::move($3), std::move($4));}
 | LPAR FORALLSMTLIB LPAR smtlib_quantvar_list RPAR 
   {

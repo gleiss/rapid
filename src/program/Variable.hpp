@@ -23,17 +23,17 @@ namespace program {
     class Variable
     {
     public:
-        Variable(std::string name) : name(name) {}
+        Variable(std::string name, bool isConstant) : name(name), isConstant(isConstant) {}
         
         const std::string name;
-        
+        const bool isConstant;
         virtual void addSymbolToSignature() const = 0;
     };
     
     class IntVariable : public IntExpression, public Variable
     {
     public:
-        IntVariable(std::string name) : IntExpression(), Variable(name) {}
+        IntVariable(std::string name, bool isConstant) : IntExpression(), Variable(name, isConstant) {}
         
         bool operator==(const IntVariable& rhs) const { return (name == rhs.name); }
         bool operator!=(const IntVariable& rhs) const { return !operator==(rhs); }
@@ -52,7 +52,7 @@ namespace program {
     class BoolVariable : public BoolExpression, public Variable
     {
     public:
-        BoolVariable(std::string name) : BoolExpression(), Variable(name) {}
+        BoolVariable(std::string name, bool isConstant) : BoolExpression(), Variable(name, isConstant) {}
 
         bool operator==(const BoolVariable& rhs) const { return (name == rhs.name); }
         bool operator!=(const BoolVariable& rhs) const { return !operator==(rhs); }
@@ -66,7 +66,7 @@ namespace program {
     class IntArrayVariable : public Variable
     {
     public:
-        IntArrayVariable(std::string name) : Variable(name) {}
+        IntArrayVariable(std::string name, bool isConstant) : Variable(name, isConstant) {}
         bool operator==(const IntArrayVariable& rhs) const { return (name == rhs.name); }
         bool operator!=(const IntArrayVariable& rhs) const { return !operator==(rhs); }
         

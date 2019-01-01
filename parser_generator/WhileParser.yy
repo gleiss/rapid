@@ -94,6 +94,7 @@ YY_DECL;
   FORALLSMTLIB  "forall"
   EXISTSSMTLIB  "exists"
   ASSERTNOT     "assert-not"
+  CONST         "const"
 ;
 %token <std::string> PROGRAM_ID "program identifier"
 %token <std::string> SMTLIB_ID "smtlib identifier"
@@ -362,51 +363,29 @@ function_list:
 ;
 
 function:
-  FUNC PROGRAM_ID LPAR RPAR LCUR var_definition_list statement_list RCUR 
+  FUNC PROGRAM_ID LPAR RPAR LCUR 
   {
-  	$$ = std::shared_ptr<const program::Function>(new program::Function($2, std::move($6.first), std::move($6.second), std::move($7)));
+    context.pushProgramVars();
+  }
+  var_definition_list statement_list RCUR 
+  {
+    context.popProgramVars();
+  	$$ = std::shared_ptr<const program::Function>(new program::Function($2, std::move($7.first), std::move($7.second), std::move($8)));
   }
 ;
 
 var_definition_list:
-  %empty {$$ = std::pair<std::vector<std::shared_ptr<const program::IntVariable>>, std::vector<std::shared_ptr<const program::IntArrayVariable>>>({},{});}
+  %empty 
+  {
+    $$ = std::pair<std::vector<std::shared_ptr<const program::IntVariable>>, std::vector<std::shared_ptr<const program::IntArrayVariable>>>({},{});
+  }
 | var_definition_list int_var_definition 
   {  
-    for(const auto& var : $1.first)
-    {
-      if(var->name == $2->name)
-      {
-        error(@2, "Variable with name " + var->name + " is already defined.");
-      }
-    }
-    for(const auto& var : $1.second)
-    {
-      if(var->name == $2->name)
-      {
-        error(@2, "Array variable with name " + var->name + " is already defined.");
-      }
-    }
-    // add the symbol after error handling
     $2->addSymbolToSignature();
     $1.first.push_back(std::move($2)); $$ = std::move($1);
   }
 | var_definition_list int_array_var_definition
   {  
-    for(const auto& var : $1.first)
-    {
-      if(var->name == $2->name)
-      {
-        error(@2, "Variable with name " + var->name + " is already defined.");
-      }
-    }
-    for(const auto& var : $1.second)
-    {
-      if(var->name == $2->name)
-      {
-        error(@2, "Array variable with name " + var->name + " is already defined.");
-      }
-    }
-    // add the symbol after error handling
     $2->addSymbolToSignature();
     $1.second.push_back(std::move($2)); $$ = std::move($1);
   }
@@ -417,7 +396,17 @@ int_var_definition:
   {
     // TODO: check that TYPE is not Time
     // TODO: support Bool or check that TYPE is not Bool
-    $$ = std::shared_ptr<const program::IntVariable>(new program::IntVariable($2));
+    auto var = std::shared_ptr<const program::IntVariable>(new program::IntVariable($2, false));
+    context.addProgramVar(var);
+    $$ = var;
+  }
+| CONST TYPE PROGRAM_ID SCOL 
+  {
+    // TODO: check that TYPE is not Time
+    // TODO: support Bool or check that TYPE is not Bool
+    auto var = std::shared_ptr<const program::IntVariable>(new program::IntVariable($3, true));
+    context.addProgramVar(var);
+    $$ = var;  
   }
 ;
 
@@ -426,7 +415,17 @@ int_array_var_definition:
   {
     // TODO: check that TYPE is not Time
     // TODO: support Bool or check that TYPE is not Bool
-    $$ = std::shared_ptr<const program::IntArrayVariable>(new program::IntArrayVariable($4));
+    auto var = std::shared_ptr<const program::IntArrayVariable>(new program::IntArrayVariable($4, false));
+    context.addProgramVar(var);
+    $$ = var;  
+  }
+| CONST TYPE LBRA RBRA PROGRAM_ID SCOL 
+  {
+    // TODO: check that TYPE is not Time
+    // TODO: support Bool or check that TYPE is not Bool
+    auto var = std::shared_ptr<const program::IntArrayVariable>(new program::IntArrayVariable($5, true));
+    context.addProgramVar(var);
+    $$ = var;   
   }
 ;
 
@@ -488,15 +487,14 @@ expr:
 location:
   PROGRAM_ID                
   { 
-  	// TODO: add check that variable exists
-    // std::cout << "parsing program id " << std::string($1) << "\n";
-  	$$ = std::shared_ptr<const program::IntVariable>(new program::IntVariable($1));
+  	auto var = context.getProgramVar($1);
+    $$ = std::static_pointer_cast<const program::IntVariable>(var);
   }
 | PROGRAM_ID LBRA expr RBRA 
   { 
-  	// TODO: add check that variable exists
-	auto formula = std::shared_ptr<const program::IntArrayVariable>(new IntArrayVariable($1));
-	$$ = std::shared_ptr<const program::IntArrayApplication>(new IntArrayApplication(std::move(formula), std::move($3)));
+	  auto var = context.getProgramVar($1);
+    auto castedVar = std::static_pointer_cast<const program::IntArrayVariable>(var);
+	  $$ = std::shared_ptr<const program::IntArrayApplication>(new IntArrayApplication(std::move(castedVar), std::move($3)));
   }
 ;
 

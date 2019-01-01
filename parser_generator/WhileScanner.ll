@@ -64,6 +64,7 @@ else         { return parser::WhileParser::make_ELSE(loc); }
 while        { return parser::WhileParser::make_WHILE(loc); }
 skip         { return parser::WhileParser::make_SKIP(loc); }
 func         { BEGIN(programstate); return parser::WhileParser::make_FUNC(loc);}
+const        { return parser::WhileParser::make_CONST(loc); }
 
 and         	{ return parser::WhileParser::make_ANDSMTLIB(loc); }
 or         		{ return parser::WhileParser::make_ORSMTLIB(loc); }

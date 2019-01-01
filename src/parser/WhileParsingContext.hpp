@@ -6,6 +6,7 @@
 #include "Formula.hpp"
 #include "Program.hpp"
 #include "Signature.hpp"
+#include "Variable.hpp"
 
 namespace parser
 {
@@ -29,16 +30,23 @@ namespace parser
         std::shared_ptr<const logic::Formula> conjecture;
         
     private:
-        // context-informatino
+        // context-information
         std::unordered_map<std::string, const logic::Symbol*> quantifiedVarsDeclarations;
         std::vector<std::vector<std::string>> quantifiedVarsStack;
+        
+        std::unordered_map<std::string, std::shared_ptr<const program::Variable>> programVarsDeclarations;
+        std::vector<std::vector<std::string>> programVarsStack;
+        
     public:
         bool pushQuantifiedVars(std::vector<const logic::Symbol*> quantifiedVars);
         void popQuantifiedVars();
-        
         // fetch symbol with given name from quantVarDecls or Signature.
         const logic::Symbol* fetch(std::string name);
-
+        
+        void pushProgramVars();
+        void popProgramVars();
+        bool addProgramVar(std::shared_ptr<const program::Variable> programVar);
+        std::shared_ptr<const program::Variable> getProgramVar(std::string name);
     };
 }
 

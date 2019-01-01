@@ -44,5 +44,47 @@ namespace parser
         }
         return logic::Signature::fetch(name);
     }
+    
+    void WhileParsingContext::pushProgramVars()
+    {
+        programVarsStack.push_back({});
+    }
+    
+    void WhileParsingContext::popProgramVars()
+    {
+        // remove each var of last level from map
+        for (const auto& programVarName : programVarsStack.back())
+        {
+            programVarsDeclarations.erase(programVarName);
+        }
+        // pop last level
+        programVarsStack.pop_back();
+    }
+    
+    bool WhileParsingContext::addProgramVar(std::shared_ptr<const program::Variable> programVar)
+    {
+        if (programVarsDeclarations.count(programVar->name) > 0)
+        {
+            return false;
+        }
+        programVarsDeclarations[programVar->name] = programVar;
+        programVarsStack.back().push_back(programVar->name);
+
+        return true;
+    }
+    
+    std::shared_ptr<const program::Variable> WhileParsingContext::getProgramVar(std::string name)
+    {
+        if (programVarsDeclarations.count(name) > 0)
+        {
+            return programVarsDeclarations[name];
+        }
+        else
+        {
+            std::cout << "program var " << name << " has not been declared!";
+            assert(false);
+            return nullptr;
+        }
+    }
 
 }

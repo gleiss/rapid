@@ -28,7 +28,8 @@ namespace parser
         std::unique_ptr<const program::Program> program;
         std::unique_ptr<const program::ProgramGlobalProperties> programGlobalProperties;
         std::shared_ptr<const logic::Formula> conjecture;
-        
+        std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars;
+
     private:
         // context-information
         std::unordered_map<std::string, const logic::Symbol*> quantifiedVarsDeclarations;
@@ -47,6 +48,7 @@ namespace parser
         void popProgramVars();
         bool addProgramVar(std::shared_ptr<const program::Variable> programVar);
         std::shared_ptr<const program::Variable> getProgramVar(std::string name);
+        std::vector<std::shared_ptr<const program::Variable>> getActiveProgramVars();
     };
 }
 

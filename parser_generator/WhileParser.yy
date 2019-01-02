@@ -118,6 +118,8 @@ YY_DECL;
 %type < std::shared_ptr<const program::Variable> > var_definition
 
 %type < std::vector<std::shared_ptr<const program::Statement>> > statement_list
+%type < std::shared_ptr<const program::Statement> > statement
+%type < std::vector<std::shared_ptr<const program::Variable>> > active_vars_dummy
 %type < std::shared_ptr<const program::IntAssignment> > assignment_statement
 %type < std::shared_ptr<const program::IfElse> > if_else_statement
 %type < std::shared_ptr<const program::WhileStatement> > while_statement
@@ -362,12 +364,14 @@ function_list:
 ;
 
 function:
-  FUNC PROGRAM_ID LPAR RPAR LCUR 
+  FUNC PROGRAM_ID LPAR RPAR LCUR
   {
     context.pushProgramVars();
   }
   var_definition_list statement_list RCUR 
   {
+    auto functionEndLocationName =  $2 + "_end";
+    context.locationToActiveVars[functionEndLocationName] = context.getActiveProgramVars();
     context.popProgramVars();
   	$$ = std::shared_ptr<const program::Function>(new program::Function($2, std::move($7), std::move($8)));
   }
@@ -413,12 +417,21 @@ var_definition:
   }
 ;
 
+
 statement_list:
   %empty {$$ = std::vector<std::shared_ptr<const program::Statement>>();}
-| statement_list assignment_statement {$1.push_back(std::move($2)); $$ = std::move($1);}
-| statement_list if_else_statement {$1.push_back(std::move($2)); $$ = std::move($1);}
-| statement_list while_statement {$1.push_back(std::move($2)); $$ = std::move($1);}
-| statement_list skip_statement {$1.push_back(std::move($2)); $$ = std::move($1);}
+| statement_list active_vars_dummy statement
+  {
+    context.locationToActiveVars[$3] = $2;
+    $1.push_back(std::move($3)); $$ = std::move($1);
+  }
+;
+
+statement:
+  assignment_statement {$$ = std::move($1);}
+| if_else_statement {$$ = std::move($1);}
+| while_statement {$$ = std::move($1);}
+| skip_statement {$$ = std::move($1);}
 ;
 
 assignment_statement:
@@ -430,8 +443,14 @@ assignment_statement:
 ;
 
 if_else_statement:
-  IF LPAR formula RPAR LCUR statement_list RCUR ELSE LCUR statement_list RCUR 
-  {$$ = std::shared_ptr<const program::IfElse>(new program::IfElse(@1.begin.line, std::move($3), std::move($6), std::move($10)));}
+  IF LPAR formula RPAR LCUR statement_list active_vars_dummy RCUR ELSE LCUR statement_list active_vars_dummy RCUR 
+  {
+    auto leftEndLocationName = @1.begin.line + "_lEnd";
+    auto rightEndLocationName = @1.begin.line + "_rEnd";
+    context.locationToActiveVars[leftEndLocationName] = $7;
+    context.locationToActiveVars[rightEndLocationName] = $12;
+    $$ = std::shared_ptr<const program::IfElse>(new program::IfElse(@1.begin.line, std::move($3), std::move($6), std::move($11)));
+  }
 ;
 
 while_statement:
@@ -440,6 +459,13 @@ while_statement:
 
 skip_statement:
   SKIP {$$ = std::shared_ptr<const program::SkipStatement>(new program::SkipStatement(@1.begin.line));}
+;
+
+active_vars_dummy:
+  %empty 
+  {
+    $$ = context.getActiveProgramVars(); 
+  }
 ;
 
 formula:

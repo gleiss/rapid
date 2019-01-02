@@ -86,5 +86,15 @@ namespace parser
             return nullptr;
         }
     }
+    
+    std::vector<std::shared_ptr<const program::Variable>> WhileParsingContext::getActiveProgramVars()
+    {
+        std::vector<std::shared_ptr<const program::Variable>> activeVars;
+        for (const auto& pairNameVar : programVarsDeclarations)
+        {
+            activeVars.push_back(pairNameVar.second);
+        }
+        return activeVars;
+    }
 
 }

@@ -114,7 +114,7 @@ YY_DECL;
 %type < std::vector< std::shared_ptr<const program::Function>> > function_list
 %type < std::shared_ptr<const program::Function> > function
 
-%type < std::vector< std::shared_ptr<const program::Variable>> > var_definition_list
+%type < std::vector<std::shared_ptr<const program::Variable>> > var_definition_list
 %type < std::shared_ptr<const program::Variable> > var_definition
 
 %type < std::vector<std::shared_ptr<const program::Statement>> > statement_list
@@ -422,7 +422,8 @@ statement_list:
   %empty {$$ = std::vector<std::shared_ptr<const program::Statement>>();}
 | statement_list active_vars_dummy statement
   {
-    context.locationToActiveVars[$3] = $2;
+    auto locationName = $3->location;
+    context.locationToActiveVars[locationName] = $2;
     $1.push_back(std::move($3)); $$ = std::move($1);
   }
 ;
@@ -445,8 +446,8 @@ assignment_statement:
 if_else_statement:
   IF LPAR formula RPAR LCUR statement_list active_vars_dummy RCUR ELSE LCUR statement_list active_vars_dummy RCUR 
   {
-    auto leftEndLocationName = @1.begin.line + "_lEnd";
-    auto rightEndLocationName = @1.begin.line + "_rEnd";
+    auto leftEndLocationName = "l" + std::to_string(@1.begin.line) + "_lEnd";
+    auto rightEndLocationName = "l" + std::to_string(@1.begin.line) + "_rEnd";
     context.locationToActiveVars[leftEndLocationName] = $7;
     context.locationToActiveVars[rightEndLocationName] = $12;
     $$ = std::shared_ptr<const program::IfElse>(new program::IfElse(@1.begin.line, std::move($3), std::move($6), std::move($11)));

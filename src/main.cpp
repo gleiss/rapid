@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
                 
                 // parse the input-program into context
                 parser::WhileParser parser(context);
-                parser.set_debug_level(false); // no traces
+                parser.set_debug_level(false);
                 parser.parse();
                 fclose(f);
                 
@@ -79,8 +79,10 @@ int main(int argc, char *argv[])
                 util::Output::stream() << *context.program;
                 util::Output::stream() << util::Output::nocomment;
 
+                // end of parsing
+                
                 logic::Problem problem;
-
+                
                 analysis::Semantics s(*context.program, *context.programGlobalProperties);
                 
                 problem.axioms = s.generateSemantics();
@@ -89,33 +91,6 @@ int main(int argc, char *argv[])
                 analysis::TraceLemmas generator(*context.program, *context.programGlobalProperties);
                 problem.lemmas = generator.generate();
                 problem.outputSMTLIB(util::Output::stream());
-                
-//                auto map = s.computeEndLocations(*p);
-//                for (const auto& pair : map)
-//                {
-//                    util::Output::stream() << pair.first->location << ", " << pair.second << "\n";
-//                }
-//                // run lightweight analysis
-//                program::Analyzer a(*p);
-//                program::AnalyzerResult aRes = a.computeVariableProperties();
-//
-//                util::Output::stream() << util::Output::comment;
-//                util::Output::stream() << aRes.toString();
-//                util::Output::stream() << util::Output::nocomment;
-//
-//                // create properties and dump them to SMTLIB
-//                if (!util::Configuration::instance().timepoints().getValue())
-//                {
-//                    program::Properties props(*p, aRes);
-//                    props.analyze();
-//                    props.output();
-//                }
-//                else
-//                {
-//                    program::PropertiesTime props(*p, aRes);
-//                    props.analyze();
-//                    props.output();
-//                }
             }
         }
         return 0;

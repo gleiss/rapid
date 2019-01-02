@@ -33,17 +33,13 @@ namespace analysis {
         const program::EndTimePointMap& endTimePointMap;
         
         std::shared_ptr<const logic::Formula> generateSemantics(const program::Statement* statement,
-                                                                const std::vector<std::shared_ptr<const program::IntVariable>>& intVars,
-                                                                const std::vector<std::shared_ptr<const program::IntArrayVariable>>& intArrayVars);
+                                                                const std::vector<std::shared_ptr<const program::Variable>>& vars);
         std::shared_ptr<const logic::Formula> generateSemantics(const program::IntAssignment* intAssignment,
-                                                                const std::vector<std::shared_ptr<const program::IntVariable>>& intVars,
-                                                                const std::vector<std::shared_ptr<const program::IntArrayVariable>>& intArrayVars);
+                                                                const std::vector<std::shared_ptr<const program::Variable>>& vars);
         std::shared_ptr<const logic::Formula> generateSemantics(const program::IfElse* ifElse,
-                                                                const std::vector<std::shared_ptr<const program::IntVariable>>& intVars,
-                                                                const std::vector<std::shared_ptr<const program::IntArrayVariable>>& intArrayVars);
+                                                                const std::vector<std::shared_ptr<const program::Variable>>& vars);
         std::shared_ptr<const logic::Formula> generateSemantics(const program::WhileStatement* whileStatement,
-                                                                const std::vector<std::shared_ptr<const program::IntVariable>>& intVars,
-                                                                const std::vector<std::shared_ptr<const program::IntArrayVariable>>& intArrayVars);
+                                                                const std::vector<std::shared_ptr<const program::Variable>>& vars);
         std::shared_ptr<const logic::Formula> generateSemantics(const program::SkipStatement* skipStatement);
     };
 }

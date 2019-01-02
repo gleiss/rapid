@@ -23,78 +23,52 @@ namespace program {
     class Variable
     {
     public:
-        Variable(std::string name, bool isConstant) : name(name), isConstant(isConstant) {}
-        
+        Variable(std::string name, bool isConstant, bool isArray) : name(name), isConstant(isConstant), isArray(isArray) {}
+
         const std::string name;
         const bool isConstant;
-        virtual void addSymbolToSignature() const = 0;
+        const bool isArray;
+        virtual void addSymbolToSignature() const;
+        
+        bool operator==(const Variable& rhs) const { return (name == rhs.name); }
+        bool operator!=(const Variable& rhs) const { return !operator==(rhs); }
+        
+        std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const logic::Term> index) const;
+        std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const logic::Term> index, std::shared_ptr<const logic::Term> position) const;
     };
-    
-    class IntVariable : public IntExpression, public Variable
+
+    // hack needed for bison: std::vector has no overload for ostream, but these overloads are needed for bison
+    std::ostream& operator<<(std::ostream& ostr, const std::vector< std::shared_ptr<const program::Variable>>& e);
+
+    class IntVariableAccess : public IntExpression
     {
     public:
-        IntVariable(std::string name, bool isConstant) : IntExpression(), Variable(name, isConstant) {}
+        IntVariableAccess(std::shared_ptr<const Variable> var) : IntExpression(), var(var) {}
         
-        bool operator==(const IntVariable& rhs) const { return (name == rhs.name); }
-        bool operator!=(const IntVariable& rhs) const { return !operator==(rhs); }
-        
-        IntExpression::Type type() const override {return IntExpression::Type::IntVariable;}
+        const std::shared_ptr<const Variable> var;
+
+        IntExpression::Type type() const override {return IntExpression::Type::IntVariableAccess;}
         
         std::string toString() const override;
-        
-        virtual void addSymbolToSignature() const override;
         std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const logic::Term> index) const override;
     };
     
-    // hack needed for bison: std::vector has no overload for ostream, but these overloads are needed for bison
-    std::ostream& operator<<(std::ostream& ostr, const std::vector< std::shared_ptr<const program::IntVariable>>& e);
-
-    class BoolVariable : public BoolExpression, public Variable
-    {
-    public:
-        BoolVariable(std::string name, bool isConstant) : BoolExpression(), Variable(name, isConstant) {}
-
-        bool operator==(const BoolVariable& rhs) const { return (name == rhs.name); }
-        bool operator!=(const BoolVariable& rhs) const { return !operator==(rhs); }
-        
-        std::string toString() const override;
-        
-        virtual void addSymbolToSignature() const override;
-        std::shared_ptr<const logic::Formula> toFormula(std::shared_ptr<const logic::Term> index) const override;
-    };
-    
-    class IntArrayVariable : public Variable
-    {
-    public:
-        IntArrayVariable(std::string name, bool isConstant) : Variable(name, isConstant) {}
-        bool operator==(const IntArrayVariable& rhs) const { return (name == rhs.name); }
-        bool operator!=(const IntArrayVariable& rhs) const { return !operator==(rhs); }
-        
-        std::string toString() const;
-        
-        virtual void addSymbolToSignature() const override;
-        std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const logic::Term> index, std::shared_ptr<const logic::Term> position) const;
-    };
-    
-    // hack needed for bison: std::vector has no overload for ostream, but these overloads are needed for bison
-    std::ostream& operator<<(std::ostream& ostr, const std::vector< std::shared_ptr<const program::IntArrayVariable>>& e);
-    std::ostream& operator<<(std::ostream& ostr, const std::pair<std::vector<std::shared_ptr<const program::IntVariable>>, std::vector<std::shared_ptr<const program::IntArrayVariable>>>& e);
-
     class IntArrayApplication : public IntExpression
     {
     public:
-        IntArrayApplication(std::shared_ptr<const IntArrayVariable> array, std::shared_ptr<const IntExpression> index) : array(std::move(array)), index(std::move(index))
+        IntArrayApplication(std::shared_ptr<const Variable> array, std::shared_ptr<const IntExpression> index) : array(std::move(array)), index(std::move(index))
         {
             assert(this->array != nullptr);
             assert(this->index != nullptr);
         }
         
-        const std::shared_ptr<const IntArrayVariable> array;
+        const std::shared_ptr<const Variable> array;
         const std::shared_ptr<const IntExpression> index;
         
         IntExpression::Type type() const override {return IntExpression::Type::IntArrayApplication;}
 
         std::string toString() const override;
+        std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const logic::Term> index, std::shared_ptr<const logic::Term> position) const;
         std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const logic::Term> i) const override;
     };
 }

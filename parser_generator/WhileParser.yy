@@ -114,9 +114,8 @@ YY_DECL;
 %type < std::vector< std::shared_ptr<const program::Function>> > function_list
 %type < std::shared_ptr<const program::Function> > function
 
-%type < std::pair<std::vector< std::shared_ptr<const program::IntVariable>>, std::vector< std::shared_ptr<const program::IntArrayVariable>>> > var_definition_list
-%type < std::shared_ptr<const program::IntVariable> > int_var_definition
-%type < std::shared_ptr<const program::IntArrayVariable> > int_array_var_definition
+%type < std::vector< std::shared_ptr<const program::Variable>> > var_definition_list
+%type < std::shared_ptr<const program::Variable> > var_definition
 
 %type < std::vector<std::shared_ptr<const program::Statement>> > statement_list
 %type < std::shared_ptr<const program::IntAssignment> > assignment_statement
@@ -370,62 +369,47 @@ function:
   var_definition_list statement_list RCUR 
   {
     context.popProgramVars();
-  	$$ = std::shared_ptr<const program::Function>(new program::Function($2, std::move($7.first), std::move($7.second), std::move($8)));
+  	$$ = std::shared_ptr<const program::Function>(new program::Function($2, std::move($7), std::move($8)));
   }
 ;
 
 var_definition_list:
   %empty 
   {
-    $$ = std::pair<std::vector<std::shared_ptr<const program::IntVariable>>, std::vector<std::shared_ptr<const program::IntArrayVariable>>>({},{});
+    $$ = std::vector<std::shared_ptr<const program::Variable>>();
   }
-| var_definition_list int_var_definition 
+| var_definition_list var_definition 
   {  
+    context.addProgramVar($2);
     $2->addSymbolToSignature();
-    $1.first.push_back(std::move($2)); $$ = std::move($1);
-  }
-| var_definition_list int_array_var_definition
-  {  
-    $2->addSymbolToSignature();
-    $1.second.push_back(std::move($2)); $$ = std::move($1);
+    $1.push_back(std::move($2)); $$ = std::move($1);
   }
 ;
 
-int_var_definition:
+var_definition:
   TYPE PROGRAM_ID SCOL 
   {
     // TODO: check that TYPE is not Time
     // TODO: support Bool or check that TYPE is not Bool
-    auto var = std::shared_ptr<const program::IntVariable>(new program::IntVariable($2, false));
-    context.addProgramVar(var);
-    $$ = var;
+    $$ = std::shared_ptr<const program::Variable>(new program::Variable($2, false, false));
   }
 | CONST TYPE PROGRAM_ID SCOL 
   {
     // TODO: check that TYPE is not Time
     // TODO: support Bool or check that TYPE is not Bool
-    auto var = std::shared_ptr<const program::IntVariable>(new program::IntVariable($3, true));
-    context.addProgramVar(var);
-    $$ = var;  
+    $$ = std::shared_ptr<const program::Variable>(new program::Variable($3, true, false));
   }
-;
-
-int_array_var_definition:
-  TYPE LBRA RBRA PROGRAM_ID SCOL 
+| TYPE LBRA RBRA PROGRAM_ID SCOL 
   {
     // TODO: check that TYPE is not Time
     // TODO: support Bool or check that TYPE is not Bool
-    auto var = std::shared_ptr<const program::IntArrayVariable>(new program::IntArrayVariable($4, false));
-    context.addProgramVar(var);
-    $$ = var;  
+    $$ = std::shared_ptr<const program::Variable>(new program::Variable($4, false, true));
   }
 | CONST TYPE LBRA RBRA PROGRAM_ID SCOL 
   {
     // TODO: check that TYPE is not Time
     // TODO: support Bool or check that TYPE is not Bool
-    auto var = std::shared_ptr<const program::IntArrayVariable>(new program::IntArrayVariable($5, true));
-    context.addProgramVar(var);
-    $$ = var;   
+    $$ = std::shared_ptr<const program::Variable>(new program::Variable($5, true, true));
   }
 ;
 
@@ -488,13 +472,12 @@ location:
   PROGRAM_ID                
   { 
   	auto var = context.getProgramVar($1);
-    $$ = std::static_pointer_cast<const program::IntVariable>(var);
+    $$ = std::shared_ptr<const program::IntVariableAccess>(new IntVariableAccess(std::move(var)));
   }
 | PROGRAM_ID LBRA expr RBRA 
   { 
 	  auto var = context.getProgramVar($1);
-    auto castedVar = std::static_pointer_cast<const program::IntArrayVariable>(var);
-	  $$ = std::shared_ptr<const program::IntArrayApplication>(new IntArrayApplication(std::move(castedVar), std::move($3)));
+	  $$ = std::shared_ptr<const program::IntArrayApplication>(new IntArrayApplication(std::move(var), std::move($3)));
   }
 ;
 

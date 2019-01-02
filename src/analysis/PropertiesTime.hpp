@@ -38,12 +38,10 @@ namespace analysis {
         
         void generateStandardInductionLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
         void generateStandardInductionLemmas(const program::Statement* statement,
-                                             const std::vector<std::shared_ptr<const program::IntVariable>>& intVars,
-                                             const std::vector<std::shared_ptr<const program::IntArrayVariable>>& intArrayVars,
+                                             const std::vector<std::shared_ptr<const program::Variable>>& vars,
                                              std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
         void generateStandardInductionLemmas(const program::WhileStatement* whileStatement,
-                                             const std::vector<std::shared_ptr<const program::IntVariable>>& intVars,
-                                             const std::vector<std::shared_ptr<const program::IntArrayVariable>>& intArrayVars,
+                                             const std::vector<std::shared_ptr<const program::Variable>>& vars,
                                              std::vector<std::shared_ptr<const logic::Formula>>& lemmas,
                                              const InductionKind kind);
     };

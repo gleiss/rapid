@@ -18,7 +18,7 @@ namespace program {
     class IntExpression
     {
     public:
-        enum class Type{ IntVariable, IntArrayApplication, Other};
+        enum class Type{ IntVariableAccess, IntArrayApplication, Other};
         virtual Type type() const {return Type::Other;}
         
         virtual std::string toString() const = 0;

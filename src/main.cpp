@@ -83,12 +83,12 @@ int main(int argc, char *argv[])
                 
                 logic::Problem problem;
                 
-                analysis::Semantics s(*context.program, *context.programGlobalProperties);
+                analysis::Semantics s(*context.program, *context.programGlobalProperties, context.locationToActiveVars);
                 
                 problem.axioms = s.generateSemantics();
                 problem.conjecture = std::move(context.conjecture);
                 
-                analysis::TraceLemmas generator(*context.program, *context.programGlobalProperties);
+                analysis::TraceLemmas generator(*context.program, *context.programGlobalProperties, context.locationToActiveVars);
                 problem.lemmas = generator.generate();
                 problem.outputSMTLIB(util::Output::stream());
             }

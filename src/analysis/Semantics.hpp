@@ -12,14 +12,16 @@ namespace analysis {
     {
     public:
         Semantics(const program::Program& program,
-                  const program::ProgramGlobalProperties& maps) :
+                  const program::ProgramGlobalProperties& maps,
+                  std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars) :
         program(program),
         iteratorMap(maps.iteratorMap),
         lastIterationMap(maps.lastIterationMap),
         enclosingIteratorsMap(maps.enclosingIteratorsMap),
         locationSymbolMap(maps.locationSymbolMap),
         startTimePointMap(maps.startTimePointMap),
-        endTimePointMap(maps.endTimePointMap){}
+        endTimePointMap(maps.endTimePointMap),
+        locationToActiveVars(locationToActiveVars) {}
         
         std::vector<std::shared_ptr<const logic::Formula>> generateSemantics();
         
@@ -31,6 +33,7 @@ namespace analysis {
         const program::LocationSymbolMap& locationSymbolMap;
         const program::StartTimePointMap& startTimePointMap;
         const program::EndTimePointMap& endTimePointMap;
+        const std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars;
         
         std::shared_ptr<const logic::Formula> generateSemantics(const program::Statement* statement,
                                                                 const std::vector<std::shared_ptr<const program::Variable>>& vars);

@@ -18,12 +18,14 @@ namespace analysis {
     {
     public:
         TraceLemmas(const program::Program& program,
-                  const program::ProgramGlobalProperties& maps) :
+                    const program::ProgramGlobalProperties& maps,
+                    std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars) :
         program(program),
         iteratorMap(maps.iteratorMap),
         lastIterationMap(maps.lastIterationMap),
         enclosingIteratorsMap(maps.enclosingIteratorsMap),
-        locationSymbolMap(maps.locationSymbolMap){}
+        locationSymbolMap(maps.locationSymbolMap),
+        locationToActiveVars(locationToActiveVars) {}
         
         std::vector<std::shared_ptr<const logic::Formula>> generate();
         
@@ -33,7 +35,8 @@ namespace analysis {
         const program::LastIterationMap& lastIterationMap;
         const program::EnclosingIteratorsMap& enclosingIteratorsMap;
         const program::LocationSymbolMap& locationSymbolMap;
-        
+        const std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars;
+
         enum class InductionKind { Equal, Less, Greater, LessEqual, GreaterEqual};
         
         void generateStandardInductionLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);

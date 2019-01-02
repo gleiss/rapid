@@ -18,28 +18,17 @@ namespace program {
 
     void Variable::addSymbolToSignature() const
     {
+        std::vector<const logic::Sort*> argSorts;
+        if (!isConstant)
+        {
+            argSorts.push_back(logic::Sorts::timeSort());
+        }
         if (isArray)
         {
-            if (isConstant)
-            {
-                logic::Signature::add(name, {logic::Sorts::intSort()}, logic::Sorts::intSort());
-            }
-            else
-            {
-                logic::Signature::add(name, {logic::Sorts::timeSort(), logic::Sorts::intSort()}, logic::Sorts::intSort());
-            }
+            argSorts.push_back(logic::Sorts::intSort());
         }
-        else
-        {
-            if (isConstant)
-            {
-                logic::Signature::add(name, {}, logic::Sorts::intSort());
-            }
-            else
-            {
-                logic::Signature::add(name, {logic::Sorts::timeSort()}, logic::Sorts::intSort());
-            }
-        }
+        
+        logic::Signature::add(name, argSorts, logic::Sorts::intSort());
     }
 
     std::shared_ptr<const logic::Term> Variable::toTerm(std::shared_ptr<const logic::Term> i) const

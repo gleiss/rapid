@@ -7,6 +7,20 @@
 
 namespace analysis {
     
+    std::vector<std::shared_ptr<const program::Variable>> intersection(std::vector<std::shared_ptr<const program::Variable>> v1,
+                                                                       std::vector<std::shared_ptr<const program::Variable>> v2)
+    {
+        std::vector<std::shared_ptr<const program::Variable>> v3;
+        
+        std::sort(v1.begin(), v1.end());
+        std::sort(v2.begin(), v2.end());
+        
+        std::set_intersection(v1.begin(),v1.end(),
+                              v2.begin(),v2.end(),
+                              back_inserter(v3));
+        return v3;
+    }
+
     std::vector<std::shared_ptr<const logic::Formula>> Semantics::generateSemantics()
     {
         // generate semantics compositionally
@@ -57,7 +71,9 @@ namespace analysis {
         
         auto l1 = startTimePointMap.at(intAssignment);
         auto l2 = endTimePointMap.at(intAssignment);
+        auto l1Name = l1->symbol->name;
         auto l2Name = l2->symbol->name;
+        auto activeVars = intersection(locationToActiveVars.at(l1Name), locationToActiveVars.at(l2Name));
 
         // case 1: assignment to int var
         if (intAssignment->lhs->type() == program::IntExpression::Type::IntVariableAccess)
@@ -68,7 +84,7 @@ namespace analysis {
             auto eq = logic::Formulas::equality(castedLhs->toTerm(l2), intAssignment->rhs->toTerm(l1));
             conjuncts.push_back(eq);
             
-            for (const auto& var : locationToActiveVars.at(l2Name))
+            for (const auto& var : activeVars)
             {
                 if (!var->isArray)
                 {
@@ -112,7 +128,7 @@ namespace analysis {
             auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::implication(premise, eq2));
             conjuncts.push_back(conjunct);
             
-            for (const auto& var : locationToActiveVars.at(l2Name))
+            for (const auto& var : activeVars)
             {
                 if (!var->isArray)
                 {
@@ -148,15 +164,19 @@ namespace analysis {
         auto lLeftEnd = endTimePointMap.at(ifElse->ifStatements.back().get());
         auto lRightEnd = endTimePointMap.at(ifElse->elseStatements.back().get());
         
-        auto lLeftStartName = lLeftStart->symbol->name;
-        auto lRightStartName = lRightStart->symbol->name;
+        auto lStartName = lStart->symbol->name;
+        auto lLeftEndName = lLeftEnd->symbol->name;
+        auto lRightEndName = lRightEnd->symbol->name;
         auto lEndName = lEnd->symbol->name;
 
         // Part 1: values at the beginning of any branch are the same as at the beginning of the ifElse-statement
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts1;
-
+        
+         // don't need to take the intersection with active vars at lLeftStart/lRightStart, since the active vars at lStart are always a subset of those at lLeftStart/lRightStart
+        auto activeVars1 = locationToActiveVars.at(lStartName);
+        
         // TODO: sideconditions
-        for (const auto& var : locationToActiveVars.at(lLeftStartName))
+        for (const auto& var : activeVars1)
         {
             if (!var->isArray)
             {
@@ -173,7 +193,7 @@ namespace analysis {
                 conjuncts1.push_back(conjunct);
             }
         }
-        for (const auto& var : locationToActiveVars.at(lRightStartName))
+        for (const auto& var : activeVars1)
         {
             if (!var->isArray)
             {
@@ -199,7 +219,11 @@ namespace analysis {
         
         auto c = ifElse->condition->toFormula(lStart);
         
-        for (const auto& var : locationToActiveVars.at(lEndName))
+        // TODO: activeVars2 and activeVars3 should be the same (not completely sure) and therefore only computed once.
+        auto activeVars2 = intersection(locationToActiveVars.at(lLeftEndName), locationToActiveVars.at(lEndName));
+        auto activeVars3 = intersection(locationToActiveVars.at(lRightEndName), locationToActiveVars.at(lEndName));
+        
+        for (const auto& var : activeVars2)
         {
             if (!var->isArray)
             {
@@ -217,7 +241,7 @@ namespace analysis {
                 conjuncts2.push_back(logic::Formulas::implication(c, conclusion1));
             }
         }
-        for (const auto& var : locationToActiveVars.at(lEndName))
+        for (const auto& var : activeVars3)
         {
             if (!var->isArray)
             {
@@ -280,6 +304,7 @@ namespace analysis {
         auto lEnd = endTimePointMap.at(whileStatement);
         
         auto lStartName = lStart0->symbol->name;
+        auto activeVars1 = locationToActiveVars.at(lStartName);
         
         // Part 1: values at the beginning of body are the same as at the beginning of the while-statement
         // TODO: sideconditions

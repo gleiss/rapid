@@ -114,8 +114,7 @@ YY_DECL;
 %type < std::vector< std::shared_ptr<const program::Function>> > function_list
 %type < std::shared_ptr<const program::Function> > function
 
-%type < std::vector<std::shared_ptr<const program::Variable>> > var_definition_list
-%type < std::shared_ptr<const program::Variable> > var_definition
+%type < std::shared_ptr<const program::Variable> > var_definition_head
 
 %type < std::vector<std::shared_ptr<const program::Statement>> > statement_list
 %type < std::shared_ptr<const program::Statement> > statement
@@ -368,55 +367,14 @@ function:
   {
     context.pushProgramVars();
   }
-  var_definition_list statement_list RCUR 
+  statement_list RCUR
   {
     auto functionEndLocationName =  $2 + "_end";
     context.locationToActiveVars[functionEndLocationName] = context.getActiveProgramVars();
     context.popProgramVars();
-  	$$ = std::shared_ptr<const program::Function>(new program::Function($2, std::move($7), std::move($8)));
+  	$$ = std::shared_ptr<const program::Function>(new program::Function($2, std::move($7)));
   }
 ;
-
-var_definition_list:
-  %empty 
-  {
-    $$ = std::vector<std::shared_ptr<const program::Variable>>();
-  }
-| var_definition_list var_definition 
-  {  
-    context.addProgramVar($2);
-    $2->addSymbolToSignature();
-    $1.push_back(std::move($2)); $$ = std::move($1);
-  }
-;
-
-var_definition:
-  TYPE PROGRAM_ID SCOL 
-  {
-    // TODO: check that TYPE is not Time
-    // TODO: support Bool or check that TYPE is not Bool
-    $$ = std::shared_ptr<const program::Variable>(new program::Variable($2, false, false));
-  }
-| CONST TYPE PROGRAM_ID SCOL 
-  {
-    // TODO: check that TYPE is not Time
-    // TODO: support Bool or check that TYPE is not Bool
-    $$ = std::shared_ptr<const program::Variable>(new program::Variable($3, true, false));
-  }
-| TYPE LBRA RBRA PROGRAM_ID SCOL 
-  {
-    // TODO: check that TYPE is not Time
-    // TODO: support Bool or check that TYPE is not Bool
-    $$ = std::shared_ptr<const program::Variable>(new program::Variable($4, false, true));
-  }
-| CONST TYPE LBRA RBRA PROGRAM_ID SCOL 
-  {
-    // TODO: check that TYPE is not Time
-    // TODO: support Bool or check that TYPE is not Bool
-    $$ = std::shared_ptr<const program::Variable>(new program::Variable($5, true, true));
-  }
-;
-
 
 statement_list:
   %empty {$$ = std::vector<std::shared_ptr<const program::Statement>>();}
@@ -425,6 +383,12 @@ statement_list:
     auto locationName = $3->location;
     context.locationToActiveVars[locationName] = $2;
     $1.push_back(std::move($3)); $$ = std::move($1);
+  }
+| statement_list var_definition_head SCOL
+  {
+    context.addProgramVar($2);
+    $2->addSymbolToSignature();
+    $$ = std::move($1);
   }
 ;
 
@@ -444,18 +408,40 @@ assignment_statement:
 ;
 
 if_else_statement:
-  IF LPAR formula RPAR LCUR statement_list active_vars_dummy RCUR ELSE LCUR statement_list active_vars_dummy RCUR 
+  IF LPAR formula RPAR 
   {
+    context.pushProgramVars();
+  }
+  LCUR statement_list active_vars_dummy RCUR 
+  {
+    context.popProgramVars();
+  }
+  ELSE 
+  {
+    context.pushProgramVars();
+  }  
+  LCUR statement_list active_vars_dummy RCUR 
+  {
+    context.popProgramVars();
+
     auto leftEndLocationName = "l" + std::to_string(@1.begin.line) + "_lEnd";
     auto rightEndLocationName = "l" + std::to_string(@1.begin.line) + "_rEnd";
-    context.locationToActiveVars[leftEndLocationName] = $7;
-    context.locationToActiveVars[rightEndLocationName] = $12;
-    $$ = std::shared_ptr<const program::IfElse>(new program::IfElse(@1.begin.line, std::move($3), std::move($6), std::move($11)));
+    context.locationToActiveVars[leftEndLocationName] = $8;
+    context.locationToActiveVars[rightEndLocationName] = $15;
+    $$ = std::shared_ptr<const program::IfElse>(new program::IfElse(@1.begin.line, std::move($3), std::move($7), std::move($14)));
   }
 ;
 
 while_statement:
-  WHILE formula LCUR statement_list RCUR {$$ = std::shared_ptr<const program::WhileStatement>(new program::WhileStatement(@1.begin.line, std::move($2), std::move($4)));}
+  WHILE formula 
+  {
+    context.pushProgramVars();
+  }
+  LCUR statement_list RCUR
+  {
+    context.popProgramVars();
+    $$ = std::shared_ptr<const program::WhileStatement>(new program::WhileStatement(@1.begin.line, std::move($2), std::move($5)));
+  }
 ;
 
 skip_statement:
@@ -466,6 +452,33 @@ active_vars_dummy:
   %empty 
   {
     $$ = context.getActiveProgramVars(); 
+  }
+;
+
+var_definition_head:
+  TYPE PROGRAM_ID
+  {
+    // TODO: check that TYPE is not Time
+    // TODO: support Bool or check that TYPE is not Bool
+    $$ = std::shared_ptr<const program::Variable>(new program::Variable($2, false, false));
+  }
+| CONST TYPE PROGRAM_ID
+  {
+    // TODO: check that TYPE is not Time
+    // TODO: support Bool or check that TYPE is not Bool
+    $$ = std::shared_ptr<const program::Variable>(new program::Variable($3, true, false));
+  }
+| TYPE LBRA RBRA PROGRAM_ID
+  {
+    // TODO: check that TYPE is not Time
+    // TODO: support Bool or check that TYPE is not Bool
+    $$ = std::shared_ptr<const program::Variable>(new program::Variable($4, false, true));
+  }
+| CONST TYPE LBRA RBRA PROGRAM_ID
+  {
+    // TODO: check that TYPE is not Time
+    // TODO: support Bool or check that TYPE is not Bool
+    $$ = std::shared_ptr<const program::Variable>(new program::Variable($5, true, true));
   }
 ;
 

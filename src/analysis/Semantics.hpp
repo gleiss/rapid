@@ -35,14 +35,10 @@ namespace analysis {
         const program::EndTimePointMap& endTimePointMap;
         const std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars;
         
-        std::shared_ptr<const logic::Formula> generateSemantics(const program::Statement* statement,
-                                                                const std::vector<std::shared_ptr<const program::Variable>>& vars);
-        std::shared_ptr<const logic::Formula> generateSemantics(const program::IntAssignment* intAssignment,
-                                                                const std::vector<std::shared_ptr<const program::Variable>>& vars);
-        std::shared_ptr<const logic::Formula> generateSemantics(const program::IfElse* ifElse,
-                                                                const std::vector<std::shared_ptr<const program::Variable>>& vars);
-        std::shared_ptr<const logic::Formula> generateSemantics(const program::WhileStatement* whileStatement,
-                                                                const std::vector<std::shared_ptr<const program::Variable>>& vars);
+        std::shared_ptr<const logic::Formula> generateSemantics(const program::Statement* statement);
+        std::shared_ptr<const logic::Formula> generateSemantics(const program::IntAssignment* intAssignment);
+        std::shared_ptr<const logic::Formula> generateSemantics(const program::IfElse* ifElse);
+        std::shared_ptr<const logic::Formula> generateSemantics(const program::WhileStatement* whileStatement);
         std::shared_ptr<const logic::Formula> generateSemantics(const program::SkipStatement* skipStatement);
     };
 }

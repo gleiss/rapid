@@ -384,10 +384,11 @@ statement_list:
     context.locationToActiveVars[locationName] = $2;
     $1.push_back(std::move($3)); $$ = std::move($1);
   }
-| statement_list var_definition_head SCOL
+| statement_list active_vars_dummy var_definition_head SCOL
   {
-    context.addProgramVar($2);
-    $2->addSymbolToSignature();
+    // dummy is not used here, but silences a shift-reduce conflict
+    context.addProgramVar($3);
+    $3->addSymbolToSignature();
     $$ = std::move($1);
   }
 ;
@@ -422,6 +423,22 @@ assignment_statement:
       }
     }
     $$ = std::shared_ptr<const program::IntAssignment>(new program::IntAssignment(@2.begin.line, std::move($1), std::move($3)));
+  }
+| var_definition_head ASSIGN expr SCOL
+  {
+    // declare var
+    context.addProgramVar($1);
+    $1->addSymbolToSignature();
+
+    // construct location
+    if($1->isArray)
+    {
+      error(@1, "Combined declaration and assignment not allowed, since " + $1->name + " is array variable");
+    }
+    auto intVariableAccess = std::shared_ptr<const program::IntVariableAccess>(new IntVariableAccess(std::move($1)));
+   
+    // build assignment
+    $$ = std::shared_ptr<const program::IntAssignment>(new program::IntAssignment(@2.begin.line, std::move(intVariableAccess), std::move($3)));
   }
 ;
 
@@ -533,7 +550,7 @@ location:
     $$ = std::shared_ptr<const program::IntVariableAccess>(new IntVariableAccess(std::move(var)));
   }
 | PROGRAM_ID LBRA expr RBRA 
-  { 
+  {
 	  auto var = context.getProgramVar($1);
 	  $$ = std::shared_ptr<const program::IntArrayApplication>(new IntArrayApplication(std::move(var), std::move($3)));
   }

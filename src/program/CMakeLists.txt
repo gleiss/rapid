@@ -1,17 +1,15 @@
 set(SPECTRE_PROGRAM_SOURCES
     Expression.cpp
     Variable.cpp
-    Assignment.cpp
+    Statements.cpp
     Program.cpp
-    Location.cpp
 )
 
 set(SPECTRE_PROGRAM_HEADERS
     Expression.hpp
     Variable.hpp
-    Assignment.hpp
+    Statements.hpp
     Program.hpp
-    Location.hpp
 )
 
 add_library(program ${SPECTRE_PROGRAM_SOURCES} ${SPECTRE_PROGRAM_HEADERS})

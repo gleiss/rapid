@@ -74,11 +74,9 @@ namespace util {
     public:
         Configuration() :
         _outputFile("output", ""),
-        _timepoints("timepoints", false),
         _allOptions()
         {
             registerOption(&_outputFile);
-            registerOption(&_timepoints);
         }
         
         bool setAllValues(int argc, char *argv[]);
@@ -86,13 +84,11 @@ namespace util {
         Option* getOption(std::string name);
         
         StringOption outputFile() { return _outputFile; }
-        BooleanOption timepoints() { return _timepoints; }
         
         static Configuration instance() { return _instance; }
         
     protected:
         StringOption _outputFile;
-        BooleanOption _timepoints;
         
         std::map<std::string, Option*> _allOptions;
         

@@ -124,61 +124,64 @@ namespace analysis {
         // add lemma for each intVar
         for (const auto& v : locationToActiveVars.at(locationName))
         {
-            if (!v->isArray)
+            if (!v->isConstant)
             {
-                // Part1: it<=n => v(l(it1,...,itk,it)) C v(l(it1,...,itk,s(it))), where C in {=,<,>,<=,>=}
-                auto ineq = logic::Theory::timeSub(it, n);
-                
-                auto lhs1 = v->toTerm(logic::Terms::func(locationSymbol, enclosingIteratorsAndIt));
-                auto rhs1 = v->toTerm(logic::Terms::func(locationSymbol, enclosingIteratorsAndSuccOfIt));
-                std::shared_ptr<const Formula> formula1;
-                switch (kind)
+                if (!v->isArray)
                 {
-                    case InductionKind::Equal:
-                        formula1 = logic::Formulas::equality(lhs1, rhs1);
-                        break;
-                    case InductionKind::Less:
-                        formula1 = logic::Theory::intLess(lhs1, rhs1);
-                        break;
-                    case InductionKind::Greater:
-                        formula1 = logic::Theory::intGreater(lhs1, rhs1);
-                        break;
-                    case InductionKind::LessEqual:
-                        formula1 = logic::Theory::intLessEqual(lhs1, rhs1);
-                        break;
-                    case InductionKind::GreaterEqual:
-                        formula1 = logic::Theory::intGreaterEqual(lhs1, rhs1);
-                        break;
+                    // Part1: it<=n => v(l(it1,...,itk,it)) C v(l(it1,...,itk,s(it))), where C in {=,<,>,<=,>=}
+                    auto ineq = logic::Theory::timeSub(it, n);
+                    
+                    auto lhs1 = v->toTerm(logic::Terms::func(locationSymbol, enclosingIteratorsAndIt));
+                    auto rhs1 = v->toTerm(logic::Terms::func(locationSymbol, enclosingIteratorsAndSuccOfIt));
+                    std::shared_ptr<const Formula> formula1;
+                    switch (kind)
+                    {
+                        case InductionKind::Equal:
+                            formula1 = logic::Formulas::equality(lhs1, rhs1);
+                            break;
+                        case InductionKind::Less:
+                            formula1 = logic::Theory::intLess(lhs1, rhs1);
+                            break;
+                        case InductionKind::Greater:
+                            formula1 = logic::Theory::intGreater(lhs1, rhs1);
+                            break;
+                        case InductionKind::LessEqual:
+                            formula1 = logic::Theory::intLessEqual(lhs1, rhs1);
+                            break;
+                        case InductionKind::GreaterEqual:
+                            formula1 = logic::Theory::intGreaterEqual(lhs1, rhs1);
+                            break;
+                    }
+                    auto imp = logic::Formulas::implication(ineq, formula1);
+                    auto universal = logic::Formulas::universal({itSymbol}, imp);
+                    
+                    // Part2: v(l(it1,...,itk,0)) C v(l(it1,...,itk,n)), where C in {=,<,>,<=,>=}
+                    auto lhs2 = v->toTerm(logic::Terms::func(locationSymbol, enclosingIteratorsAndZero));
+                    auto rhs2 = v->toTerm(logic::Terms::func(locationSymbol, enclosingIteratorsAndN));
+                    std::shared_ptr<const Formula> formula2;
+                    switch (kind)
+                    {
+                        case InductionKind::Equal:
+                            formula2 = logic::Formulas::equality(lhs2, rhs2);
+                            break;
+                        case InductionKind::Less:
+                            formula2 = logic::Theory::intLess(lhs2, rhs2);
+                            break;
+                        case InductionKind::Greater:
+                            formula2 = logic::Theory::intGreater(lhs2, rhs2);
+                            break;
+                        case InductionKind::LessEqual:
+                            formula2 = logic::Theory::intLessEqual(lhs2, rhs2);
+                            break;
+                        case InductionKind::GreaterEqual:
+                            formula2 = logic::Theory::intGreaterEqual(lhs2, rhs2);
+                            break;
+                    }
+                    // Part1 => Part2
+                    auto label = "Lemma: Induction on " + connective + " for var " + v->name + " and location " + whileStatement->location;
+                    auto lemma = logic::Formulas::implication(universal, formula2, label);
+                    lemmas.push_back(lemma);
                 }
-                auto imp = logic::Formulas::implication(ineq, formula1);
-                auto universal = logic::Formulas::universal({itSymbol}, imp);
-                
-                // Part2: v(l(it1,...,itk,0)) C v(l(it1,...,itk,n)), where C in {=,<,>,<=,>=}
-                auto lhs2 = v->toTerm(logic::Terms::func(locationSymbol, enclosingIteratorsAndZero));
-                auto rhs2 = v->toTerm(logic::Terms::func(locationSymbol, enclosingIteratorsAndN));
-                std::shared_ptr<const Formula> formula2;
-                switch (kind)
-                {
-                    case InductionKind::Equal:
-                        formula2 = logic::Formulas::equality(lhs2, rhs2);
-                        break;
-                    case InductionKind::Less:
-                        formula2 = logic::Theory::intLess(lhs2, rhs2);
-                        break;
-                    case InductionKind::Greater:
-                        formula2 = logic::Theory::intGreater(lhs2, rhs2);
-                        break;
-                    case InductionKind::LessEqual:
-                        formula2 = logic::Theory::intLessEqual(lhs2, rhs2);
-                        break;
-                    case InductionKind::GreaterEqual:
-                        formula2 = logic::Theory::intGreaterEqual(lhs2, rhs2);
-                        break;
-                }
-                // Part1 => Part2
-                auto label = "Lemma: Induction on " + connective + " for var " + v->name + " and location " + whileStatement->location;
-                auto lemma = logic::Formulas::implication(universal, formula2, label);
-                lemmas.push_back(lemma);
             }
         }
         
@@ -187,63 +190,66 @@ namespace analysis {
         auto p = logic::Terms::var(pSymbol.get());
         for (const auto& v : locationToActiveVars.at(locationName))
         {
-            if (v->isArray)
+            if (!v->isConstant)
             {
-                // Part1: it<=n => v(l(it1,...,itk,it),p) C v(l(it1,...,itk,s(it)),p), where C in {=,<,>,<=,>=}
-                auto ineq = logic::Theory::timeSub(it, n);
-                
-                auto lhs1 = v->toTerm(logic::Terms::func(locationSymbol, enclosingIteratorsAndIt), p);
-                auto rhs1 = v->toTerm(logic::Terms::func(locationSymbol, enclosingIteratorsAndSuccOfIt), p);
-                std::shared_ptr<const Formula> formula1;
-                switch (kind)
+                if (v->isArray)
                 {
-                    case InductionKind::Equal:
-                        formula1 = logic::Formulas::equality(lhs1, rhs1);
-                        break;
-                    case InductionKind::Less:
-                        formula1 = logic::Theory::intLess(lhs1, rhs1);
-                        break;
-                    case InductionKind::Greater:
-                        formula1 = logic::Theory::intGreater(lhs1, rhs1);
-                        break;
-                    case InductionKind::LessEqual:
-                        formula1 = logic::Theory::intLessEqual(lhs1, rhs1);
-                        break;
-                    case InductionKind::GreaterEqual:
-                        formula1 = logic::Theory::intGreaterEqual(lhs1, rhs1);
-                        break;
+                    // Part1: it<=n => v(l(it1,...,itk,it),p) C v(l(it1,...,itk,s(it)),p), where C in {=,<,>,<=,>=}
+                    auto ineq = logic::Theory::timeSub(it, n);
+                    
+                    auto lhs1 = v->toTerm(logic::Terms::func(locationSymbol, enclosingIteratorsAndIt), p);
+                    auto rhs1 = v->toTerm(logic::Terms::func(locationSymbol, enclosingIteratorsAndSuccOfIt), p);
+                    std::shared_ptr<const Formula> formula1;
+                    switch (kind)
+                    {
+                        case InductionKind::Equal:
+                            formula1 = logic::Formulas::equality(lhs1, rhs1);
+                            break;
+                        case InductionKind::Less:
+                            formula1 = logic::Theory::intLess(lhs1, rhs1);
+                            break;
+                        case InductionKind::Greater:
+                            formula1 = logic::Theory::intGreater(lhs1, rhs1);
+                            break;
+                        case InductionKind::LessEqual:
+                            formula1 = logic::Theory::intLessEqual(lhs1, rhs1);
+                            break;
+                        case InductionKind::GreaterEqual:
+                            formula1 = logic::Theory::intGreaterEqual(lhs1, rhs1);
+                            break;
+                    }
+                    auto imp = logic::Formulas::implication(ineq, formula1);
+                    auto universal = logic::Formulas::universal({itSymbol}, imp);
+                    
+                    // Part2: v(l(it1,...,itk,0), p) C v(l(it1,...,itk,n), p), where C in {=,<,>,<=,>=}
+                    auto lhs2 = v->toTerm(logic::Terms::func(locationSymbol, enclosingIteratorsAndZero), p);
+                    auto rhs2 = v->toTerm(logic::Terms::func(locationSymbol, enclosingIteratorsAndN), p);
+                    std::shared_ptr<const Formula> formula2;
+                    switch (kind)
+                    {
+                        case InductionKind::Equal:
+                            formula2 = logic::Formulas::equality(lhs2, rhs2);
+                            break;
+                        case InductionKind::Less:
+                            formula2 = logic::Theory::intLess(lhs2, rhs2);
+                            break;
+                        case InductionKind::Greater:
+                            formula2 = logic::Theory::intGreater(lhs2, rhs2);
+                            break;
+                        case InductionKind::LessEqual:
+                            formula2 = logic::Theory::intLessEqual(lhs2, rhs2);
+                            break;
+                        case InductionKind::GreaterEqual:
+                            formula2 = logic::Theory::intGreaterEqual(lhs2, rhs2);
+                            break;
+                    }
+                    // forall p. (Part1 => Part2)
+                    auto outerImp = logic::Formulas::implication(universal, formula2);
+                    auto label = "Lemma: Induction on " + connective + " for array var " + v->name + " and location " + whileStatement->location;
+                    auto lemma = logic::Formulas::universal({pSymbol}, outerImp, label);
+                    
+                    lemmas.push_back(lemma);
                 }
-                auto imp = logic::Formulas::implication(ineq, formula1);
-                auto universal = logic::Formulas::universal({itSymbol}, imp);
-                
-                // Part2: v(l(it1,...,itk,0), p) C v(l(it1,...,itk,n), p), where C in {=,<,>,<=,>=}
-                auto lhs2 = v->toTerm(logic::Terms::func(locationSymbol, enclosingIteratorsAndZero), p);
-                auto rhs2 = v->toTerm(logic::Terms::func(locationSymbol, enclosingIteratorsAndN), p);
-                std::shared_ptr<const Formula> formula2;
-                switch (kind)
-                {
-                    case InductionKind::Equal:
-                        formula2 = logic::Formulas::equality(lhs2, rhs2);
-                        break;
-                    case InductionKind::Less:
-                        formula2 = logic::Theory::intLess(lhs2, rhs2);
-                        break;
-                    case InductionKind::Greater:
-                        formula2 = logic::Theory::intGreater(lhs2, rhs2);
-                        break;
-                    case InductionKind::LessEqual:
-                        formula2 = logic::Theory::intLessEqual(lhs2, rhs2);
-                        break;
-                    case InductionKind::GreaterEqual:
-                        formula2 = logic::Theory::intGreaterEqual(lhs2, rhs2);
-                        break;
-                }
-                // forall p. (Part1 => Part2)
-                auto outerImp = logic::Formulas::implication(universal, formula2);
-                auto label = "Lemma: Induction on " + connective + " for array var " + v->name + " and location " + whileStatement->location;
-                auto lemma = logic::Formulas::universal({pSymbol}, outerImp, label);
-                
-                lemmas.push_back(lemma);
             }
         }
     }

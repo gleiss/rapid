@@ -547,11 +547,19 @@ location:
   PROGRAM_ID                
   { 
   	auto var = context.getProgramVar($1);
+    if(var->isArray)
+    {
+      error(@1, "Array variable " + var->name + " needs index for access");
+    }
     $$ = std::shared_ptr<const program::IntVariableAccess>(new IntVariableAccess(std::move(var)));
   }
 | PROGRAM_ID LBRA expr RBRA 
   {
 	  auto var = context.getProgramVar($1);
+    if(!var->isArray)
+    {
+      error(@1, "Variable " + var->name + " is not an array");
+    }
 	  $$ = std::shared_ptr<const program::IntArrayApplication>(new IntArrayApplication(std::move(var), std::move($3)));
   }
 ;

@@ -13,12 +13,7 @@
 #include "parser/WhileParserWrapper.hpp"
 
 #include "analysis/Semantics.hpp"
-#include "analysis/Analyzer.hpp"
-#include "analysis/Properties.hpp"
-#include "analysis/PropertiesTime.hpp"
-
-
-extern FILE *yyin;
+#include "analysis/TraceLemmas.hpp"
 
 void outputUsage()
 {

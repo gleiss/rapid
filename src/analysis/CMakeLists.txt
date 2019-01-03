@@ -1,14 +1,10 @@
 set(SPECTRE_ANALYSIS_SOURCES
-    Properties.cpp
-    PropertiesTime.cpp
-    Analyzer.cpp
     Semantics.cpp
+    TraceLemmas.cpp
 )
 set(SPECTRE_ANALYSIS_HEADERS
-    Properties.hpp
-    PropertiesTime.hpp
-    Analyzer.hpp
     Semantics.hpp
+    TraceLemmas.hpp
 )
 
 add_library(analysis ${SPECTRE_ANALYSIS_SOURCES} ${SPECTRE_ANALYSIS_HEADERS})

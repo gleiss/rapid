@@ -1,4 +1,4 @@
-#include "PropertiesTime.hpp"
+#include "TraceLemmas.hpp"
 
 #include <cassert>
 #include <iostream>

@@ -6,6 +6,7 @@ set(SPECTRE_PARSER_SOURCES
 )
 set(SPECTRE_PARSER_HEADERS
     WhileParser.hpp
+    WhileParserWrapper.hpp
 	WhileParsingContext.hpp
 	WhileParserPostComputation.hpp
 )

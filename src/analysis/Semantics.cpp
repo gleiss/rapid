@@ -86,22 +86,25 @@ namespace analysis {
             
             for (const auto& var : activeVars)
             {
-                if (!var->isArray)
+                if(!var->isConstant)
                 {
-                    // forall other int-variables: v(l2) = v(l1)
-                    if (*var != *castedLhs->var)
+                    if (!var->isArray)
                     {
-                        auto eq = logic::Formulas::equality(var->toTerm(l2), var->toTerm(l1));
-                        conjuncts.push_back(eq);
+                        // forall other active non-const int-variables: v(l2) = v(l1)
+                        if (*var != *castedLhs->var)
+                        {
+                            auto eq = logic::Formulas::equality(var->toTerm(l2), var->toTerm(l1));
+                            conjuncts.push_back(eq);
+                        }
                     }
-                }
-                else
-                {
-                    // forall int-array-variables: forall p. v(l2,p) = v(l1,p)
-                    auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
-                    auto p = logic::Terms::var(pSymbol.get());
-                    auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(var->toTerm(l2, p), var->toTerm(l1, p)));
-                    conjuncts.push_back(conjunct);
+                    else
+                    {
+                        // forall active non-const int-array-variables: forall p. v(l2,p) = v(l1,p)
+                        auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
+                        auto p = logic::Terms::var(pSymbol.get());
+                        auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(var->toTerm(l2, p), var->toTerm(l1, p)));
+                        conjuncts.push_back(conjunct);
+                    }
                 }
             }
 
@@ -130,21 +133,24 @@ namespace analysis {
             
             for (const auto& var : activeVars)
             {
-                if (!var->isArray)
+                if(!var->isConstant)
                 {
-                    // forall int-variables: v(l2) = v(l1)
-                    auto eq = logic::Formulas::equality(var->toTerm(l2), var->toTerm(l1));
-                    conjuncts.push_back(eq);
-                }
-                else
-                {
-                    // forall other int-array-variables: forall p. v(l2,p) = v(l1,p)
-                    if (*var != *application->array)
+                    if (!var->isArray)
                     {
-                        auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
-                        auto p = logic::Terms::var(pSymbol.get());
-                        auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(var->toTerm(l2, p), var->toTerm(l1, p)));
-                        conjuncts.push_back(conjunct);
+                        // forall active non-const int-variables: v(l2) = v(l1)
+                        auto eq = logic::Formulas::equality(var->toTerm(l2), var->toTerm(l1));
+                        conjuncts.push_back(eq);
+                    }
+                    else
+                    {
+                        // forall other active non-const int-array-variables: forall p. v(l2,p) = v(l1,p)
+                        if (*var != *application->array)
+                        {
+                            auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
+                            auto p = logic::Terms::var(pSymbol.get());
+                            auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(var->toTerm(l2, p), var->toTerm(l1, p)));
+                            conjuncts.push_back(conjunct);
+                        }
                     }
                 }
             }
@@ -178,36 +184,42 @@ namespace analysis {
         // TODO: sideconditions
         for (const auto& var : activeVars1)
         {
-            if (!var->isArray)
+            if (!var->isConstant)
             {
-                // v(lLeftStart) = v(lStart)
-                auto eq = logic::Formulas::equality(var->toTerm(lLeftStart), var->toTerm(lStart));
-                conjuncts1.push_back(eq);
-            }
-            else
-            {
-                // forall p. v(lLeftStart,p) = v(lStart,p)
-                auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
-                auto p = logic::Terms::var(pSymbol.get());
-                auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(var->toTerm(lLeftStart, p), var->toTerm(lStart, p)));
-                conjuncts1.push_back(conjunct);
+                if (!var->isArray)
+                {
+                    // v(lLeftStart) = v(lStart)
+                    auto eq = logic::Formulas::equality(var->toTerm(lLeftStart), var->toTerm(lStart));
+                    conjuncts1.push_back(eq);
+                }
+                else
+                {
+                    // forall p. v(lLeftStart,p) = v(lStart,p)
+                    auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
+                    auto p = logic::Terms::var(pSymbol.get());
+                    auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(var->toTerm(lLeftStart, p), var->toTerm(lStart, p)));
+                    conjuncts1.push_back(conjunct);
+                }
             }
         }
         for (const auto& var : activeVars1)
         {
-            if (!var->isArray)
+            if (!var->isConstant)
             {
-                // v(lRightStart) = v(lStart)
-                auto eq = logic::Formulas::equality(var->toTerm(lRightStart), var->toTerm(lStart));
-                conjuncts1.push_back(eq);
-            }
-            else
-            {
-                // forall p. v(lRightStart,p) = v(lStart,p)
-                auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
-                auto p = logic::Terms::var(pSymbol.get());
-                auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(var->toTerm(lRightStart, p), var->toTerm(lStart, p)));
-                conjuncts1.push_back(conjunct);
+                if (!var->isArray)
+                {
+                    // v(lRightStart) = v(lStart)
+                    auto eq = logic::Formulas::equality(var->toTerm(lRightStart), var->toTerm(lStart));
+                    conjuncts1.push_back(eq);
+                }
+                else
+                {
+                    // forall p. v(lRightStart,p) = v(lStart,p)
+                    auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
+                    auto p = logic::Terms::var(pSymbol.get());
+                    auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(var->toTerm(lRightStart, p), var->toTerm(lStart, p)));
+                    conjuncts1.push_back(conjunct);
+                }
             }
         }
         
@@ -225,38 +237,44 @@ namespace analysis {
         
         for (const auto& var : activeVars2)
         {
-            if (!var->isArray)
+            if(!var->isConstant)
             {
-                // condition(lStart) => v(lEnd)=v(lLeftEnd)
-                auto eq1 = logic::Formulas::equality(var->toTerm(lEnd), var->toTerm(lLeftEnd));
-                conjuncts2.push_back(logic::Formulas::implication(c, eq1));
-            }
-            else
-            {
-                auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
-                auto p = logic::Terms::var(pSymbol.get());
-                
-                // condition(lStart) => forall p. v(lEnd,p) = v(lLeftEnd,p)
-                auto conclusion1 = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(var->toTerm(lEnd, p), var->toTerm(lLeftEnd, p)));
-                conjuncts2.push_back(logic::Formulas::implication(c, conclusion1));
+                if (!var->isArray)
+                {
+                    // condition(lStart) => v(lEnd)=v(lLeftEnd)
+                    auto eq1 = logic::Formulas::equality(var->toTerm(lEnd), var->toTerm(lLeftEnd));
+                    conjuncts2.push_back(logic::Formulas::implication(c, eq1));
+                }
+                else
+                {
+                    auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
+                    auto p = logic::Terms::var(pSymbol.get());
+                    
+                    // condition(lStart) => forall p. v(lEnd,p) = v(lLeftEnd,p)
+                    auto conclusion1 = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(var->toTerm(lEnd, p), var->toTerm(lLeftEnd, p)));
+                    conjuncts2.push_back(logic::Formulas::implication(c, conclusion1));
+                }
             }
         }
         for (const auto& var : activeVars3)
         {
-            if (!var->isArray)
+            if(!var->isConstant)
             {
-                // not condition(lStart) => v(lEnd)=v(lRightEnd)
-                auto eq2 = logic::Formulas::equality(var->toTerm(lEnd), var->toTerm(lRightEnd));
-                conjuncts2.push_back(logic::Formulas::implication(logic::Formulas::negation(c), eq2));
-            }
-            else
-            {
-                auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
-                auto p = logic::Terms::var(pSymbol.get());
-                
-                // not condition(lStart) => forall p. v(lEnd,p) = v(lLeftEnd,p)
-                auto conclusion2 = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(var->toTerm(lEnd, p), var->toTerm(lRightEnd, p)));
-                conjuncts2.push_back(logic::Formulas::implication(logic::Formulas::negation(c), conclusion2));
+                if (!var->isArray)
+                {
+                    // not condition(lStart) => v(lEnd)=v(lRightEnd)
+                    auto eq2 = logic::Formulas::equality(var->toTerm(lEnd), var->toTerm(lRightEnd));
+                    conjuncts2.push_back(logic::Formulas::implication(logic::Formulas::negation(c), eq2));
+                }
+                else
+                {
+                    auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
+                    auto p = logic::Terms::var(pSymbol.get());
+                    
+                    // not condition(lStart) => forall p. v(lEnd,p) = v(lLeftEnd,p)
+                    auto conclusion2 = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(var->toTerm(lEnd, p), var->toTerm(lRightEnd, p)));
+                    conjuncts2.push_back(logic::Formulas::implication(logic::Formulas::negation(c), conclusion2));
+                }
             }
         }
         conjuncts.push_back(logic::Formulas::conjunction(conjuncts2, "The branching-condition determines which values to use after the if-statement"));
@@ -311,19 +329,22 @@ namespace analysis {
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts1;
         for (const auto& var : locationToActiveVars.at(lStartName))
         {
-            if (!var->isArray)
+            if(!var->isConstant)
             {
-                // v(lBodyStartIt) = v(lStartIt)
-                auto eq = logic::Formulas::equality(var->toTerm(lBodyStartIt), var->toTerm(lStartIt));
-                conjuncts1.push_back(eq);
-            }
-            else
-            {
-                // forall p. v(lBodyStartIt,p) = v(lStartIt,p)
-                auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
-                auto p = logic::Terms::var(pSymbol.get());
-                auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(var->toTerm(lBodyStartIt, p), var->toTerm(lStartIt, p)));
-                conjuncts1.push_back(conjunct);
+                if (!var->isArray)
+                {
+                    // v(lBodyStartIt) = v(lStartIt)
+                    auto eq = logic::Formulas::equality(var->toTerm(lBodyStartIt), var->toTerm(lStartIt));
+                    conjuncts1.push_back(eq);
+                }
+                else
+                {
+                    // forall p. v(lBodyStartIt,p) = v(lStartIt,p)
+                    auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
+                    auto p = logic::Terms::var(pSymbol.get());
+                    auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(var->toTerm(lBodyStartIt, p), var->toTerm(lStartIt, p)));
+                    conjuncts1.push_back(conjunct);
+                }
             }
         }
         conjuncts.push_back(logic::Formulas::universal({iSymbol}, logic::Formulas::conjunction(conjuncts1), "Jumping into the body doesn't change the variable values"));

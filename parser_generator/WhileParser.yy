@@ -403,6 +403,24 @@ assignment_statement:
   location ASSIGN expr SCOL 
   {
     // TODO: check that location and expr have the same type (need refactoring first so that IntExpression and BoolExpression have a common superclass)
+
+    if($1->type() == IntExpression::Type::IntVariableAccess)
+    {
+      auto intVariableAccess = std::static_pointer_cast<const program::IntVariableAccess>($1);
+      if(intVariableAccess->var->isConstant)
+      {
+        error(@1, "Assignment to const var " + intVariableAccess->var->name);
+      }
+    }
+    else
+    {
+      assert($1->type() == IntExpression::Type::IntArrayApplication);
+      auto intArrayApplication = std::static_pointer_cast<const program::IntArrayApplication>($1);
+      if(intArrayApplication->array->isConstant)
+      {
+        error(@1, "Assignment to const var " + intArrayApplication->array->name);
+      }
+    }
     $$ = std::shared_ptr<const program::IntAssignment>(new program::IntAssignment(@2.begin.line, std::move($1), std::move($3)));
   }
 ;

@@ -58,6 +58,7 @@ YY_DECL;
 {BLANK}+     { loc.step(); }
 [\n]+        { loc.lines(yyleng); loc.step(); }
 
+"(two-traces)" { return parser::WhileParser::make_TWOTRACES(loc); }
 "="          { return parser::WhileParser::make_ASSIGN(loc); }
 if           { return parser::WhileParser::make_IF(loc); }
 else         { return parser::WhileParser::make_ELSE(loc); }

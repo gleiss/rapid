@@ -21,14 +21,14 @@ namespace parser
     class WhileParserPostComputation
     {
     public:
-        static std::unique_ptr<const program::ProgramGlobalProperties> compute(const program::Program& program);
+        static std::unique_ptr<const program::ProgramGlobalProperties> compute(const program::Program& program, bool twoTraces);
 
     private:
         static program::IteratorMap computeIteratorMap(const program::Program& program);
         static void addIteratorsForStatement(const program::Statement* statement, program::IteratorMap& iteratorMap);
         
-        static program::LastIterationMap computeLastIterationMap(const program::Program& program);
-        static void addLastIterationsForStatement(const program::Statement* statement, program::LastIterationMap& lastIterationMap);
+        static program::LastIterationMap computeLastIterationMap(const program::Program& program, bool twoTraces);
+        static void addLastIterationsForStatement(const program::Statement* statement, program::LastIterationMap& lastIterationMap, bool twoTraces);
 
         static program::EnclosingIteratorsMap computeEnclosingIteratorsMap(const program::Program& program, const program::IteratorMap& iteratorMap);
         static void addEnclosingIteratorsForStatement(const program::Statement* statement,

@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
                 problem.axioms = s.generateSemantics();
                 problem.conjecture = std::move(parserResult.conjecture);
                 
-                analysis::TraceLemmas traceLemmas(*parserResult.program, *parserResult.programGlobalProperties, parserResult.locationToActiveVars);
+                analysis::TraceLemmas traceLemmas(*parserResult.program, *parserResult.programGlobalProperties, parserResult.locationToActiveVars, parserResult.twoTraces);
                 problem.lemmas = traceLemmas.generate();
                 
                 problem.outputSMTLIB(util::Output::stream());

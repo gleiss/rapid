@@ -13,7 +13,8 @@ namespace analysis {
     public:
         Semantics(const program::Program& program,
                   const program::ProgramGlobalProperties& maps,
-                  std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars) :
+                  std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars,
+                  bool twoTraces = true) :
         program(program),
         iteratorMap(maps.iteratorMap),
         lastIterationMap(maps.lastIterationMap),
@@ -21,7 +22,8 @@ namespace analysis {
         locationSymbolMap(maps.locationSymbolMap),
         startTimePointMap(maps.startTimePointMap),
         endTimePointMap(maps.endTimePointMap),
-        locationToActiveVars(locationToActiveVars) {}
+        locationToActiveVars(locationToActiveVars),
+        twoTraces(twoTraces) {}
         
         std::vector<std::shared_ptr<const logic::Formula>> generateSemantics();
         
@@ -34,6 +36,8 @@ namespace analysis {
         const program::StartTimePointMap& startTimePointMap;
         const program::EndTimePointMap& endTimePointMap;
         const std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars;
+        
+        const bool twoTraces;
         
         std::shared_ptr<const logic::Formula> generateSemantics(const program::Statement* statement);
         std::shared_ptr<const logic::Formula> generateSemantics(const program::IntAssignment* intAssignment);

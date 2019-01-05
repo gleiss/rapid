@@ -30,7 +30,7 @@ namespace logic {
         friend class Formulas;
         
     public:
-        PredicateFormula(const Symbol* symbol, std::vector<std::shared_ptr<const Term>> subterms, std::string label = "") : Formula(label), symbol(symbol), subterms(subterms)
+        PredicateFormula(std::shared_ptr<const Symbol> symbol, std::vector<std::shared_ptr<const Term>> subterms, std::string label = "") : Formula(label), symbol(symbol), subterms(subterms)
         {
             assert(symbol->argSorts.size() == subterms.size());
             for (int i=0; i < symbol->argSorts.size(); ++i)
@@ -39,7 +39,7 @@ namespace logic {
             }
         }
 
-        const Symbol* symbol;
+        std::shared_ptr<const Symbol> symbol;
         const std::vector<std::shared_ptr<const Term>> subterms;
 
         std::string toSMTLIB(unsigned indentation = 0) const override;

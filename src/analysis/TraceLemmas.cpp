@@ -21,10 +21,15 @@ namespace analysis {
         // generate standard induction lemmas for all loops, all variables and the predicates =,<,>,<=,>=.
         generateStandardInductionLemmas(lemmas);
         
+        if (twoTraces)
+        {
+            // generate for each active variable at each loop an induction lemma for equality of the variable on both traces
+            generateTwoTracesLemmas(lemmas);
+        }
         return lemmas;
     }
 
-#pragma mark - Const Var Lemmas
+#pragma mark - Standard Induction Lemmas
     
     void TraceLemmas::generateStandardInductionLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
     
@@ -99,7 +104,7 @@ namespace analysis {
         }
         
         auto itSymbol = iteratorMap.at(whileStatement);
-        auto it = logic::Terms::var(itSymbol.get());
+        auto it = logic::Terms::var(itSymbol);
         auto n = lastIterationMap.at(whileStatement);
         auto locationSymbol = locationSymbolMap.at(whileStatement);
         
@@ -111,15 +116,20 @@ namespace analysis {
         auto enclosingIteratorsAndN = std::vector<std::shared_ptr<const logic::Term>>();
         for (const auto& enclosingIteratorSymbol : enclosingIteratorsMap.at(whileStatement))
         {
-            enclosingIteratorsAndIt.push_back(logic::Terms::var(enclosingIteratorSymbol.get()));
-            enclosingIteratorsAndSuccOfIt.push_back(logic::Terms::var(enclosingIteratorSymbol.get()));
-            enclosingIteratorsAndZero.push_back(logic::Terms::var(enclosingIteratorSymbol.get()));
-            enclosingIteratorsAndN.push_back(logic::Terms::var(enclosingIteratorSymbol.get()));
+            enclosingIteratorsAndIt.push_back(logic::Terms::var(enclosingIteratorSymbol));
+            enclosingIteratorsAndSuccOfIt.push_back(logic::Terms::var(enclosingIteratorSymbol));
+            enclosingIteratorsAndZero.push_back(logic::Terms::var(enclosingIteratorSymbol));
+            enclosingIteratorsAndN.push_back(logic::Terms::var(enclosingIteratorSymbol));
         }
         enclosingIteratorsAndIt.push_back(it);
         enclosingIteratorsAndSuccOfIt.push_back(logic::Theory::timeSucc(it));
         enclosingIteratorsAndZero.push_back(logic::Theory::timeZero());
         enclosingIteratorsAndN.push_back(n);
+        
+        auto lStartIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndIt);
+        auto lStartSuccOfIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndSuccOfIt);
+        auto lStartZero = logic::Terms::func(locationSymbol, enclosingIteratorsAndZero);
+        auto lStartN = logic::Terms::func(locationSymbol, enclosingIteratorsAndN);
         
         // add lemma for each intVar
         for (const auto& v : locationToActiveVars.at(locationName))
@@ -131,8 +141,8 @@ namespace analysis {
                     // Part1: it<=n => v(l(it1,...,itk,it)) C v(l(it1,...,itk,s(it))), where C in {=,<,>,<=,>=}
                     auto ineq = logic::Theory::timeSub(it, n);
                     
-                    auto lhs1 = v->toTerm(logic::Terms::func(locationSymbol, enclosingIteratorsAndIt));
-                    auto rhs1 = v->toTerm(logic::Terms::func(locationSymbol, enclosingIteratorsAndSuccOfIt));
+                    auto lhs1 = v->toTerm(lStartIt);
+                    auto rhs1 = v->toTerm(lStartSuccOfIt);
                     std::shared_ptr<const Formula> formula1;
                     switch (kind)
                     {
@@ -156,8 +166,8 @@ namespace analysis {
                     auto universal = logic::Formulas::universal({itSymbol}, imp);
                     
                     // Part2: v(l(it1,...,itk,0)) C v(l(it1,...,itk,n)), where C in {=,<,>,<=,>=}
-                    auto lhs2 = v->toTerm(logic::Terms::func(locationSymbol, enclosingIteratorsAndZero));
-                    auto rhs2 = v->toTerm(logic::Terms::func(locationSymbol, enclosingIteratorsAndN));
+                    auto lhs2 = v->toTerm(lStartZero);
+                    auto rhs2 = v->toTerm(lStartN);
                     std::shared_ptr<const Formula> formula2;
                     switch (kind)
                     {
@@ -187,7 +197,7 @@ namespace analysis {
         
         // add lemma for each intArrayVar
         auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
-        auto p = logic::Terms::var(pSymbol.get());
+        auto p = logic::Terms::var(pSymbol);
         for (const auto& v : locationToActiveVars.at(locationName))
         {
             if (!v->isConstant)
@@ -197,8 +207,8 @@ namespace analysis {
                     // Part1: it<=n => v(l(it1,...,itk,it),p) C v(l(it1,...,itk,s(it)),p), where C in {=,<,>,<=,>=}
                     auto ineq = logic::Theory::timeSub(it, n);
                     
-                    auto lhs1 = v->toTerm(logic::Terms::func(locationSymbol, enclosingIteratorsAndIt), p);
-                    auto rhs1 = v->toTerm(logic::Terms::func(locationSymbol, enclosingIteratorsAndSuccOfIt), p);
+                    auto lhs1 = v->toTerm(lStartIt, p);
+                    auto rhs1 = v->toTerm(lStartSuccOfIt, p);
                     std::shared_ptr<const Formula> formula1;
                     switch (kind)
                     {
@@ -222,8 +232,8 @@ namespace analysis {
                     auto universal = logic::Formulas::universal({itSymbol}, imp);
                     
                     // Part2: v(l(it1,...,itk,0), p) C v(l(it1,...,itk,n), p), where C in {=,<,>,<=,>=}
-                    auto lhs2 = v->toTerm(logic::Terms::func(locationSymbol, enclosingIteratorsAndZero), p);
-                    auto rhs2 = v->toTerm(logic::Terms::func(locationSymbol, enclosingIteratorsAndN), p);
+                    auto lhs2 = v->toTerm(lStartZero, p);
+                    auto rhs2 = v->toTerm(lStartN, p);
                     std::shared_ptr<const Formula> formula2;
                     switch (kind)
                     {
@@ -249,6 +259,167 @@ namespace analysis {
                     auto lemma = logic::Formulas::universal({pSymbol}, outerImp, label);
                     
                     lemmas.push_back(lemma);
+                }
+            }
+        }
+    }
+    
+#pragma mark - Lemmas for two traces
+    void TraceLemmas::generateTwoTracesLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
+    {
+        for(const auto& function : program.functions)
+        {
+            std::vector<std::shared_ptr<const logic::Formula>> conjunctsFunction;
+            
+            for (const auto& statement : function->statements)
+            {
+                generateTwoTracesLemmas(statement.get(), lemmas);
+            }
+        }
+    }
+    
+    void TraceLemmas::generateTwoTracesLemmas(const program::Statement* statement,
+                                                      std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
+    {
+        if (statement->type() == program::Statement::Type::IfElse)
+        {
+            auto castedStatement = static_cast<const program::IfElse*>(statement);
+            // recurse on both branches
+            for (const auto& statement : castedStatement->ifStatements)
+            {
+                generateTwoTracesLemmas(statement.get(), lemmas);
+            }
+            for (const auto& statement : castedStatement->elseStatements)
+            {
+                generateTwoTracesLemmas(statement.get(), lemmas);
+            }
+        }
+        else if (statement->type() == program::Statement::Type::WhileStatement)
+        {
+            auto castedStatement = static_cast<const program::WhileStatement*>(statement);
+            // generate lemmas
+            generateTwoTracesLemmas(castedStatement, lemmas);
+            
+            // recurse on body
+            for (const auto& statement : castedStatement->bodyStatements)
+            {
+                generateTwoTracesLemmas(statement.get(), lemmas);
+            }
+        }
+    }
+    
+    void TraceLemmas::generateTwoTracesLemmas(const program::WhileStatement* whileStatement,
+                                              std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
+    {
+        auto t1 = logic::Terms::func("t1", {}, logic::Sorts::traceSort());
+        auto t2 = logic::Terms::func("t2", {}, logic::Sorts::traceSort());
+        
+        auto itSymbol = iteratorMap.at(whileStatement);
+        auto it = logic::Terms::var(itSymbol);
+        auto locationSymbol = locationSymbolMap.at(whileStatement);
+        
+        auto locationName = locationSymbol->name;
+        
+        auto enclosingIteratorsAndIt = std::vector<std::shared_ptr<const logic::Term>>();
+        auto enclosingIteratorsAndSuccOfIt = std::vector<std::shared_ptr<const logic::Term>>();
+        auto enclosingIteratorsAndZero = std::vector<std::shared_ptr<const logic::Term>>();
+        for (const auto& enclosingIteratorSymbol : enclosingIteratorsMap.at(whileStatement))
+        {
+            enclosingIteratorsAndIt.push_back(logic::Terms::var(enclosingIteratorSymbol));
+            enclosingIteratorsAndSuccOfIt.push_back(logic::Terms::var(enclosingIteratorSymbol));
+            enclosingIteratorsAndZero.push_back(logic::Terms::var(enclosingIteratorSymbol));
+        }
+        enclosingIteratorsAndIt.push_back(it);
+        enclosingIteratorsAndSuccOfIt.push_back(logic::Theory::timeSucc(it));
+        enclosingIteratorsAndZero.push_back(logic::Theory::timeZero());
+        
+        auto lStartIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndIt);
+        auto lStartSuccOfIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndSuccOfIt);
+        auto lStartZero = logic::Terms::func(locationSymbol, enclosingIteratorsAndZero);
+
+        // add lemma for each intVar
+        for (const auto& v : locationToActiveVars.at(locationName))
+        {
+            if (!v->isConstant)
+            {
+                if (!v->isArray)
+                {
+                    // Part1a: v(l(0),t1) = v(l(0),t2)
+                    auto lhs1 = v->toTermForTrace(lStartZero, t1);
+                    auto rhs1 = v->toTermForTrace(lStartZero, t2);
+                    auto baseCase = logic::Formulas::equality(lhs1, rhs1);
+                    
+                    // Part1b: v(l(it),t1) = v(l(it), t2) => v(l(s(it)),t1) = v(l(s(it)),t2)
+                    auto lhs2 = v->toTermForTrace(lStartIt, t1);
+                    auto rhs2 = v->toTermForTrace(lStartIt, t2);
+                    auto eq2 = logic::Formulas::equality(lhs2, rhs2);
+                    
+                    auto lhs3 = v->toTermForTrace(lStartSuccOfIt, t1);
+                    auto rhs3 = v->toTermForTrace(lStartSuccOfIt, t2);
+                    auto eq3 = logic::Formulas::equality(lhs3, rhs3);
+                    
+                    auto implication = logic::Formulas::implication(eq2, eq3);
+                    auto inductiveCase = logic::Formulas::universal({itSymbol}, implication);
+                    
+                    // Part2: forall it. v(l(it),t1) = v(l(it), t2)
+                    auto lhs4 = v->toTermForTrace(lStartIt, t1);
+                    auto rhs4 = v->toTermForTrace(lStartIt, t2);
+                    auto eq4 = logic::Formulas::equality(lhs4, rhs4);
+                    
+                    auto conclusion = logic::Formulas::universal({itSymbol}, eq4);
+                    
+                    // (Part1a and Part1b) => Part2
+                    auto premise = logic::Formulas::conjunction({baseCase, inductiveCase});
+                    
+                    auto label = "Lemma: Var " + v->name + " at loop " + whileStatement->location + " has same values on both traces";
+                    auto lemma = logic::Formulas::implication(premise, conclusion, label);
+                    lemmas.push_back(lemma);
+                }
+            }
+        }
+
+        // add lemma for each arrayVar
+        auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
+        auto p = logic::Terms::var(pSymbol);
+        for (const auto& v : locationToActiveVars.at(locationName))
+        {
+            if (!v->isConstant)
+            {
+                if (v->isArray)
+                {
+                    // Part1a: v(l(0),p,t1) = v(l(0),p,t2)
+                    auto lhs1 = v->toTermForTrace(lStartZero, p, t1);
+                    auto rhs1 = v->toTermForTrace(lStartZero, p, t2);
+                    auto baseCase = logic::Formulas::equality(lhs1, rhs1);
+                    
+                    // Part1b: v(l(it),p,t1) = v(l(it),p,t2) => v(l(s(it)),p,t1) = v(l(s(it)),p,t2)
+                    auto lhs2 = v->toTermForTrace(lStartIt, p, t1);
+                    auto rhs2 = v->toTermForTrace(lStartIt, p, t2);
+                    auto eq2 = logic::Formulas::equality(lhs2, rhs2);
+                    
+                    auto lhs3 = v->toTermForTrace(lStartSuccOfIt, p, t1);
+                    auto rhs3 = v->toTermForTrace(lStartSuccOfIt, p, t2);
+                    auto eq3 = logic::Formulas::equality(lhs3, rhs3);
+                    
+                    auto implication = logic::Formulas::implication(eq2, eq3);
+                    auto inductiveCase = logic::Formulas::universal({itSymbol}, implication);
+                    
+                    // Part2: forall it. v(l(it),p,t1) = v(l(it),p,t2)
+                    auto lhs4 = v->toTermForTrace(lStartIt, p, t1);
+                    auto rhs4 = v->toTermForTrace(lStartIt, p, t2);
+                    auto eq4 = logic::Formulas::equality(lhs4, rhs4);
+                    
+                    auto conclusion = logic::Formulas::universal({itSymbol}, eq4);
+                    
+                    // forall p. ((Part1a and Part1b) => Part2)
+                    auto premise = logic::Formulas::conjunction({baseCase, inductiveCase});
+
+                    auto outerImp = logic::Formulas::implication(premise, conclusion);
+                    auto label = "Lemma: Array var " + v->name + " at loop " + whileStatement->location + " has same values on both traces";
+                    auto lemma = logic::Formulas::universal({pSymbol}, outerImp, label);
+
+                    lemmas.push_back(lemma);
+
                 }
             }
         }

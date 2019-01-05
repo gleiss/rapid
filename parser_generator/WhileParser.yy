@@ -95,6 +95,7 @@ YY_DECL;
   EXISTSSMTLIB  "exists"
   ASSERTNOT     "assert-not"
   CONST         "const"
+  TWOTRACES     "(two-traces)"
 ;
 %token <std::string> PROGRAM_ID "program identifier"
 %token <std::string> SMTLIB_ID "smtlib identifier"
@@ -145,13 +146,19 @@ YY_DECL;
 
 problem:
   program smtlib_conjecture {}
+|
+  TWOTRACES
+  {
+    context.twoTraces = true;
+  }
+  program smtlib_conjecture {}
 ;
 
 program:
   function_list 
   { 
     context.program = std::unique_ptr<const program::Program>(new program::Program($1)); 
-    context.programGlobalProperties = WhileParserPostComputation::compute(*context.program);
+    context.programGlobalProperties = WhileParserPostComputation::compute(*context.program, context.twoTraces);
   }
 ;
 
@@ -232,13 +239,8 @@ smtlib_formula:
 | LPAR IMPSMTLIB smtlib_formula smtlib_formula RPAR  { $$ = logic::Formulas::implication(std::move($3), std::move($4));}
 | LPAR FORALLSMTLIB LPAR smtlib_quantvar_list RPAR 
   {
-    std::vector<const logic::Symbol*> quantVarPointers; 
-    for (const auto& quantifiedVar : $4)
-    {
-      quantVarPointers.push_back(quantifiedVar.get());
-    }
     // TODO: propagate existing-var-error to parser and raise error
-    context.pushQuantifiedVars(quantVarPointers);
+    context.pushQuantifiedVars($4);
   } 
   smtlib_formula RPAR 
   { 
@@ -247,13 +249,8 @@ smtlib_formula:
   }
 | LPAR EXISTSSMTLIB LPAR smtlib_quantvar_list RPAR 
   {
-    std::vector<const logic::Symbol*> quantVarPointers;
-    for (const auto& quantifiedVar : $4)
-    {
-      quantVarPointers.push_back(quantifiedVar.get());
-    } 
     // TODO: propagate existing-var-error to parser and raise error
-    context.pushQuantifiedVars(quantVarPointers);
+    context.pushQuantifiedVars($4);
   } 
   smtlib_formula RPAR 
   { 
@@ -495,25 +492,25 @@ var_definition_head:
   {
     // TODO: check that TYPE is not Time
     // TODO: support Bool or check that TYPE is not Bool
-    $$ = std::shared_ptr<const program::Variable>(new program::Variable($2, false, false));
+    $$ = std::shared_ptr<const program::Variable>(new program::Variable($2, false, false, context.twoTraces));
   }
 | CONST TYPE PROGRAM_ID
   {
     // TODO: check that TYPE is not Time
     // TODO: support Bool or check that TYPE is not Bool
-    $$ = std::shared_ptr<const program::Variable>(new program::Variable($3, true, false));
+    $$ = std::shared_ptr<const program::Variable>(new program::Variable($3, true, false, context.twoTraces));
   }
 | TYPE LBRA RBRA PROGRAM_ID
   {
     // TODO: check that TYPE is not Time
     // TODO: support Bool or check that TYPE is not Bool
-    $$ = std::shared_ptr<const program::Variable>(new program::Variable($4, false, true));
+    $$ = std::shared_ptr<const program::Variable>(new program::Variable($4, false, true, context.twoTraces));
   }
 | CONST TYPE LBRA RBRA PROGRAM_ID
   {
     // TODO: check that TYPE is not Time
     // TODO: support Bool or check that TYPE is not Bool
-    $$ = std::shared_ptr<const program::Variable>(new program::Variable($5, true, true));
+    $$ = std::shared_ptr<const program::Variable>(new program::Variable($5, true, true, context.twoTraces));
   }
 ;
 

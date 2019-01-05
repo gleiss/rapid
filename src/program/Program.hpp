@@ -41,7 +41,7 @@ namespace program
     typedef std::unordered_map<const program::WhileStatement*, std::shared_ptr<const logic::Symbol>> IteratorMap;
     typedef std::unordered_map<const program::WhileStatement*, std::shared_ptr<const logic::Term>> LastIterationMap;
     typedef std::unordered_map<const program::Statement*, std::vector<std::shared_ptr<const logic::Symbol>>> EnclosingIteratorsMap;
-    typedef std::unordered_map<const program::Statement*, const logic::Symbol*> LocationSymbolMap;
+    typedef std::unordered_map<const program::Statement*, std::shared_ptr<const logic::Symbol>> LocationSymbolMap;
     typedef std::unordered_map<const program::Statement*, std::shared_ptr<const logic::Term>> StartTimePointMap;
     typedef std::unordered_map<const program::Statement*, std::shared_ptr<const logic::Term>> EndTimePointMap;
     

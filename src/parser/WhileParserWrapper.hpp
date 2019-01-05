@@ -18,12 +18,14 @@ namespace parser
         WhileParserResult(std::unique_ptr<const program::Program> program,
                           std::unique_ptr<const program::ProgramGlobalProperties> programGlobalProperties,
                           std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars,
-                          std::shared_ptr<const logic::Formula> conjecture) : program(std::move(program)), programGlobalProperties(std::move(programGlobalProperties)), locationToActiveVars(locationToActiveVars), conjecture(conjecture){}
+                          std::shared_ptr<const logic::Formula> conjecture,
+                          bool twoTraces) : program(std::move(program)), programGlobalProperties(std::move(programGlobalProperties)), locationToActiveVars(locationToActiveVars), conjecture(conjecture), twoTraces(twoTraces) {}
         
         std::unique_ptr<const program::Program> program;
         std::unique_ptr<const program::ProgramGlobalProperties> programGlobalProperties;
         std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars;
         std::shared_ptr<const logic::Formula> conjecture;
+        bool twoTraces;
         ;
     };
     
@@ -71,7 +73,7 @@ namespace parser
         util::Output::stream() << *context.program;
         util::Output::stream() << util::Output::nocomment;
         
-        return WhileParserResult(std::move(context.program), std::move(context.programGlobalProperties), std::move(context.locationToActiveVars), std::move(context.conjecture));
+        return WhileParserResult(std::move(context.program), std::move(context.programGlobalProperties), std::move(context.locationToActiveVars), std::move(context.conjecture), context.twoTraces);
     }
 }
 

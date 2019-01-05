@@ -14,9 +14,9 @@ namespace logic {
     class Term
     {
     public:
-        Term(const Symbol* symbol) : symbol(symbol) {}
+        Term(std::shared_ptr<const Symbol> symbol) : symbol(symbol) {}
         
-        const Symbol* symbol;
+        std::shared_ptr<const Symbol> symbol;
         
         virtual std::string toSMTLIB() const = 0;
         virtual std::string prettyString() const = 0;
@@ -26,7 +26,7 @@ namespace logic {
     {
         friend class Terms;
         
-        LVariable(const Symbol* symbol) : Term(symbol), id(freshId++){}
+        LVariable(std::shared_ptr<const Symbol> symbol) : Term(symbol), id(freshId++){}
 
     public:
         const unsigned id;
@@ -43,7 +43,7 @@ namespace logic {
     class FuncTerm : public Term
     {
         friend class Terms;
-        FuncTerm(const Symbol* symbol, std::vector<std::shared_ptr<const Term>> subterms) : Term(symbol), subterms(std::move(subterms))
+        FuncTerm(std::shared_ptr<const Symbol> symbol, std::vector<std::shared_ptr<const Term>> subterms) : Term(symbol), subterms(std::move(subterms))
         {
             assert(this->symbol->argSorts.size() == this->subterms.size());
             for (int i=0; i < this->symbol->argSorts.size(); ++i)
@@ -73,9 +73,9 @@ namespace logic {
     public:
 
         // construct new terms
-        static std::shared_ptr<const LVariable> var(const Symbol* symbol);
+        static std::shared_ptr<const LVariable> var(std::shared_ptr<const Symbol> symbol);
         static std::shared_ptr<const FuncTerm> func(std::string name, std::vector<std::shared_ptr<const Term>> subterms, const Sort* sort, bool noDeclaration=false);
-        static std::shared_ptr<const FuncTerm> func(const Symbol* symbol, std::vector<std::shared_ptr<const Term>> subterms);
+        static std::shared_ptr<const FuncTerm> func(std::shared_ptr<const Symbol> symbol, std::vector<std::shared_ptr<const Term>> subterms);
     };
 }
 #endif

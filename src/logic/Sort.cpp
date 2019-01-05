@@ -34,6 +34,10 @@ namespace logic {
         {
             return "(declare-datatypes ((Time 0)) (( (zero) (s (p Time)) )) )\n";
         }
+        else if (s.toSMTLIB() == "Trace")
+        {
+            return "(declare-datatypes ((Trace 0)) (( (t1) (t2) )) )\n";
+        }
         else
         {
             return "(declare-sort " + s.toSMTLIB() + " 0)\n";

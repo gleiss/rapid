@@ -23,16 +23,21 @@ namespace program {
     class Variable
     {
     public:
-        Variable(std::string name, bool isConstant, bool isArray) : name(name), isConstant(isConstant), isArray(isArray) {}
+        Variable(std::string name, bool isConstant, bool isArray, bool twoTraces) : name(name), isConstant(isConstant), isArray(isArray), twoTraces(twoTraces) {}
 
         const std::string name;
         const bool isConstant;
         const bool isArray;
+        const bool twoTraces;
+        
         virtual void addSymbolToSignature() const;
         
         bool operator==(const Variable& rhs) const { return (name == rhs.name); }
         bool operator!=(const Variable& rhs) const { return !operator==(rhs); }
         
+        std::shared_ptr<const logic::Term> toTermForTrace(std::shared_ptr<const logic::Term> i, std::shared_ptr<const logic::Term> trace) const;
+        std::shared_ptr<const logic::Term> toTermForTrace(std::shared_ptr<const logic::Term> i, std::shared_ptr<const logic::Term> position, std::shared_ptr<const logic::Term> trace) const;
+
         std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const logic::Term> index) const;
         std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const logic::Term> index, std::shared_ptr<const logic::Term> position) const;
     };

@@ -88,19 +88,19 @@ namespace logic {
     {
     public:
         // construct new symbols
-        static const Symbol* add(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration=false);
-        static const Symbol* fetch(std::string name);
-        static const Symbol* fetchOrAdd(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration=false);
+        static std::shared_ptr<const Symbol> add(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration=false);
+        static std::shared_ptr<const Symbol> fetch(std::string name);
+        static std::shared_ptr<const Symbol> fetchOrAdd(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration=false);
 
         // check that variable doesn't use name which already occurs in Signature
         // return Symbol without adding it to Signature
         static std::shared_ptr<const Symbol> varSymbol(std::string name, const Sort* rngSort);
 
-        static const std::unordered_map<std::string, std::unique_ptr<const Symbol>>& signature(){return _signature;}
+        static const std::unordered_map<std::string, std::shared_ptr<const Symbol>>& signature(){return _signature;}
         
     private:
         // _signature collects all symbols used so far.
-        static std::unordered_map<std::string, std::unique_ptr<const Symbol>> _signature;
+        static std::unordered_map<std::string, std::shared_ptr<const Symbol>> _signature;
     };
 }
 #endif

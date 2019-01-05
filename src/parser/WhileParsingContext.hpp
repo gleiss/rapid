@@ -18,7 +18,7 @@ namespace parser
     class WhileParsingContext
     {
     public:
-        WhileParsingContext() : inputFile(""), errorFlag(false), program(nullptr){}
+        WhileParsingContext() : inputFile(""), errorFlag(false), program(nullptr), programGlobalProperties(nullptr), conjecture(nullptr), locationToActiveVars(), twoTraces(false){}
         
         // input
         std::string inputFile;
@@ -29,20 +29,21 @@ namespace parser
         std::unique_ptr<const program::ProgramGlobalProperties> programGlobalProperties;
         std::shared_ptr<const logic::Formula> conjecture;
         std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars;
-
+        bool twoTraces;
+        
     private:
         // context-information
-        std::unordered_map<std::string, const logic::Symbol*> quantifiedVarsDeclarations;
+        std::unordered_map<std::string, std::shared_ptr<const logic::Symbol>> quantifiedVarsDeclarations;
         std::vector<std::vector<std::string>> quantifiedVarsStack;
         
         std::unordered_map<std::string, std::shared_ptr<const program::Variable>> programVarsDeclarations;
         std::vector<std::vector<std::string>> programVarsStack;
         
     public:
-        bool pushQuantifiedVars(std::vector<const logic::Symbol*> quantifiedVars);
+        bool pushQuantifiedVars(std::vector<std::shared_ptr<const logic::Symbol>> quantifiedVars);
         void popQuantifiedVars();
         // fetch symbol with given name from quantVarDecls or Signature.
-        const logic::Symbol* fetch(std::string name);
+        std::shared_ptr<const logic::Symbol> fetch(std::string name);
         
         void pushProgramVars();
         void popProgramVars();

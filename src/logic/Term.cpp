@@ -102,7 +102,7 @@ namespace logic {
     
 # pragma mark - Terms
     
-    std::shared_ptr<const LVariable> Terms::var(const Symbol* symbol)
+    std::shared_ptr<const LVariable> Terms::var(std::shared_ptr<const Symbol> symbol)
     {
         return std::shared_ptr<const LVariable>(new LVariable(symbol));
     }
@@ -118,7 +118,7 @@ namespace logic {
         return std::shared_ptr<const FuncTerm>(new FuncTerm(symbol, subterms));
     }
     
-    std::shared_ptr<const FuncTerm> Terms::func(const Symbol* symbol, std::vector<std::shared_ptr<const Term>> subterms)
+    std::shared_ptr<const FuncTerm> Terms::func(std::shared_ptr<const Symbol> symbol, std::vector<std::shared_ptr<const Term>> subterms)
     {
         return std::shared_ptr<const FuncTerm>(new FuncTerm(symbol, subterms));
     }

@@ -19,13 +19,15 @@ namespace analysis {
     public:
         TraceLemmas(const program::Program& program,
                     const program::ProgramGlobalProperties& maps,
-                    std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars) :
+                    std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars,
+                    bool twoTraces) :
         program(program),
         iteratorMap(maps.iteratorMap),
         lastIterationMap(maps.lastIterationMap),
         enclosingIteratorsMap(maps.enclosingIteratorsMap),
         locationSymbolMap(maps.locationSymbolMap),
-        locationToActiveVars(locationToActiveVars) {}
+        locationToActiveVars(locationToActiveVars),
+        twoTraces(twoTraces) {}
         
         std::vector<std::shared_ptr<const logic::Formula>> generate();
         
@@ -36,7 +38,8 @@ namespace analysis {
         const program::EnclosingIteratorsMap& enclosingIteratorsMap;
         const program::LocationSymbolMap& locationSymbolMap;
         const std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars;
-
+        const bool twoTraces;
+        
         enum class InductionKind { Equal, Less, Greater, LessEqual, GreaterEqual};
         
         void generateStandardInductionLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
@@ -45,6 +48,12 @@ namespace analysis {
         void generateStandardInductionLemmas(const program::WhileStatement* whileStatement,
                                              std::vector<std::shared_ptr<const logic::Formula>>& lemmas,
                                              const InductionKind kind);
+        
+        void generateTwoTracesLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+        void generateTwoTracesLemmas(const program::Statement* statement,
+                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+        void generateTwoTracesLemmas(const program::WhileStatement* whileStatement,
+                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
     };
 }
 

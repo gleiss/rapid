@@ -8,10 +8,10 @@ namespace parser
 {
 # pragma mark - compute
     
-    std::unique_ptr<const program::ProgramGlobalProperties>  WhileParserPostComputation::compute(const program::Program& program)
+    std::unique_ptr<const program::ProgramGlobalProperties>  WhileParserPostComputation::compute(const program::Program& program, bool twoTraces)
     {
         auto iteratorMap = computeIteratorMap(program);
-        auto lastIterationMap = computeLastIterationMap(program);
+        auto lastIterationMap = computeLastIterationMap(program, twoTraces);
         
         auto enclosingIteratorsMap = computeEnclosingIteratorsMap(program, iteratorMap);
         auto locationSymbolMap = computeLocationSymbolMap(program, enclosingIteratorsMap);
@@ -68,40 +68,46 @@ namespace parser
     
 # pragma mark - lastIterationMap
     
-    LastIterationMap WhileParserPostComputation::computeLastIterationMap(const program::Program& program)
+    LastIterationMap WhileParserPostComputation::computeLastIterationMap(const program::Program& program, bool twoTraces)
     {
         LastIterationMap lastIterationMap;
         for(const auto& function : program.functions)
         {
             for (const auto& statement : function->statements)
             {
-                addLastIterationsForStatement(statement.get(), lastIterationMap);
+                addLastIterationsForStatement(statement.get(), lastIterationMap, twoTraces);
             }
         }
         return lastIterationMap;
     }
     
-    void WhileParserPostComputation::addLastIterationsForStatement(const program::Statement* statement, LastIterationMap& lastIterationMap)
+    void WhileParserPostComputation::addLastIterationsForStatement(const program::Statement* statement, LastIterationMap& lastIterationMap, bool twoTraces)
     {
         if (statement->type() == program::Statement::Type::IfElse)
         {
             auto castedStatement = static_cast<const program::IfElse*>(statement);
             for (const auto& statement : castedStatement->ifStatements)
             {
-                addLastIterationsForStatement(statement.get(), lastIterationMap);
+                addLastIterationsForStatement(statement.get(), lastIterationMap, twoTraces);
             }
             for (const auto& statement : castedStatement->elseStatements)
             {
-                addLastIterationsForStatement(statement.get(), lastIterationMap);
+                addLastIterationsForStatement(statement.get(), lastIterationMap, twoTraces);
             }
         }
         else if (statement->type() == program::Statement::Type::WhileStatement)
         {
             auto castedStatement = static_cast<const program::WhileStatement*>(statement);
-            lastIterationMap[castedStatement] = logic::Terms::func("n" + castedStatement->location, {}, logic::Sorts::timeSort());
+            std::vector<std::shared_ptr<const logic::Term>> arguments;
+            if (twoTraces)
+            {
+                auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
+                arguments.push_back(logic::Terms::var(tr));
+            }
+            lastIterationMap[castedStatement] = logic::Terms::func("n" + castedStatement->location, arguments, logic::Sorts::timeSort());
             for (const auto& statement : castedStatement->bodyStatements)
             {
-                addLastIterationsForStatement(statement.get(), lastIterationMap);
+                addLastIterationsForStatement(statement.get(), lastIterationMap, twoTraces);
             }
         }
     }
@@ -239,7 +245,7 @@ namespace parser
         auto enclosingIteratorTerms = std::vector<std::shared_ptr<const logic::Term>>();
         for (const auto& enclosingIterator : enclosingIterators)
         {
-            enclosingIteratorTerms.push_back(logic::Terms::var(enclosingIterator.get()));
+            enclosingIteratorTerms.push_back(logic::Terms::var(enclosingIterator));
         }
         
         if (statement->type() == program::Statement::Type::WhileStatement)
@@ -340,7 +346,7 @@ namespace parser
         auto enclosingIteratorTerms = std::vector<std::shared_ptr<const logic::Term>>();
         for (const auto& enclosingIterator : enclosingIteratorsMap.at(ifElse))
         {
-            enclosingIteratorTerms.push_back(logic::Terms::var(enclosingIterator.get()));
+            enclosingIteratorTerms.push_back(logic::Terms::var(enclosingIterator));
         }
         
         auto lLeftEnd = logic::Terms::func(ifElse->location + "_lEnd", enclosingIteratorTerms, logic::Sorts::timeSort());
@@ -360,7 +366,7 @@ namespace parser
         auto enclosingIteratorTermsRight = std::vector<std::shared_ptr<const logic::Term>>();
         for (const auto& enclosingIterator : enclosingIteratorsMap.at(ifElse))
         {
-            enclosingIteratorTermsRight.push_back(logic::Terms::var(enclosingIterator.get()));
+            enclosingIteratorTermsRight.push_back(logic::Terms::var(enclosingIterator));
         }
 
         auto lRightEnd = logic::Terms::func(ifElse->location + "_rEnd", enclosingIteratorTerms, logic::Sorts::timeSort());
@@ -389,9 +395,9 @@ namespace parser
         auto enclosingIteratorTerms = std::vector<std::shared_ptr<const logic::Term>>();
         for (const auto& enclosingIterator : enclosingIteratorsMap.at(whileStatement))
         {
-            enclosingIteratorTerms.push_back(logic::Terms::var(enclosingIterator.get()));
+            enclosingIteratorTerms.push_back(logic::Terms::var(enclosingIterator));
         }
-        auto t1 = logic::Terms::var(iteratorMap.at(whileStatement).get());
+        auto t1 = logic::Terms::var(iteratorMap.at(whileStatement));
         auto t2 = logic::Theory::timeSucc(t1);
         enclosingIteratorTerms.push_back(t2);
         auto t3 = logic::Terms::func(whileStatement->location, enclosingIteratorTerms, logic::Sorts::timeSort());

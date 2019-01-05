@@ -135,32 +135,32 @@ namespace logic {
     
 #pragma mark - Signature
     
-    std::unordered_map<std::string, std::unique_ptr<const Symbol>> Signature::_signature;
+    std::unordered_map<std::string, std::shared_ptr<const Symbol>> Signature::_signature;
     
-    const Symbol* Signature::fetch(std::string name)
+    std::shared_ptr<const Symbol> Signature::fetch(std::string name)
     {
         auto it = _signature.find(name);
         assert(it != _signature.end());
         
-        return it->second.get();
+        return it->second;
     }
     
-    const Symbol* Signature::add(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration)
+    std::shared_ptr<const Symbol> Signature::add(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration)
     {
         // there must be no symbol with name name already added
         assert(_signature.count(name) == 0);
         
         auto pair = _signature.insert(std::make_pair(name,std::unique_ptr<Symbol>(new Symbol(name, argSorts, rngSort, noDeclaration))));
         assert(pair.second); // must succeed since we checked that no such symbols existed before the insertion
-        return pair.first->second.get();
+        return pair.first->second;
     }
     
-    const Symbol* Signature::fetchOrAdd(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration)
+    std::shared_ptr<const Symbol> Signature::fetchOrAdd(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration)
     {
         
-        auto pair = _signature.insert(std::make_pair(name, std::unique_ptr<Symbol>(new Symbol(name, argSorts, rngSort, noDeclaration))));
+        auto pair = _signature.insert(std::make_pair(name, std::shared_ptr<Symbol>(new Symbol(name, argSorts, rngSort, noDeclaration))));
         
-        auto symbol = pair.first->second.get();
+        auto symbol = pair.first->second;
         // if a symbol with the name already exist, make sure it has the same sorts
         if (!pair.second)
         {

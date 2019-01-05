@@ -2,7 +2,7 @@
 
 namespace parser
 {
-    bool WhileParsingContext::pushQuantifiedVars(std::vector<const logic::Symbol*> quantifiedVars)
+    bool WhileParsingContext::pushQuantifiedVars(std::vector<std::shared_ptr<const logic::Symbol>> quantifiedVars)
     {
         // TODO: later check that those don't exist yet.
         // insert each var into into map
@@ -36,7 +36,7 @@ namespace parser
         quantifiedVarsStack.pop_back();
     }
     
-    const logic::Symbol* WhileParsingContext::fetch(std::string name)
+    std::shared_ptr<const logic::Symbol> WhileParsingContext::fetch(std::string name)
     {
         if (quantifiedVarsDeclarations.count(name) > 0)
         {

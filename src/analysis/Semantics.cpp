@@ -6,6 +6,7 @@
 #include "Theory.hpp"
 
 #include "SemanticsHelper.hpp"
+#include "SymbolDeclarations.hpp"
 
 namespace analysis {
     
@@ -307,24 +308,25 @@ namespace analysis {
     {
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts;
 
-        auto iSymbol = iteratorMap.at(whileStatement);
+        auto iSymbol = iteratorForLoop(whileStatement);
         auto i = logic::Terms::var(iSymbol);
-        auto n = lastIterationMap.at(whileStatement);
+        auto n = lastIterationTermForLoop(whileStatement, twoTraces);
 
         auto lStart0 = startTimePointMap.at(whileStatement);
         
         auto iteratorsItTerms = std::vector<std::shared_ptr<const logic::Term>>();
         auto iteratorsNTerms = std::vector<std::shared_ptr<const logic::Term>>();
-        for (const auto& iteratorIt : enclosingIteratorsMap.at(whileStatement))
+        for (const auto& enclosingLoop : *whileStatement->enclosingLoops)
         {
-            iteratorsItTerms.push_back(logic::Terms::var(iteratorIt));
-            iteratorsNTerms.push_back(logic::Terms::var(iteratorIt));
+            auto enclosingIterator = iteratorTermForLoop(enclosingLoop);
+            iteratorsItTerms.push_back(enclosingIterator);
+            iteratorsNTerms.push_back(enclosingIterator);
         }
         iteratorsItTerms.push_back(i);
         iteratorsNTerms.push_back(n);
 
-        auto lStartIt = logic::Terms::func(locationSymbolMap.at(whileStatement), iteratorsItTerms);
-        auto lStartN = logic::Terms::func(locationSymbolMap.at(whileStatement), iteratorsNTerms);
+        auto lStartIt = logic::Terms::func(locationSymbolForStatement(whileStatement), iteratorsItTerms);
+        auto lStartN = logic::Terms::func(locationSymbolForStatement(whileStatement), iteratorsNTerms);
         
         auto lBodyStartIt = startTimePointMap.at(whileStatement->bodyStatements.front().get());
         

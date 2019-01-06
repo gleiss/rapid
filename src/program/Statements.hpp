@@ -7,12 +7,21 @@
 #include <iostream>
 namespace program
 {
+    class WhileStatement;
     class Statement
     {
     public:
-        Statement(unsigned lineNumber) : location("l" + std::to_string(lineNumber)){}
+        Statement(unsigned lineNumber) : location("l" + std::to_string(lineNumber)), enclosingLoops(std::make_unique<std::vector<const WhileStatement*>>()) {}
         
         const std::string location;
+        /*
+         * enclosingLoops needs to be modified in the parser-post-computation (but must not change afterwards)
+         * we therefore need our programs to be constant up to the enclosingLoop-fields.
+         * we achieve this by using indirection: constness is not transitive in c++,
+         * so we get a (constant) pointer to a (not necessarily constant) vector enclosingLoops,
+         * which we can fill up in the parser-post-computation.
+         */
+        std::unique_ptr<std::vector<const WhileStatement*>> enclosingLoops;
         
         enum class Type{ IntAssignment, IfElse, WhileStatement, SkipStatement };
         virtual Type type() const = 0;

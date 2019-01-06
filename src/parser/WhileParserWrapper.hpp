@@ -16,13 +16,11 @@ namespace parser
     {
     public:
         WhileParserResult(std::unique_ptr<const program::Program> program,
-                          std::unique_ptr<const program::ProgramGlobalProperties> programGlobalProperties,
                           std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars,
                           std::shared_ptr<const logic::Formula> conjecture,
-                          bool twoTraces) : program(std::move(program)), programGlobalProperties(std::move(programGlobalProperties)), locationToActiveVars(locationToActiveVars), conjecture(conjecture), twoTraces(twoTraces) {}
+                          bool twoTraces) : program(std::move(program)), locationToActiveVars(locationToActiveVars), conjecture(conjecture), twoTraces(twoTraces) {}
         
         std::unique_ptr<const program::Program> program;
-        std::unique_ptr<const program::ProgramGlobalProperties> programGlobalProperties;
         std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars;
         std::shared_ptr<const logic::Formula> conjecture;
         bool twoTraces;
@@ -60,20 +58,20 @@ namespace parser
         parser.parse();
         fclose(f);
         
+        // if there was an error during parsing, exit the program.
         if (context.errorFlag)
         {
             exit(1);
         }
         
         assert(context.program);
-        assert(context.programGlobalProperties);
         assert(context.conjecture);
         
         util::Output::stream() << util::Output::comment;
         util::Output::stream() << *context.program;
         util::Output::stream() << util::Output::nocomment;
         
-        return WhileParserResult(std::move(context.program), std::move(context.programGlobalProperties), std::move(context.locationToActiveVars), std::move(context.conjecture), context.twoTraces);
+        return WhileParserResult(std::move(context.program), std::move(context.locationToActiveVars), std::move(context.conjecture), context.twoTraces);
     }
 }
 

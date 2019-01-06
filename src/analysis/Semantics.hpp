@@ -6,22 +6,19 @@
 #include "Statements.hpp"
 #include <unordered_map>
 
+#include "AnalysisPreComputation.hpp"
+
 namespace analysis {
     
     class Semantics
     {
     public:
         Semantics(const program::Program& program,
-                  const program::ProgramGlobalProperties& maps,
                   std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars,
                   bool twoTraces = true) :
         program(program),
-        iteratorMap(maps.iteratorMap),
-        lastIterationMap(maps.lastIterationMap),
-        enclosingIteratorsMap(maps.enclosingIteratorsMap),
-        locationSymbolMap(maps.locationSymbolMap),
-        startTimePointMap(maps.startTimePointMap),
-        endTimePointMap(maps.endTimePointMap),
+        startTimePointMap(AnalysisPreComputation::computeStartTimePointMap(program)),
+        endTimePointMap(AnalysisPreComputation::computeEndTimePointMap(program, startTimePointMap)),
         locationToActiveVars(locationToActiveVars),
         twoTraces(twoTraces) {}
         
@@ -29,12 +26,8 @@ namespace analysis {
         
     private:
         const program::Program& program;
-        const program::IteratorMap& iteratorMap;
-        const program::LastIterationMap& lastIterationMap;
-        const program::EnclosingIteratorsMap& enclosingIteratorsMap;
-        const program::LocationSymbolMap& locationSymbolMap;
-        const program::StartTimePointMap& startTimePointMap;
-        const program::EndTimePointMap& endTimePointMap;
+        const StartTimePointMap startTimePointMap;
+        const EndTimePointMap endTimePointMap;
         const std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars;
         
         const bool twoTraces;

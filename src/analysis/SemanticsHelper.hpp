@@ -3,6 +3,7 @@
 
 #include "Term.hpp"
 #include "Variable.hpp"
+#include "Statements.hpp"
 
 namespace analysis {
 
@@ -33,7 +34,10 @@ namespace analysis {
      */
     std::shared_ptr<const logic::Formula> toFormula(std::shared_ptr<const program::BoolExpression> expr, std::shared_ptr<const logic::Term> timePoint);
 
+    std::shared_ptr<const logic::LVariable> iteratorTermForLoop(const program::WhileStatement* whileStatement);
+    std::shared_ptr<const logic::Term> lastIterationTermForLoop(const program::WhileStatement* whileStatement, bool twoTraces);
 }
+
 
 #endif
 

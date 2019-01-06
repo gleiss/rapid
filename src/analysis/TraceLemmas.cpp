@@ -8,6 +8,7 @@
 #include "Options.hpp"
 #include "Output.hpp"
 
+#include "SymbolDeclarations.hpp"
 #include "SemanticsHelper.hpp"
 
 using namespace logic;
@@ -105,10 +106,9 @@ namespace analysis {
                 break;
         }
         
-        auto itSymbol = iteratorMap.at(whileStatement);
-        auto it = logic::Terms::var(itSymbol);
-        auto n = lastIterationMap.at(whileStatement);
-        auto locationSymbol = locationSymbolMap.at(whileStatement);
+        auto it = iteratorTermForLoop(whileStatement);
+        auto n = lastIterationTermForLoop(whileStatement, twoTraces);
+        auto locationSymbol = locationSymbolForStatement(whileStatement);
         
         auto locationName = locationSymbol->name;
         
@@ -116,12 +116,13 @@ namespace analysis {
         auto enclosingIteratorsAndSuccOfIt = std::vector<std::shared_ptr<const logic::Term>>();
         auto enclosingIteratorsAndZero = std::vector<std::shared_ptr<const logic::Term>>();
         auto enclosingIteratorsAndN = std::vector<std::shared_ptr<const logic::Term>>();
-        for (const auto& enclosingIteratorSymbol : enclosingIteratorsMap.at(whileStatement))
+        for (const auto& enclosingLoop : *whileStatement->enclosingLoops)
         {
-            enclosingIteratorsAndIt.push_back(logic::Terms::var(enclosingIteratorSymbol));
-            enclosingIteratorsAndSuccOfIt.push_back(logic::Terms::var(enclosingIteratorSymbol));
-            enclosingIteratorsAndZero.push_back(logic::Terms::var(enclosingIteratorSymbol));
-            enclosingIteratorsAndN.push_back(logic::Terms::var(enclosingIteratorSymbol));
+            auto enclosingIterator = iteratorTermForLoop(enclosingLoop);
+            enclosingIteratorsAndIt.push_back(enclosingIterator);
+            enclosingIteratorsAndSuccOfIt.push_back(enclosingIterator);
+            enclosingIteratorsAndZero.push_back(enclosingIterator);
+            enclosingIteratorsAndN.push_back(enclosingIterator);
         }
         enclosingIteratorsAndIt.push_back(it);
         enclosingIteratorsAndSuccOfIt.push_back(logic::Theory::timeSucc(it));
@@ -165,7 +166,7 @@ namespace analysis {
                             break;
                     }
                     auto imp = logic::Formulas::implication(ineq, formula1);
-                    auto universal = logic::Formulas::universal({itSymbol}, imp);
+                    auto universal = logic::Formulas::universal({it->symbol}, imp);
                     
                     // Part2: v(l(it1,...,itk,0)) C v(l(it1,...,itk,n)), where C in {=,<,>,<=,>=}
                     auto lhs2 = toTerm(v,lStartZero);
@@ -231,7 +232,7 @@ namespace analysis {
                             break;
                     }
                     auto imp = logic::Formulas::implication(ineq, formula1);
-                    auto universal = logic::Formulas::universal({itSymbol}, imp);
+                    auto universal = logic::Formulas::universal({it->symbol}, imp);
                     
                     // Part2: v(l(it1,...,itk,0), p) C v(l(it1,...,itk,n), p), where C in {=,<,>,<=,>=}
                     auto lhs2 = toTerm(v, lStartZero, p);
@@ -316,20 +317,21 @@ namespace analysis {
         auto t1 = logic::Terms::func("t1", {}, logic::Sorts::traceSort());
         auto t2 = logic::Terms::func("t2", {}, logic::Sorts::traceSort());
         
-        auto itSymbol = iteratorMap.at(whileStatement);
+        auto itSymbol = iteratorForLoop(whileStatement);
         auto it = logic::Terms::var(itSymbol);
-        auto locationSymbol = locationSymbolMap.at(whileStatement);
+        auto locationSymbol = locationSymbolForStatement(whileStatement);
         
         auto locationName = locationSymbol->name;
         
         auto enclosingIteratorsAndIt = std::vector<std::shared_ptr<const logic::Term>>();
         auto enclosingIteratorsAndSuccOfIt = std::vector<std::shared_ptr<const logic::Term>>();
         auto enclosingIteratorsAndZero = std::vector<std::shared_ptr<const logic::Term>>();
-        for (const auto& enclosingIteratorSymbol : enclosingIteratorsMap.at(whileStatement))
+        for (const auto& enclosingLoop : *whileStatement->enclosingLoops)
         {
-            enclosingIteratorsAndIt.push_back(logic::Terms::var(enclosingIteratorSymbol));
-            enclosingIteratorsAndSuccOfIt.push_back(logic::Terms::var(enclosingIteratorSymbol));
-            enclosingIteratorsAndZero.push_back(logic::Terms::var(enclosingIteratorSymbol));
+            auto enclosingIterator = iteratorTermForLoop(enclosingLoop);
+            enclosingIteratorsAndIt.push_back(enclosingIterator);
+            enclosingIteratorsAndSuccOfIt.push_back(enclosingIterator);
+            enclosingIteratorsAndZero.push_back(enclosingIterator);
         }
         enclosingIteratorsAndIt.push_back(it);
         enclosingIteratorsAndSuccOfIt.push_back(logic::Theory::timeSucc(it));

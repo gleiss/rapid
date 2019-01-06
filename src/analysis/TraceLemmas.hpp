@@ -18,14 +18,9 @@ namespace analysis {
     {
     public:
         TraceLemmas(const program::Program& program,
-                    const program::ProgramGlobalProperties& maps,
                     std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars,
                     bool twoTraces) :
         program(program),
-        iteratorMap(maps.iteratorMap),
-        lastIterationMap(maps.lastIterationMap),
-        enclosingIteratorsMap(maps.enclosingIteratorsMap),
-        locationSymbolMap(maps.locationSymbolMap),
         locationToActiveVars(locationToActiveVars),
         twoTraces(twoTraces) {}
         
@@ -33,10 +28,6 @@ namespace analysis {
         
     private:
         const program::Program& program;
-        const program::IteratorMap& iteratorMap;
-        const program::LastIterationMap& lastIterationMap;
-        const program::EnclosingIteratorsMap& enclosingIteratorsMap;
-        const program::LocationSymbolMap& locationSymbolMap;
         const std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars;
         const bool twoTraces;
         

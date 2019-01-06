@@ -158,7 +158,10 @@ program:
   function_list 
   { 
     context.program = std::unique_ptr<const program::Program>(new program::Program($1)); 
-    context.programGlobalProperties = WhileParserPostComputation::compute(*context.program, context.twoTraces);
+    
+    // finish parsing of program by computing for each statement the loops in which the
+    // statement is nested in
+    WhileParserPostComputation::addEnclosingLoops(*context.program);
   }
 ;
 

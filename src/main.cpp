@@ -38,12 +38,12 @@ int main(int argc, char *argv[])
                 
                 logic::Problem problem;
                 
-                analysis::Semantics s(*parserResult.program, *parserResult.programGlobalProperties, parserResult.locationToActiveVars);
+                analysis::Semantics s(*parserResult.program, parserResult.locationToActiveVars);
                 
                 problem.axioms = s.generateSemantics();
                 problem.conjecture = std::move(parserResult.conjecture);
                 
-                analysis::TraceLemmas traceLemmas(*parserResult.program, *parserResult.programGlobalProperties, parserResult.locationToActiveVars, parserResult.twoTraces);
+                analysis::TraceLemmas traceLemmas(*parserResult.program, parserResult.locationToActiveVars, parserResult.twoTraces);
                 problem.lemmas = traceLemmas.generate();
                 
                 problem.outputSMTLIB(util::Output::stream());

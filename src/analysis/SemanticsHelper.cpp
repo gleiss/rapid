@@ -1,9 +1,10 @@
 #include "SemanticsHelper.hpp"
 
 #include "Variable.hpp"
-
 #include "Term.hpp"
 #include "Theory.hpp"
+
+#include "SymbolDeclarations.hpp"
 
 namespace analysis {
     
@@ -172,4 +173,24 @@ namespace analysis {
             }
         }
     }
+    
+    std::shared_ptr<const logic::LVariable> iteratorTermForLoop(const program::WhileStatement* whileStatement)
+    {
+        return logic::Terms::var(iteratorForLoop(whileStatement));
+    }
+    
+    std::shared_ptr<const logic::Term> lastIterationTermForLoop(const program::WhileStatement* whileStatement, bool twoTraces)
+    {
+        auto symbol = lastIterationForLoop(whileStatement, twoTraces);
+        std::vector<std::shared_ptr<const logic::Term>> subterms;
+        if (twoTraces)
+        {
+            auto trSymbol = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
+            auto tr = logic::Terms::var(trSymbol);
+            subterms.push_back(tr);
+        }
+        return logic::Terms::func(symbol, subterms);
+    }
+    
+    
 }

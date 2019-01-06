@@ -34,12 +34,6 @@ namespace program {
         
         bool operator==(const Variable& rhs) const { return (name == rhs.name); }
         bool operator!=(const Variable& rhs) const { return !operator==(rhs); }
-        
-        std::shared_ptr<const logic::Term> toTermForTrace(std::shared_ptr<const logic::Term> i, std::shared_ptr<const logic::Term> trace) const;
-        std::shared_ptr<const logic::Term> toTermForTrace(std::shared_ptr<const logic::Term> i, std::shared_ptr<const logic::Term> position, std::shared_ptr<const logic::Term> trace) const;
-
-        std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const logic::Term> index) const;
-        std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const logic::Term> index, std::shared_ptr<const logic::Term> position) const;
     };
 
     // hack needed for bison: std::vector has no overload for ostream, but these overloads are needed for bison
@@ -55,7 +49,6 @@ namespace program {
         IntExpression::Type type() const override {return IntExpression::Type::IntVariableAccess;}
         
         std::string toString() const override;
-        std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const logic::Term> index) const override;
     };
     
     class IntArrayApplication : public IntExpression
@@ -73,8 +66,6 @@ namespace program {
         IntExpression::Type type() const override {return IntExpression::Type::IntArrayApplication;}
 
         std::string toString() const override;
-        std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const logic::Term> index, std::shared_ptr<const logic::Term> position) const;
-        std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const logic::Term> i) const override;
     };
 }
 

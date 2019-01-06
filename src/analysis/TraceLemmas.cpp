@@ -8,6 +8,8 @@
 #include "Options.hpp"
 #include "Output.hpp"
 
+#include "SemanticsHelper.hpp"
+
 using namespace logic;
 
 namespace analysis {
@@ -141,8 +143,8 @@ namespace analysis {
                     // Part1: it<=n => v(l(it1,...,itk,it)) C v(l(it1,...,itk,s(it))), where C in {=,<,>,<=,>=}
                     auto ineq = logic::Theory::timeSub(it, n);
                     
-                    auto lhs1 = v->toTerm(lStartIt);
-                    auto rhs1 = v->toTerm(lStartSuccOfIt);
+                    auto lhs1 = toTerm(v,lStartIt);
+                    auto rhs1 = toTerm(v,lStartSuccOfIt);
                     std::shared_ptr<const Formula> formula1;
                     switch (kind)
                     {
@@ -166,8 +168,8 @@ namespace analysis {
                     auto universal = logic::Formulas::universal({itSymbol}, imp);
                     
                     // Part2: v(l(it1,...,itk,0)) C v(l(it1,...,itk,n)), where C in {=,<,>,<=,>=}
-                    auto lhs2 = v->toTerm(lStartZero);
-                    auto rhs2 = v->toTerm(lStartN);
+                    auto lhs2 = toTerm(v,lStartZero);
+                    auto rhs2 = toTerm(v,lStartN);
                     std::shared_ptr<const Formula> formula2;
                     switch (kind)
                     {
@@ -207,8 +209,8 @@ namespace analysis {
                     // Part1: it<=n => v(l(it1,...,itk,it),p) C v(l(it1,...,itk,s(it)),p), where C in {=,<,>,<=,>=}
                     auto ineq = logic::Theory::timeSub(it, n);
                     
-                    auto lhs1 = v->toTerm(lStartIt, p);
-                    auto rhs1 = v->toTerm(lStartSuccOfIt, p);
+                    auto lhs1 = toTerm(v,lStartIt, p);
+                    auto rhs1 = toTerm(v,lStartSuccOfIt, p);
                     std::shared_ptr<const Formula> formula1;
                     switch (kind)
                     {
@@ -232,8 +234,8 @@ namespace analysis {
                     auto universal = logic::Formulas::universal({itSymbol}, imp);
                     
                     // Part2: v(l(it1,...,itk,0), p) C v(l(it1,...,itk,n), p), where C in {=,<,>,<=,>=}
-                    auto lhs2 = v->toTerm(lStartZero, p);
-                    auto rhs2 = v->toTerm(lStartN, p);
+                    auto lhs2 = toTerm(v, lStartZero, p);
+                    auto rhs2 = toTerm(v, lStartN, p);
                     std::shared_ptr<const Formula> formula2;
                     switch (kind)
                     {
@@ -345,25 +347,25 @@ namespace analysis {
                 if (!v->isArray)
                 {
                     // Part1a: v(l(0),t1) = v(l(0),t2)
-                    auto lhs1 = v->toTermForTrace(lStartZero, t1);
-                    auto rhs1 = v->toTermForTrace(lStartZero, t2);
+                    auto lhs1 = toTermFull(v, lStartZero, t1);
+                    auto rhs1 = toTermFull(v, lStartZero, t2);
                     auto baseCase = logic::Formulas::equality(lhs1, rhs1);
                     
                     // Part1b: v(l(it),t1) = v(l(it), t2) => v(l(s(it)),t1) = v(l(s(it)),t2)
-                    auto lhs2 = v->toTermForTrace(lStartIt, t1);
-                    auto rhs2 = v->toTermForTrace(lStartIt, t2);
+                    auto lhs2 = toTermFull(v, lStartIt, t1);
+                    auto rhs2 = toTermFull(v, lStartIt, t2);
                     auto eq2 = logic::Formulas::equality(lhs2, rhs2);
                     
-                    auto lhs3 = v->toTermForTrace(lStartSuccOfIt, t1);
-                    auto rhs3 = v->toTermForTrace(lStartSuccOfIt, t2);
+                    auto lhs3 = toTermFull(v, lStartSuccOfIt, t1);
+                    auto rhs3 = toTermFull(v, lStartSuccOfIt, t2);
                     auto eq3 = logic::Formulas::equality(lhs3, rhs3);
                     
                     auto implication = logic::Formulas::implication(eq2, eq3);
                     auto inductiveCase = logic::Formulas::universal({itSymbol}, implication);
                     
                     // Part2: forall it. v(l(it),t1) = v(l(it), t2)
-                    auto lhs4 = v->toTermForTrace(lStartIt, t1);
-                    auto rhs4 = v->toTermForTrace(lStartIt, t2);
+                    auto lhs4 = toTermFull(v, lStartIt, t1);
+                    auto rhs4 = toTermFull(v, lStartIt, t2);
                     auto eq4 = logic::Formulas::equality(lhs4, rhs4);
                     
                     auto conclusion = logic::Formulas::universal({itSymbol}, eq4);
@@ -388,25 +390,25 @@ namespace analysis {
                 if (v->isArray)
                 {
                     // Part1a: v(l(0),p,t1) = v(l(0),p,t2)
-                    auto lhs1 = v->toTermForTrace(lStartZero, p, t1);
-                    auto rhs1 = v->toTermForTrace(lStartZero, p, t2);
+                    auto lhs1 = toTermFull(v, lStartZero, p, t1);
+                    auto rhs1 = toTermFull(v, lStartZero, p, t2);
                     auto baseCase = logic::Formulas::equality(lhs1, rhs1);
                     
                     // Part1b: v(l(it),p,t1) = v(l(it),p,t2) => v(l(s(it)),p,t1) = v(l(s(it)),p,t2)
-                    auto lhs2 = v->toTermForTrace(lStartIt, p, t1);
-                    auto rhs2 = v->toTermForTrace(lStartIt, p, t2);
+                    auto lhs2 = toTermFull(v, lStartIt, p, t1);
+                    auto rhs2 = toTermFull(v, lStartIt, p, t2);
                     auto eq2 = logic::Formulas::equality(lhs2, rhs2);
                     
-                    auto lhs3 = v->toTermForTrace(lStartSuccOfIt, p, t1);
-                    auto rhs3 = v->toTermForTrace(lStartSuccOfIt, p, t2);
+                    auto lhs3 = toTermFull(v, lStartSuccOfIt, p, t1);
+                    auto rhs3 = toTermFull(v, lStartSuccOfIt, p, t2);
                     auto eq3 = logic::Formulas::equality(lhs3, rhs3);
                     
                     auto implication = logic::Formulas::implication(eq2, eq3);
                     auto inductiveCase = logic::Formulas::universal({itSymbol}, implication);
                     
                     // Part2: forall it. v(l(it),p,t1) = v(l(it),p,t2)
-                    auto lhs4 = v->toTermForTrace(lStartIt, p, t1);
-                    auto rhs4 = v->toTermForTrace(lStartIt, p, t2);
+                    auto lhs4 = toTermFull(v, lStartIt, p, t1);
+                    auto rhs4 = toTermFull(v, lStartIt, p, t2);
                     auto eq4 = logic::Formulas::equality(lhs4, rhs4);
                     
                     auto conclusion = logic::Formulas::universal({itSymbol}, eq4);

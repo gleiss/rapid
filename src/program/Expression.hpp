@@ -18,11 +18,19 @@ namespace program {
     class IntExpression
     {
     public:
-        enum class Type{ IntVariableAccess, IntArrayApplication, Other};
-        virtual Type type() const {return Type::Other;}
+        enum class Type
+        {
+            ArithmeticConstant,
+            Addition,
+            Subtraction,
+            Multiplication,
+            UnaryMinus,
+            IntVariableAccess,
+            IntArrayApplication,
+        };
+        virtual Type type() const = 0;
         
         virtual std::string toString() const = 0;
-        virtual std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const logic::Term> index) const = 0;
     };
     std::ostream& operator<<(std::ostream& ostr, const IntExpression& e);
 
@@ -33,8 +41,8 @@ namespace program {
         
         const int value;
         
+        Type type() const override { return IntExpression::Type::ArithmeticConstant; }
         std::string toString() const override;
-        std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const logic::Term> index) const override;
     };
     
     class Addition : public IntExpression
@@ -46,8 +54,8 @@ namespace program {
         const std::shared_ptr<const IntExpression> summand1;
         const std::shared_ptr<const IntExpression> summand2;
         
+        Type type() const override { return IntExpression::Type::Addition; }
         std::string toString() const override;
-        std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const logic::Term> index) const override;
     };
 
     class Subtraction : public IntExpression
@@ -59,8 +67,8 @@ namespace program {
         const std::shared_ptr<const IntExpression> child1;
         const std::shared_ptr<const IntExpression> child2;
         
+        Type type() const override { return IntExpression::Type::Subtraction; }
         std::string toString() const override;
-        std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const logic::Term> index) const override;
     };
     
     class Multiplication : public IntExpression
@@ -72,8 +80,8 @@ namespace program {
         const std::shared_ptr<const IntExpression> factor1;
         const std::shared_ptr<const IntExpression> factor2;
         
+        Type type() const override { return IntExpression::Type::Multiplication; }
         std::string toString() const override;
-        std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const logic::Term> index) const override;
     };
     
     class UnaryMinus : public IntExpression
@@ -83,15 +91,24 @@ namespace program {
 
         const std::shared_ptr<const IntExpression> child;
         
+        Type type() const override { return IntExpression::Type::UnaryMinus; }
         std::string toString() const override;
-        std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const logic::Term> index) const override;
     };
     
     class BoolExpression
     {
     public:
+        enum class Type
+        {
+            BooleanConstant,
+            BooleanAnd,
+            BooleanOr,
+            BooleanNot,
+            ArithmeticComparison
+        };
+        virtual Type type() const = 0;
+        
         virtual std::string toString() const = 0;
-        virtual std::shared_ptr<const logic::Formula> toFormula(std::shared_ptr<const logic::Term> index) const = 0;
     };
     std::ostream& operator<<(std::ostream& ostr, const BoolExpression& e);
 
@@ -102,8 +119,8 @@ namespace program {
         
         const bool value;
         
+        Type type() const override { return BoolExpression::Type::BooleanConstant; }
         std::string toString() const override;
-        std::shared_ptr<const logic::Formula> toFormula(std::shared_ptr<const logic::Term> index) const override;
     };
     
     class BooleanAnd : public BoolExpression
@@ -115,8 +132,8 @@ namespace program {
         const std::shared_ptr<const BoolExpression> child1;
         const std::shared_ptr<const BoolExpression> child2;
         
+        Type type() const override { return BoolExpression::Type::BooleanAnd; }
         std::string toString() const override;
-        std::shared_ptr<const logic::Formula> toFormula(std::shared_ptr<const logic::Term> index) const override;
     };
     
     class BooleanOr : public BoolExpression
@@ -128,8 +145,8 @@ namespace program {
         const std::shared_ptr<const BoolExpression> child1;
         const std::shared_ptr<const BoolExpression> child2;
         
+        Type type() const override { return BoolExpression::Type::BooleanOr; }
         std::string toString() const override;
-        std::shared_ptr<const logic::Formula> toFormula(std::shared_ptr<const logic::Term> index) const override;
     };
     
     class BooleanNot : public BoolExpression
@@ -140,8 +157,8 @@ namespace program {
         
         const std::shared_ptr<const BoolExpression> child;
         
+        Type type() const override { return BoolExpression::Type::BooleanNot; }
         std::string toString() const override;
-        std::shared_ptr<const logic::Formula> toFormula(std::shared_ptr<const logic::Term> index) const override;
     };
     
     class ArithmeticComparison : public BoolExpression
@@ -162,8 +179,8 @@ namespace program {
         const std::shared_ptr<const IntExpression> child1;
         const std::shared_ptr<const IntExpression> child2;
         
+        Type type() const override { return BoolExpression::Type::ArithmeticComparison; }
         std::string toString() const override;
-        std::shared_ptr<const logic::Formula> toFormula(std::shared_ptr<const logic::Term> index) const override;
     };
     
 

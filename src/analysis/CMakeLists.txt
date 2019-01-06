@@ -1,9 +1,11 @@
 set(SPECTRE_ANALYSIS_SOURCES
     Semantics.cpp
+    SemanticsHelper.cpp
     TraceLemmas.cpp
 )
 set(SPECTRE_ANALYSIS_HEADERS
     Semantics.hpp
+    SemanticsHelper.hpp
     TraceLemmas.hpp
 )
 

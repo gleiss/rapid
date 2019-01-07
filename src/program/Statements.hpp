@@ -5,6 +5,9 @@
 #include "Variable.hpp"
 
 #include <iostream>
+#include <vector>
+#include <memory>
+
 namespace program
 {
     class WhileStatement;

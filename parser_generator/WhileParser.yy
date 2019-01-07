@@ -24,7 +24,7 @@
 
 #include "Location.hpp"
 #include "WhileParserPostComputation.hpp"
-
+#include "SymbolDeclarations.hpp"
 
 #define YY_NULLPTR nullptr
 
@@ -388,7 +388,7 @@ statement_list:
   {
     // dummy is not used here, but silences a shift-reduce conflict
     context.addProgramVar($3);
-    $3->addSymbolToSignature();
+    declareSymbolForProgramVar($3.get());
     $$ = std::move($1);
   }
 ;
@@ -428,7 +428,7 @@ assignment_statement:
   {
     // declare var
     context.addProgramVar($1);
-    $1->addSymbolToSignature();
+    declareSymbolForProgramVar($1.get());
 
     // construct location
     if($1->isArray)

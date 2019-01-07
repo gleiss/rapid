@@ -13,11 +13,8 @@
 
 #include "Expression.hpp"
 
-#include "Term.hpp"
-#include "Formula.hpp"
-#include "Signature.hpp"
-
 #include <iostream>
+
 namespace program {
     
     class Variable
@@ -29,9 +26,7 @@ namespace program {
         const bool isConstant;
         const bool isArray;
         const bool twoTraces;
-        
-        virtual void addSymbolToSignature() const;
-        
+                
         bool operator==(const Variable& rhs) const { return (name == rhs.name); }
         bool operator!=(const Variable& rhs) const { return !operator==(rhs); }
     };

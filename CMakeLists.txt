@@ -22,9 +22,10 @@ add_executable(spectre src/main.cpp)
 
 
 add_subdirectory(src/analysis)
+add_subdirectory(src/declarations)
 add_subdirectory(src/logic)
 add_subdirectory(src/parser)
 add_subdirectory(src/program)
 add_subdirectory(src/util)
 
-target_link_libraries(spectre analysis logic parser program util)
+target_link_libraries(spectre analysis declarations logic parser program util)

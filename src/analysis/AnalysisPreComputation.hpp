@@ -3,6 +3,12 @@
 
 #include "Program.hpp"
 
+#include <unordered_map>
+#include <memory>
+
+#include "Term.hpp"
+#include "Formula.hpp"
+
 namespace analysis
 {
     typedef std::unordered_map<const program::Statement*, std::shared_ptr<const logic::Term>> StartTimePointMap;

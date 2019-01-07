@@ -1,7 +1,5 @@
 #include "Expression.hpp"
 
-#include "Sort.hpp"
-#include "Theory.hpp"
 #include "Options.hpp"
 
 namespace program {

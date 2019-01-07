@@ -9,9 +9,8 @@
 #ifndef __ProgramExpression__
 #define __ProgramExpression__
 
-#include "Sort.hpp"
-#include "Term.hpp"
-#include "Formula.hpp"
+#include <string>
+#include <memory>
 
 namespace program {
     

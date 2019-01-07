@@ -140,6 +140,7 @@ namespace logic {
     std::shared_ptr<const Symbol> Signature::fetch(std::string name)
     {
         auto it = _signature.find(name);
+        std::cout << name;
         assert(it != _signature.end());
         
         return it->second;

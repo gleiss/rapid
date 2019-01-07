@@ -308,7 +308,7 @@ namespace analysis {
     {
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts;
 
-        auto iSymbol = iteratorForLoop(whileStatement);
+        auto iSymbol = iteratorSymbol(whileStatement);
         auto i = logic::Terms::var(iSymbol);
         auto n = lastIterationTermForLoop(whileStatement, twoTraces);
 

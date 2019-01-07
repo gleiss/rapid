@@ -158,10 +158,6 @@ program:
   function_list 
   { 
     context.program = std::unique_ptr<const program::Program>(new program::Program($1)); 
-    
-    // finish parsing of program by computing for each statement the loops in which the
-    // statement is nested in
-    WhileParserPostComputation::addEnclosingLoops(*context.program);
   }
 ;
 
@@ -369,10 +365,18 @@ function:
   }
   statement_list RCUR
   {
-    auto functionEndLocationName =  $2 + "_end";
+    auto functionEndLocationName = $2 + "_end";
     context.locationToActiveVars[functionEndLocationName] = context.getActiveProgramVars();
     context.popProgramVars();
-  	$$ = std::shared_ptr<const program::Function>(new program::Function($2, std::move($7)));
+
+  	auto function = std::shared_ptr<const program::Function>(new program::Function($2, std::move($7)));
+
+    // compute enclosing loops
+    context.addEnclosingLoops(*function);
+    $$ = function;
+
+    // declare symbols for loops (needs to be done here, since it depends on enclosingLoops)
+    declareSymbolsForFunction(function.get(), context.twoTraces);
   }
 ;
 

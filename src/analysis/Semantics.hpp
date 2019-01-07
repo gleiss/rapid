@@ -15,7 +15,7 @@ namespace analysis {
     public:
         Semantics(const program::Program& program,
                   std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars,
-                  bool twoTraces = true) :
+                  bool twoTraces) :
         program(program),
         startTimePointMap(AnalysisPreComputation::computeStartTimePointMap(program)),
         endTimePointMap(AnalysisPreComputation::computeEndTimePointMap(program, startTimePointMap)),

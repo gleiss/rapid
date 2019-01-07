@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
                 
                 logic::Problem problem;
                 
-                analysis::Semantics s(*parserResult.program, parserResult.locationToActiveVars);
+                analysis::Semantics s(*parserResult.program, parserResult.locationToActiveVars, parserResult.twoTraces);
                 
                 problem.axioms = s.generateSemantics();
                 problem.conjecture = std::move(parserResult.conjecture);

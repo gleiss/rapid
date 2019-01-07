@@ -37,7 +37,7 @@ namespace parser
         
         std::unordered_map<std::string, std::shared_ptr<const program::Variable>> programVarsDeclarations;
         std::vector<std::vector<std::string>> programVarsStack;
-        
+                
     public:
         // methods which are called by bison to interact with the context
         bool pushQuantifiedVars(std::vector<std::shared_ptr<const logic::Symbol>> quantifiedVars);
@@ -49,6 +49,20 @@ namespace parser
         bool addProgramVar(std::shared_ptr<const program::Variable> programVar);
         std::shared_ptr<const program::Variable> getProgramVar(std::string name);
         std::vector<std::shared_ptr<const program::Variable>> getActiveProgramVars();
+        
+        /*
+         * we need to know for each statement in which loops it is nested in.
+         * we compute this information at the end of parsing each function.
+         * the enclosingLoops are added directly to each statement.
+         * note that we can't add the enclosing loops on the fly, since the
+         * enclosing loop is only constructed after the statement is constructed.
+         */
+    public:
+        void addEnclosingLoops(const program::Function& function);
+
+    private:
+        static void addEnclosingLoopsForStatement(const program::Statement* statement,
+                                                  std::vector<const program::WhileStatement*> enclosingLoops);
     };
 }
 

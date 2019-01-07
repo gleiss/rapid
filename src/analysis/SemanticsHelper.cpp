@@ -176,13 +176,17 @@ namespace analysis {
     
     std::shared_ptr<const logic::LVariable> iteratorTermForLoop(const program::WhileStatement* whileStatement)
     {
-        return logic::Terms::var(iteratorForLoop(whileStatement));
+        return logic::Terms::var(iteratorSymbol(whileStatement));
     }
     
     std::shared_ptr<const logic::Term> lastIterationTermForLoop(const program::WhileStatement* whileStatement, bool twoTraces)
     {
-        auto symbol = lastIterationForLoop(whileStatement, twoTraces);
+        auto symbol = lastIterationSymbol(whileStatement, twoTraces);
         std::vector<std::shared_ptr<const logic::Term>> subterms;
+        for (const auto& loop : *whileStatement->enclosingLoops)
+        {
+            subterms.push_back(iteratorTermForLoop(loop));
+        }
         if (twoTraces)
         {
             auto trSymbol = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());

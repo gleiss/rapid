@@ -69,7 +69,7 @@ namespace parser
         }
         programVarsDeclarations[programVar->name] = programVar;
         programVarsStack.back().push_back(programVar->name);
-
+        
         return true;
     }
     
@@ -96,5 +96,44 @@ namespace parser
         }
         return activeVars;
     }
-
+    
+# pragma mark enclosingLoops
+    
+    void WhileParsingContext::addEnclosingLoops(const program::Function& function)
+    {
+        for (const auto& statement : function.statements)
+        {
+            addEnclosingLoopsForStatement(statement.get(), {});
+        }
+    }
+    
+    void WhileParsingContext::addEnclosingLoopsForStatement(const program::Statement* statement, std::vector<const program::WhileStatement*> enclosingLoops)
+    {
+        *statement->enclosingLoops = enclosingLoops;
+        
+        if (statement->type() == program::Statement::Type::IfElse)
+        {
+            auto castedStatement = static_cast<const program::IfElse*>(statement);
+            for (const auto& statementInBranch : castedStatement->ifStatements)
+            {
+                addEnclosingLoopsForStatement(statementInBranch.get(), enclosingLoops);
+            }
+            for (const auto& statementInBranch : castedStatement->elseStatements)
+            {
+                addEnclosingLoopsForStatement(statementInBranch.get(), enclosingLoops);
+            }
+        }
+        else if (statement->type() == program::Statement::Type::WhileStatement)
+        {
+            auto castedStatement = static_cast<const program::WhileStatement*>(statement);
+            
+            auto enclosingLoopsCopy = enclosingLoops;
+            enclosingLoopsCopy.push_back(castedStatement);
+            for (const auto& bodyStatement : castedStatement->bodyStatements)
+            {
+                addEnclosingLoopsForStatement(bodyStatement.get(), enclosingLoopsCopy);
+            }
+        }
+    }
 }
+

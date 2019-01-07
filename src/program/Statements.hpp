@@ -18,8 +18,11 @@ namespace program
         
         const std::string location;
         /*
-         * enclosingLoops needs to be modified in the parser-post-computation (but must not change afterwards)
-         * we therefore need our programs to be constant up to the enclosingLoop-fields.
+         * enclosingLoops can only be computed after all enclosing loops are constructed, and
+         * the implementation only constructs them immediately after the whole function
+         * is constructed in the parser. This field can therefore only be used afterwards.
+         * Since enclosingLoops can't be computed at construction time, we need our programs
+         * to be constant only up to the enclosingLoop-field.
          * we achieve this by using indirection: constness is not transitive in c++,
          * so we get a (constant) pointer to a (not necessarily constant) vector enclosingLoops,
          * which we can fill up in the parser-post-computation.

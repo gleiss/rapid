@@ -317,7 +317,7 @@ namespace analysis {
         auto t1 = logic::Terms::func("t1", {}, logic::Sorts::traceSort());
         auto t2 = logic::Terms::func("t2", {}, logic::Sorts::traceSort());
         
-        auto itSymbol = iteratorForLoop(whileStatement);
+        auto itSymbol = iteratorSymbol(whileStatement);
         auto it = logic::Terms::var(itSymbol);
         auto locationSymbol = locationSymbolForStatement(whileStatement);
         

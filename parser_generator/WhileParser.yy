@@ -303,6 +303,7 @@ SMTLIB_ID
 {
   // std::cout << "parsing smtlib const " << std::string($1) << "\n"; 
   // TODO: propagate nonexisting-definition-error to parser and raise error
+  // TODO: propagate wrong-argument-sort(s)-error to parser and raise error
   auto symbol = context.fetch($1); 
   $$ = logic::Terms::func(symbol, std::vector<std::shared_ptr<const logic::Term>>());
 }
@@ -312,7 +313,20 @@ SMTLIB_ID
   // std::cout << "parsing smtlib term " << std::string($2) << "\n"; 
   // TODO: propagate nonexisting-definition-error to parser and raise error
   // TODO: propagate wrong-argument-sort(s)-error to parser and raise error
+
   auto symbol = context.fetch($2); 
+
+  if(symbol->argSorts.size() != $3.size())
+  {
+      error(@3, "Not enough arguments for term " + symbol->name);
+  }
+  for (int i=0; i < symbol->argSorts.size(); ++i)
+  {
+      if(symbol->argSorts[i] != $3[i]->symbol->rngSort)
+      {
+        error(@3, "Argument at position " + std::to_string(i) + " has type " + $3[i]->symbol->rngSort->name + " instead of " + symbol->argSorts[i]->name);
+      }
+  }
   $$ = logic::Terms::func(symbol, std::move($3));
 }
 | LPAR PLUS smtlib_term smtlib_term RPAR 
@@ -606,5 +620,6 @@ void parser::WhileParser::error(const location_type& l,
 {
   std::cout << "Error while parsing location " << l << ":\n" << m << std::endl;
   context.errorFlag = true;
+  exit(1);
 }
 

@@ -38,8 +38,8 @@ namespace logic {
     {
     public:
         // construct various sorts
-        static Sort* boolSort() { return fetchOrDeclare("bool"); }
-        static Sort* intSort() { return fetchOrDeclare("int"); }
+        static Sort* boolSort() { return fetchOrDeclare("Bool"); }
+        static Sort* intSort() { return fetchOrDeclare("Int"); }
         static Sort* natSort() { return fetchOrDeclare("Nat"); }
         static Sort* timeSort() { return fetchOrDeclare("Time"); }
         static Sort* traceSort() { return fetchOrDeclare("Trace"); }

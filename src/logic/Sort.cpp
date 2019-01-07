@@ -9,11 +9,11 @@ namespace logic {
     
     std::string Sort::toSMTLIB() const
     {
-        if (name == "int")
+        if (name == "Int")
         {
             return "Int";
         }
-        else if (name == "bool")
+        else if (name == "Bool")
         {
             return "Bool";
         }

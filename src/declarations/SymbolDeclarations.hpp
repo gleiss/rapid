@@ -14,13 +14,18 @@ std::shared_ptr<const logic::Symbol> locationSymbolEndLocation(const program::Fu
 std::shared_ptr<const logic::Symbol> iteratorSymbol(const program::WhileStatement* whileStatement);
 std::shared_ptr<const logic::Symbol> lastIterationSymbol(const program::WhileStatement* whileStatement, bool twoTraces);
 
+std::shared_ptr<const logic::Symbol> trace1Symbol();
+std::shared_ptr<const logic::Symbol> trace2Symbol();
+
 /*
- * The parser needs to declare itself the symbols corresponding to variables, locations and last-loop-iterations,
+ * The parser needs to declare itself the symbols corresponding to variables, locations, last-loop-iterations and (if enabled) traces,
  * since later parts of the parsing (i.e. the smtlib-formula-parsing) require those declarations to exist already.
  * program variables are declared on the fly during parsing (at least for now),
- * all other symbols are declared per function whenever the function-parsing is finished.
+ * (if enabled) traces are declared immediately after parsing (two-traces),
+ * and all other symbols are declared per function whenever the function-parsing is finished.
  */
 void declareSymbolForProgramVar(const program::Variable* var);
+void declareSymbolsForTraces();
 void declareSymbolsForFunction(const program::Function* function, bool twoTraces);
 // helper method for declareSymbolsForFunction
 void declareSymbolsForStatements(const program::Statement* statement, bool twoTraces);

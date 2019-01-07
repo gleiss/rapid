@@ -38,6 +38,10 @@ namespace analysis {
 
     std::shared_ptr<const logic::LVariable> iteratorTermForLoop(const program::WhileStatement* whileStatement);
     std::shared_ptr<const logic::Term> lastIterationTermForLoop(const program::WhileStatement* whileStatement, bool twoTraces);
+    
+    std::shared_ptr<const logic::Term> trace1Term();
+    std::shared_ptr<const logic::Term> trace2Term();
+
 }
 
 

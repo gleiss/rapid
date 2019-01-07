@@ -170,7 +170,7 @@ namespace analysis
         auto t1 = logic::Terms::var(iteratorSymbol(whileStatement));
         auto t2 = logic::Theory::timeSucc(t1);
         enclosingIteratorTerms.push_back(t2);
-        auto t3 = logic::Terms::func(whileStatement->location, enclosingIteratorTerms, logic::Sorts::timeSort());
+        auto t3 = logic::Terms::func(locationSymbolForStatement(whileStatement), enclosingIteratorTerms);
         
         endTimePointMap[lastStatement] = t3;
         

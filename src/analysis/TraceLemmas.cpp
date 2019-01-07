@@ -314,8 +314,8 @@ namespace analysis {
     void TraceLemmas::generateTwoTracesLemmas(const program::WhileStatement* whileStatement,
                                               std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
     {
-        auto t1 = logic::Terms::func("t1", {}, logic::Sorts::traceSort());
-        auto t2 = logic::Terms::func("t2", {}, logic::Sorts::traceSort());
+        auto t1 = trace1Term();
+        auto t2 = trace2Term();
         
         auto itSymbol = iteratorSymbol(whileStatement);
         auto it = logic::Terms::var(itSymbol);

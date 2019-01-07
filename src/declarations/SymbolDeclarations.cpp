@@ -56,6 +56,15 @@ std::shared_ptr<const logic::Symbol> iteratorSymbol(const program::WhileStatemen
     return logic::Signature::varSymbol("It" + whileStatement->location, logic::Sorts::timeSort());
 }
 
+std::shared_ptr<const logic::Symbol> trace1Symbol()
+{
+    return logic::Signature::fetchOrAdd("t1", {}, logic::Sorts::traceSort());
+}
+std::shared_ptr<const logic::Symbol> trace2Symbol()
+{
+    return logic::Signature::fetchOrAdd("t2", {}, logic::Sorts::traceSort());
+}
+
 void declareSymbolForProgramVar(const program::Variable* var)
 {
     std::vector<const logic::Sort*> argSorts;
@@ -73,6 +82,13 @@ void declareSymbolForProgramVar(const program::Variable* var)
     }
     
     logic::Signature::add(var->name, argSorts, logic::Sorts::intSort());
+}
+
+void declareSymbolsForTraces()
+{
+    // declare trace symbols
+    trace1Symbol();
+    trace2Symbol();
 }
 
 // symbols get declared by constructing them once

@@ -150,6 +150,7 @@ problem:
   TWOTRACES
   {
     context.twoTraces = true;
+    declareSymbolsForTraces();
   }
   program smtlib_conjecture {}
 ;
@@ -274,13 +275,17 @@ smtlib_quantvar:
     {
       $$ = logic::Signature::varSymbol($2, logic::Sorts::boolSort());
     }
+    else if($3 == "Time")
+    {
+      $$ = logic::Signature::varSymbol($2, logic::Sorts::timeSort());
+    }
     else
     {
-      if($3 != "Time")
+      if($3 != "Trace")
       {
-        error(@3, "Only the sorts Int, Bool and Time are supported");
+        error(@3, "Only the sorts Int, Bool, Time and Trace are supported");
       }
-      $$ = logic::Signature::varSymbol($2, logic::Sorts::timeSort());
+      $$ = logic::Signature::varSymbol($2, logic::Sorts::traceSort());
     }
   }
 ;
@@ -497,26 +502,50 @@ active_vars_dummy:
 var_definition_head:
   TYPE PROGRAM_ID
   {
-    // TODO: check that TYPE is not Time
-    // TODO: support Bool or check that TYPE is not Bool
+    if($1 == "Bool")
+    {
+      error(@1, "Program variables of type Bool are not supported");
+    }
+    if($1 == "Time" || $1 == "Trace")
+    {
+      error(@1, "Program variables can't have type " + $1);
+    }
     $$ = std::shared_ptr<const program::Variable>(new program::Variable($2, false, false, context.twoTraces));
   }
 | CONST TYPE PROGRAM_ID
   {
-    // TODO: check that TYPE is not Time
-    // TODO: support Bool or check that TYPE is not Bool
+    if($2 == "Bool")
+    {
+      error(@1, "Program variables of type Bool are not supported");
+    }
+    if($2 == "Time" || $2 == "Trace")
+    {
+      error(@2, "Program variables can't have type " + $2);
+    }
     $$ = std::shared_ptr<const program::Variable>(new program::Variable($3, true, false, context.twoTraces));
   }
 | TYPE LBRA RBRA PROGRAM_ID
   {
-    // TODO: check that TYPE is not Time
-    // TODO: support Bool or check that TYPE is not Bool
+    if($1 == "Bool")
+    {
+      error(@1, "Program variables of type Bool are not supported");
+    }
+    if($1 == "Time" || $1 == "Trace")
+    {
+      error(@1, "Program variables can't have type " + $1);
+    }
     $$ = std::shared_ptr<const program::Variable>(new program::Variable($4, false, true, context.twoTraces));
   }
 | CONST TYPE LBRA RBRA PROGRAM_ID
   {
-    // TODO: check that TYPE is not Time
-    // TODO: support Bool or check that TYPE is not Bool
+    if($2 == "Bool")
+    {
+      error(@1, "Program variables of type Bool are not supported");
+    }
+    if($2 == "Time" || $2 == "Trace")
+    {
+      error(@2, "Program variables can't have type " + $2);
+    }
     $$ = std::shared_ptr<const program::Variable>(new program::Variable($5, true, true, context.twoTraces));
   }
 ;

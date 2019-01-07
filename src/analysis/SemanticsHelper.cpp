@@ -196,5 +196,14 @@ namespace analysis {
         return logic::Terms::func(symbol, subterms);
     }
     
+    std::shared_ptr<const logic::Term> trace1Term()
+    {
+        return logic::Terms::func(trace1Symbol(), {});
+    }
+    std::shared_ptr<const logic::Term> trace2Term()
+    {
+        return logic::Terms::func(trace2Symbol(), {});
+    }
+
     
 }

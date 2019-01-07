@@ -431,8 +431,6 @@ statement:
 assignment_statement:
   location ASSIGN expr SCOL 
   {
-    // TODO: check that location and expr have the same type (need refactoring first so that IntExpression and BoolExpression have a common superclass)
-
     if($1->type() == IntExpression::Type::IntVariableAccess)
     {
       auto intVariableAccess = std::static_pointer_cast<const program::IntVariableAccess>($1);

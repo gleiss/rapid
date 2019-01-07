@@ -63,42 +63,6 @@ namespace logic {
     bool eqLVarPointers(const LVariable* p1, const LVariable* p2) {
         return p1->id == p2->id;
     }
-
-//    std::vector<std::shared_ptr<const LVariable>> LVariable::freeVariables() const
-//    {
-//        return { std::make_shared<const LVariable>(this) };
-//    }
-//
-//    std::vector<std::shared_ptr<const LVariable>> FuncTerm::freeVariables() const {
-//        std::vector<std::shared_ptr<const LVariable>> freeVars;
-//        // collect free vars from all subterms
-//        for (const auto& subterm : subterms)
-//        {
-//            auto freeVarsSubterm = subterm->freeVariables();
-//            freeVars.insert(freeVars.end(), freeVarsSubterm.begin(), freeVarsSubterm.end());
-//        }
-//        // sort and remove duplicates
-//        std::sort(freeVars.begin(), freeVars.end(), compareLVarPointers);
-//        freeVars.erase( unique(freeVars.begin(), freeVars.end(), eqLVarPointers), freeVars.end());
-//
-//        return freeVars;
-//    }
-//
-//    std::vector<std::shared_ptr<const LVariable>> PredTerm::freeVariables() const
-//    {
-//        std::vector<std::shared_ptr<const LVariable>> freeVars;
-//        // collect free vars from all subterms
-//        for (const auto& subterm : subterms)
-//        {
-//            auto freeVarsSubterm = subterm->freeVariables();
-//            freeVars.insert(freeVars.end(), freeVarsSubterm.begin(), freeVarsSubterm.end());
-//        }
-//        // sort and remove duplicates
-//        std::sort(freeVars.begin(), freeVars.end(), compareLVarPointers);
-//        freeVars.erase( unique(freeVars.begin(), freeVars.end(), eqLVarPointers), freeVars.end());
-//
-//        return freeVars;
-//    }
     
 # pragma mark - Terms
     

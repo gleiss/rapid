@@ -5,7 +5,7 @@ std::shared_ptr<const logic::Symbol> locationSymbol(std::string location, unsign
     auto enclosingIteratorTypes = std::vector<const logic::Sort*>();
     for(int i=0; i < numberOfLoops; ++i)
     {
-        enclosingIteratorTypes.push_back(logic::Sorts::timeSort());
+        enclosingIteratorTypes.push_back(logic::Sorts::natSort());
     }
     return logic::Signature::fetchOrAdd(location, enclosingIteratorTypes, logic::Sorts::timeSort());
 
@@ -42,18 +42,18 @@ std::shared_ptr<const logic::Symbol> lastIterationSymbol(const program::WhileSta
     std::vector<const logic::Sort*> argumentSorts;
     for (unsigned i=0; i < statement->enclosingLoops->size(); ++i)
     {
-        argumentSorts.push_back(logic::Sorts::timeSort());
+        argumentSorts.push_back(logic::Sorts::natSort());
     }
     if (twoTraces)
     {
         argumentSorts.push_back(logic::Sorts::traceSort());
     }
-    return logic::Signature::fetchOrAdd("n" + statement->location, argumentSorts, logic::Sorts::timeSort());
+    return logic::Signature::fetchOrAdd("n" + statement->location, argumentSorts, logic::Sorts::natSort());
 }
 
 std::shared_ptr<const logic::Symbol> iteratorSymbol(const program::WhileStatement* whileStatement)
 {
-    return logic::Signature::varSymbol("It" + whileStatement->location, logic::Sorts::timeSort());
+    return logic::Signature::varSymbol("It" + whileStatement->location, logic::Sorts::natSort());
 }
 
 std::shared_ptr<const logic::Symbol> trace1Symbol()

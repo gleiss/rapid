@@ -125,8 +125,8 @@ namespace analysis {
             enclosingIteratorsAndN.push_back(enclosingIterator);
         }
         enclosingIteratorsAndIt.push_back(it);
-        enclosingIteratorsAndSuccOfIt.push_back(logic::Theory::timeSucc(it));
-        enclosingIteratorsAndZero.push_back(logic::Theory::timeZero());
+        enclosingIteratorsAndSuccOfIt.push_back(logic::Theory::natSucc(it));
+        enclosingIteratorsAndZero.push_back(logic::Theory::natZero());
         enclosingIteratorsAndN.push_back(n);
         
         auto lStartIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndIt);
@@ -142,7 +142,7 @@ namespace analysis {
                 if (!v->isArray)
                 {
                     // Part1: it<=n => v(l(it1,...,itk,it)) C v(l(it1,...,itk,s(it))), where C in {=,<,>,<=,>=}
-                    auto ineq = logic::Theory::timeSub(it, n);
+                    auto ineq = logic::Theory::natSub(it, n);
                     
                     auto lhs1 = toTerm(v,lStartIt);
                     auto rhs1 = toTerm(v,lStartSuccOfIt);
@@ -208,7 +208,7 @@ namespace analysis {
                 if (v->isArray)
                 {
                     // Part1: it<=n => v(l(it1,...,itk,it),p) C v(l(it1,...,itk,s(it)),p), where C in {=,<,>,<=,>=}
-                    auto ineq = logic::Theory::timeSub(it, n);
+                    auto ineq = logic::Theory::natSub(it, n);
                     
                     auto lhs1 = toTerm(v,lStartIt, p);
                     auto rhs1 = toTerm(v,lStartSuccOfIt, p);
@@ -334,8 +334,8 @@ namespace analysis {
             enclosingIteratorsAndZero.push_back(enclosingIterator);
         }
         enclosingIteratorsAndIt.push_back(it);
-        enclosingIteratorsAndSuccOfIt.push_back(logic::Theory::timeSucc(it));
-        enclosingIteratorsAndZero.push_back(logic::Theory::timeZero());
+        enclosingIteratorsAndSuccOfIt.push_back(logic::Theory::natSucc(it));
+        enclosingIteratorsAndZero.push_back(logic::Theory::natZero());
         
         auto lStartIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndIt);
         auto lStartSuccOfIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndSuccOfIt);

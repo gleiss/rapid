@@ -59,24 +59,24 @@ namespace logic {
         return Formulas::predicate("bool_false", {}, label, true);
     }
     
-    std::shared_ptr<const FuncTerm> Theory::timeZero()
+    std::shared_ptr<const FuncTerm> Theory::natZero()
     {
-        return Terms::func("time_zero", {}, Sorts::timeSort(), true);
+        return Terms::func("nat_zero", {}, Sorts::natSort(), true);
     }
     
-    std::shared_ptr<const FuncTerm> Theory::timeSucc(std::shared_ptr<const Term> term)
+    std::shared_ptr<const FuncTerm> Theory::natSucc(std::shared_ptr<const Term> term)
     {
-        return Terms::func("time_succ", {term}, Sorts::timeSort(), true);
+        return Terms::func("nat_succ", {term}, Sorts::natSort(), true);
     }
     
-    std::shared_ptr<const FuncTerm> Theory::timePre(std::shared_ptr<const Term> term)
+    std::shared_ptr<const FuncTerm> Theory::natPre(std::shared_ptr<const Term> term)
     {
-        return Terms::func("time_pre", {term}, Sorts::timeSort(), true);
+        return Terms::func("nat_pre", {term}, Sorts::natSort(), true);
     }
     
-    std::shared_ptr<const Formula> Theory::timeSub(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2, std::string label)
+    std::shared_ptr<const Formula> Theory::natSub(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2, std::string label)
     {
-        return Formulas::predicate("time_sub", {t1,t2}, label, true);
+        return Formulas::predicate("nat_sub", {t1,t2}, label, true);
     }
     
 }

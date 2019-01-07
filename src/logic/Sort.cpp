@@ -30,9 +30,9 @@ namespace logic {
             // SMTLIB already knows Int and Bool.
             return "";
         }
-        else if (s.toSMTLIB() == "Time")
+        else if (s.toSMTLIB() == "Nat")
         {
-            return "(declare-datatypes ((Time 0)) (( (zero) (s (p Time)) )) )\n";
+            return "(declare-datatypes ((Nat 0)) (( (zero) (s (p Nat)) )) )\n";
         }
         else if (s.toSMTLIB() == "Trace")
         {

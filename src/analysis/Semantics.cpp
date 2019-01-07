@@ -369,14 +369,14 @@ namespace analysis {
         conjuncts.push_back(logic::Formulas::universal({iSymbol}, logic::Formulas::conjunction(conjuncts2), "Semantics of the body"));
         
         // Part 3: Define last iteration
-        // Loop condition holds always before n
-        auto iLessN = logic::Theory::timeSub(i, n);
-        auto conditionAtI = toFormula(whileStatement->condition, i);
-        auto imp = logic::Formulas::implication(iLessN, conditionAtI);
+        // Loop condition holds at main-loop-location for all iterations before n
+        auto iLessN = logic::Theory::natSub(i, n);
+        auto conditionAtLStartIt = toFormula(whileStatement->condition, lStartIt);
+        auto imp = logic::Formulas::implication(iLessN, conditionAtLStartIt);
         conjuncts.push_back(logic::Formulas::universal({iSymbol}, imp, "The loop-condition holds always before the last iteration"));
         
         // loop condition doesn't hold at n
-        auto negConditionAtN = logic::Formulas::negation(toFormula(whileStatement->condition, n), "The loop-condition doesn't hold in the last iteration");
+        auto negConditionAtN = logic::Formulas::negation(toFormula(whileStatement->condition, lStartN), "The loop-condition doesn't hold in the last iteration");
         conjuncts.push_back(negConditionAtN);
         
         // Part 4: The values after the while-loop are the values from the timepoint with location lStart and iteration n

@@ -24,10 +24,10 @@ namespace logic {
         static std::shared_ptr<const Formula> boolTrue(std::string label="");
         static std::shared_ptr<const Formula> boolFalse(std::string label="");
 
-        static std::shared_ptr<const FuncTerm> timeZero();
-        static std::shared_ptr<const FuncTerm> timeSucc(std::shared_ptr<const Term> term);
-        static std::shared_ptr<const FuncTerm> timePre(std::shared_ptr<const Term> term);
-        static std::shared_ptr<const Formula> timeSub(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2, std::string label="");
+        static std::shared_ptr<const FuncTerm> natZero();
+        static std::shared_ptr<const FuncTerm> natSucc(std::shared_ptr<const Term> term);
+        static std::shared_ptr<const FuncTerm> natPre(std::shared_ptr<const Term> term);
+        static std::shared_ptr<const Formula> natSub(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2, std::string label="");
     };
     
 }

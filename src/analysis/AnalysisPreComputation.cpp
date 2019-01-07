@@ -34,7 +34,7 @@ namespace analysis
         
         if (statement->type() == program::Statement::Type::WhileStatement)
         {
-            enclosingIteratorTerms.push_back(logic::Theory::timeZero());
+            enclosingIteratorTerms.push_back(logic::Theory::natZero());
         }
         startTimePointMap[statement] = logic::Terms::func(locationSymbolForStatement(statement), enclosingIteratorTerms);
         
@@ -168,7 +168,7 @@ namespace analysis
             enclosingIteratorTerms.push_back(logic::Terms::var(enclosingIteratorSymbol));
         }
         auto t1 = logic::Terms::var(iteratorSymbol(whileStatement));
-        auto t2 = logic::Theory::timeSucc(t1);
+        auto t2 = logic::Theory::natSucc(t1);
         enclosingIteratorTerms.push_back(t2);
         auto t3 = logic::Terms::func(locationSymbolForStatement(whileStatement), enclosingIteratorTerms);
         

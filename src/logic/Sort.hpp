@@ -40,6 +40,7 @@ namespace logic {
         // construct various sorts
         static Sort* boolSort() { return fetchOrDeclare("bool"); }
         static Sort* intSort() { return fetchOrDeclare("int"); }
+        static Sort* natSort() { return fetchOrDeclare("Nat"); }
         static Sort* timeSort() { return fetchOrDeclare("Time"); }
         static Sort* traceSort() { return fetchOrDeclare("Trace"); }
 

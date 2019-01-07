@@ -23,7 +23,6 @@
 #include "Program.hpp"
 
 #include "Location.hpp"
-#include "WhileParserPostComputation.hpp"
 #include "SymbolDeclarations.hpp"
 
 #define YY_NULLPTR nullptr
@@ -275,6 +274,10 @@ smtlib_quantvar:
     {
       $$ = logic::Signature::varSymbol($2, logic::Sorts::boolSort());
     }
+    else if($3 == "Nat")
+    {
+      $$ = logic::Signature::varSymbol($2, logic::Sorts::natSort());
+    }
     else if($3 == "Time")
     {
       $$ = logic::Signature::varSymbol($2, logic::Sorts::timeSort());
@@ -506,7 +509,7 @@ var_definition_head:
     {
       error(@1, "Program variables of type Bool are not supported");
     }
-    if($1 == "Time" || $1 == "Trace")
+    if($1 == "Nat" || $1 == "Time" || $1 == "Trace")
     {
       error(@1, "Program variables can't have type " + $1);
     }
@@ -518,7 +521,7 @@ var_definition_head:
     {
       error(@1, "Program variables of type Bool are not supported");
     }
-    if($2 == "Time" || $2 == "Trace")
+    if($2 == "Nat" || $2 == "Time" || $2 == "Trace")
     {
       error(@2, "Program variables can't have type " + $2);
     }
@@ -530,7 +533,7 @@ var_definition_head:
     {
       error(@1, "Program variables of type Bool are not supported");
     }
-    if($1 == "Time" || $1 == "Trace")
+    if($1 == "Nat" || $1 == "Time" || $1 == "Trace")
     {
       error(@1, "Program variables can't have type " + $1);
     }
@@ -542,7 +545,7 @@ var_definition_head:
     {
       error(@1, "Program variables of type Bool are not supported");
     }
-    if($2 == "Time" || $2 == "Trace")
+    if($2 == "Nat" || $2 == "Time" || $2 == "Trace")
     {
       error(@2, "Program variables can't have type " + $2);
     }

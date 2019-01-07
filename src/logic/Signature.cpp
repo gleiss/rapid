@@ -16,11 +16,11 @@ namespace logic {
         {
             // hack since Vampire currently doesn't add the sub-predicate itself
             // declare and define the symbol time_sub
-            if (name == "time_sub")
+            if (name == "nat_sub")
             {
-                std::string ret = "(declare-fun Sub (Time Time) Bool)\n";
-                ret += "(assert (forall ((it Time)) (Sub it (s it))) )\n";
-                ret += "(assert (forall ((it1 Time)(it2 Time)) (=> (Sub it1 it2) (Sub it1 (s it2))) ))\n";
+                std::string ret = "(declare-fun Sub (Nat Nat) Bool)\n";
+                ret += "(assert (forall ((it Nat)) (Sub it (s it))) )\n";
+                ret += "(assert (forall ((it1 Nat)(it2 Nat)) (=> (Sub it1 it2) (Sub it1 (s it2))) ))\n";
                 return ret;
             }
             if (argSorts.size() == 0)
@@ -100,19 +100,19 @@ namespace logic {
         {
             return "false";
         }
-        else if (name == "time_zero")
+        else if (name == "nat_zero")
         {
             return "zero";
         }
-        else if (name == "time_succ")
+        else if (name == "nat_succ")
         {
             return "s";
         }
-        else if (name == "time_pre")
+        else if (name == "nat_pre")
         {
             return "p";
         }
-        else if (name == "time_sub")
+        else if (name == "nat_sub")
         {
             return "Sub";
         }
@@ -140,7 +140,6 @@ namespace logic {
     std::shared_ptr<const Symbol> Signature::fetch(std::string name)
     {
         auto it = _signature.find(name);
-        std::cout << name;
         assert(it != _signature.end());
         
         return it->second;

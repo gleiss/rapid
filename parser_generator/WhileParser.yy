@@ -303,8 +303,12 @@ SMTLIB_ID
 {
   // std::cout << "parsing smtlib const " << std::string($1) << "\n"; 
   // TODO: propagate nonexisting-definition-error to parser and raise error
-  // TODO: propagate wrong-argument-sort(s)-error to parser and raise error
   auto symbol = context.fetch($1); 
+
+  if(symbol->argSorts.size() > 0)
+  {
+      error(@1, "Not enough arguments for term " + symbol->name);
+  }
   $$ = logic::Terms::func(symbol, std::vector<std::shared_ptr<const logic::Term>>());
 }
 | INTEGER                                 {$$ = logic::Theory::intConstant($1);}

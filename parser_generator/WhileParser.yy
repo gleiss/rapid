@@ -312,8 +312,6 @@ SMTLIB_ID
 {
   // std::cout << "parsing smtlib term " << std::string($2) << "\n"; 
   // TODO: propagate nonexisting-definition-error to parser and raise error
-  // TODO: propagate wrong-argument-sort(s)-error to parser and raise error
-
   auto symbol = context.fetch($2); 
 
   if(symbol->argSorts.size() != $3.size())

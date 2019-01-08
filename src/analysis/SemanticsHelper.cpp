@@ -50,8 +50,7 @@ namespace analysis {
         
         if (var->twoTraces)
         {
-            auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-            arguments.push_back(logic::Terms::var(tr));
+            arguments.push_back(trace);
         }
         
         return logic::Terms::func(var->name, arguments, logic::Sorts::intSort());

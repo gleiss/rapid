@@ -192,8 +192,17 @@ namespace analysis {
                     }
                     // Part1 => Part2
                     auto label = "Lemma: Induction on " + connective + " for var " + v->name + " and location " + whileStatement->location;
-                    auto lemma = logic::Formulas::implication(universal, formula2, label);
-                    lemmas.push_back(lemma);
+                    if (twoTraces)
+                    {
+                        auto lemma = logic::Formulas::implication(universal, formula2);
+                        auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
+                        lemmas.push_back(logic::Formulas::universal({tr}, lemma, label));
+                    }
+                    else
+                    {
+                        auto lemma = logic::Formulas::implication(universal, formula2);
+                        lemmas.push_back(lemma);
+                    }
                 }
             }
         }
@@ -259,9 +268,18 @@ namespace analysis {
                     // forall p. (Part1 => Part2)
                     auto outerImp = logic::Formulas::implication(universal, formula2);
                     auto label = "Lemma: Induction on " + connective + " for array var " + v->name + " and location " + whileStatement->location;
-                    auto lemma = logic::Formulas::universal({pSymbol}, outerImp, label);
                     
-                    lemmas.push_back(lemma);
+                    if (twoTraces)
+                    {
+                        auto lemma = logic::Formulas::universal({pSymbol}, outerImp);
+                        auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
+                        lemmas.push_back(logic::Formulas::universal({tr}, lemma, label));
+                    }
+                    else
+                    {
+                        auto lemma = logic::Formulas::universal({pSymbol}, outerImp, label);
+                        lemmas.push_back(lemma);
+                    }
                 }
             }
         }

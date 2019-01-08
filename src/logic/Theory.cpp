@@ -6,7 +6,7 @@ namespace logic {
 
     // declare each function-/predicate-symbol by constructing it
     // has additional sideeffect of declaring the involved sorts
-    void Theory::declareTheories(bool twoTraces)
+    void Theory::declareTheories()
     {
         boolTrue();
         boolFalse();

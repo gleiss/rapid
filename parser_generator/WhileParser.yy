@@ -145,7 +145,7 @@ YY_DECL;
 
 problem:
   {
-    logic::Theory::declareTheories(context.twoTraces);
+    logic::Theory::declareTheories();
   }
   program smtlib_conjecture 
   {
@@ -155,7 +155,7 @@ problem:
   TWOTRACES
   {
     context.twoTraces = true;
-    logic::Theory::declareTheories(context.twoTraces);
+    logic::Theory::declareTheories();
     declareSymbolsForTraces();
   }
   program smtlib_conjecture {}

@@ -9,7 +9,7 @@ namespace logic {
     
     class Theory {
     public:
-        static void declareTheories(bool twoTraces);
+        static void declareTheories();
         
         static std::shared_ptr<const FuncTerm> intConstant(int i);
         static std::shared_ptr<const FuncTerm> intAddition(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2);

@@ -93,7 +93,7 @@ namespace logic {
     
     std::shared_ptr<const Formula> Theory::natSub(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2, std::string label)
     {
-        return Formulas::predicate("Sub", {t1,t2}, label, true);
+        return Formulas::predicate("Sub", {t1,t2}, label, false); // Sub needs a declaration, since it is not added by Vampire yet
     }
     
 }

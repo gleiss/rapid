@@ -45,6 +45,13 @@ namespace analysis {
                                              std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
         void generateTwoTracesLemmas(const program::WhileStatement* whileStatement,
                                              std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+        
+        void generateNEqualLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+        void generateNEqualLemmas(const program::Statement* statement,
+                                     std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+        void generateNEqualLemmas(const program::WhileStatement* whileStatement,
+                                     std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+        
     };
 }
 

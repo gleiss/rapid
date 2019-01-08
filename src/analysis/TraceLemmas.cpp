@@ -28,6 +28,7 @@ namespace analysis {
         {
             // generate for each active variable at each loop an induction lemma for equality of the variable on both traces
             generateTwoTracesLemmas(lemmas);
+            generateNEqualLemmas(lemmas);
         }
         return lemmas;
     }
@@ -445,6 +446,96 @@ namespace analysis {
                 }
             }
         }
+    }
+    
+    void TraceLemmas::generateNEqualLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
+    {
+        for(const auto& function : program.functions)
+        {
+            std::vector<std::shared_ptr<const logic::Formula>> conjunctsFunction;
+            
+            for (const auto& statement : function->statements)
+            {
+                generateNEqualLemmas(statement.get(), lemmas);
+            }
+        }
+    }
+    
+    void TraceLemmas::generateNEqualLemmas(const program::Statement* statement,
+                                              std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
+    {
+        if (statement->type() == program::Statement::Type::IfElse)
+        {
+            auto castedStatement = static_cast<const program::IfElse*>(statement);
+            // recurse on both branches
+            for (const auto& statement : castedStatement->ifStatements)
+            {
+                generateNEqualLemmas(statement.get(), lemmas);
+            }
+            for (const auto& statement : castedStatement->elseStatements)
+            {
+                generateNEqualLemmas(statement.get(), lemmas);
+            }
+        }
+        else if (statement->type() == program::Statement::Type::WhileStatement)
+        {
+            auto castedStatement = static_cast<const program::WhileStatement*>(statement);
+            // generate lemmas
+            generateNEqualLemmas(castedStatement, lemmas);
+            
+            // recurse on body
+            for (const auto& statement : castedStatement->bodyStatements)
+            {
+                generateNEqualLemmas(statement.get(), lemmas);
+            }
+        }
+    }
+    
+
+    void TraceLemmas::generateNEqualLemmas(const program::WhileStatement* whileStatement,
+                                              std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
+    {
+        assert(twoTraces);
+
+        auto t1 = trace1Term();
+        auto t2 = trace2Term();
+        
+        auto it = iteratorTermForLoop(whileStatement);
+        auto nT1 = lastIterationTermForLoop(whileStatement, t1, true);
+        auto nT2 = lastIterationTermForLoop(whileStatement, t2, true);
+        
+        auto iteratorsItTerms = std::vector<std::shared_ptr<const logic::Term>>();
+        auto iteratorsNT2Terms = std::vector<std::shared_ptr<const logic::Term>>();
+        for (const auto& enclosingLoop : *whileStatement->enclosingLoops)
+        {
+            auto enclosingIteratorTerm = iteratorTermForLoop(enclosingLoop);
+            iteratorsItTerms.push_back(enclosingIteratorTerm);
+            iteratorsNT2Terms.push_back(enclosingIteratorTerm);
+
+        }
+        iteratorsItTerms.push_back(it);
+        iteratorsNT2Terms.push_back(nT2);
+
+        auto lStartIt = logic::Terms::func(locationSymbolForStatement(whileStatement), iteratorsItTerms);
+        auto lStartNT2 = logic::Terms::func(locationSymbolForStatement(whileStatement), iteratorsNT2Terms);
+
+        // Part 1: Loop condition holds at main-loop-location in t1 for all iterations before n(t2)
+        auto sub = logic::Theory::natSub(it, nT2);
+        auto condition1 = toFormula(whileStatement->condition, lStartIt, t1);
+        auto imp = logic::Formulas::implication(sub, condition1);
+        auto part1 = logic::Formulas::universal({it->symbol}, imp);
+        
+        // Part 2: Loop condition doesn't hold at main-loop-location in t1 for iteration n(t2)
+        auto condition2 = toFormula(whileStatement->condition, lStartNT2, t1);
+        auto part2 = logic::Formulas::negation(condition2);
+        
+        // (Part1 and Part2) => nT1=nT2
+        auto premise = logic::Formulas::conjunction({part1, part2});
+        auto conclusion = logic::Formulas::equality(nT2, nT1);
+        auto nName = nT1->symbol->name;
+        auto label = "Lemma: If " + nName + "(t2) has same properties as " + nName + "(t1), then " + nName + "(t2)=" + nName + "(t1) (for loop at " + whileStatement->location + ")";
+        auto lemma = logic::Formulas::implication(premise, conclusion, label);
+        lemmas.push_back(lemma);
     }
 }
 

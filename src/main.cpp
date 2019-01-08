@@ -33,11 +33,10 @@ int main(int argc, char *argv[])
             if (util::Output::initialize())
             {
                 std::string inputFile = argv[argc - 1];
-
+                
                 auto parserResult = parser::parse(inputFile);
                 
                 logic::Problem problem;
-                
                 analysis::Semantics s(*parserResult.program, parserResult.locationToActiveVars, parserResult.twoTraces);
                 
                 problem.axioms = s.generateSemantics();

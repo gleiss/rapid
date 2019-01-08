@@ -20,10 +20,6 @@ namespace program {
     {
         return "(" + factor1->toString() + ") * (" + factor2->toString() + ")";
     }
-    std::string UnaryMinus::toString() const
-    {
-        return "-(" + child->toString() + ")";
-    }
     std::string BooleanConstant::toString() const
     {
         return value ? "true" : "false";

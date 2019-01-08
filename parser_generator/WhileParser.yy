@@ -144,11 +144,18 @@ YY_DECL;
 %start problem;
 
 problem:
-  program smtlib_conjecture {}
+  {
+    logic::Theory::declareTheories(context.twoTraces);
+  }
+  program smtlib_conjecture 
+  {
+
+  }
 |
   TWOTRACES
   {
     context.twoTraces = true;
+    logic::Theory::declareTheories(context.twoTraces);
     declareSymbolsForTraces();
   }
   program smtlib_conjecture {}
@@ -367,14 +374,6 @@ SMTLIB_ID
   } 
   $$ = logic::Theory::intMultiplication(std::move($3), std::move($4));
 }
-| LPAR MINUS smtlib_term RPAR
-  {
-    if($3->symbol->rngSort != logic::Sorts::intSort())
-    {
-      error(@3, "Argument type needs to be Int");
-    }
-    $$ = logic::Theory::intUnaryMinus(std::move($3));
-  }
 ;
 
 function_list:
@@ -590,7 +589,6 @@ expr:
 | expr MUL expr            { $$ = std::shared_ptr<const program::Multiplication>(new program::Multiplication(std::move($1),std::move($3)));}
 | expr PLUS expr           { $$ = std::shared_ptr<const program::Addition>(new program::Addition(std::move($1),std::move($3)));}
 | expr MINUS expr          { $$ = std::shared_ptr<const program::Subtraction>(new program::Subtraction(std::move($1),std::move($3)));}
-| MINUS expr %prec UMINUS  { $$ = std::shared_ptr<const program::UnaryMinus>(new program::UnaryMinus(std::move($2)));}
 ;
 
 location:

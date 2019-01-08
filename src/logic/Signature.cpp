@@ -16,7 +16,7 @@ namespace logic {
         {
             // hack since Vampire currently doesn't add the sub-predicate itself
             // declare and define the symbol time_sub
-            if (name == "nat_sub")
+            if (name == "Sub")
             {
                 std::string ret = "(declare-fun Sub (Nat Nat) Bool)\n";
                 ret += "(assert (forall ((it Nat)) (Sub it (s it))) )\n";
@@ -46,83 +46,13 @@ namespace logic {
     
     std::string Symbol::toSMTLIB() const
     {
-        if (name == "int_plus")
-        {
-            return "+";
-        }
-        else if (name == "int_minus")
-        {
-            return "-";
-        }
-        else if (name == "int_multiply")
-        {
-            return "*";
-        }
-        else if (name == "int_quotient_e")
-        {
-            return "div";
-        }
-        else if (name == "int_unary_minus")
-        {
-            return "-";
-        }
-        else if (name == "int_greater")
-        {
-            return ">";
-        }
-        else if (name == "int_greater_eq")
-        {
-            return ">=";
-        }
-        else if (name == "int_less")
-        {
-            return "<";
-        }
-        else if (name == "int_less_eq")
-        {
-            return "<=";
-        }
-        else if (name == "array_select")
-        {
-            assert(false); // TODO: not implemented yet
-            return "$select";
-        }
-        else if (name == "array_store")
-        {
-            assert(false); // TODO: not implemented yet
-            return "$store";
-        }
-        else if (name == "bool_true")
-        {
-            return "true";
-        }
-        else if (name == "bool_false")
-        {
-            return "false";
-        }
-        else if (name == "nat_zero")
-        {
-            return "zero";
-        }
-        else if (name == "nat_succ")
-        {
-            return "s";
-        }
-        else if (name == "nat_pre")
-        {
-            return "p";
-        }
-        else if (name == "nat_sub")
-        {
-            return "Sub";
-        }
         // if non-negative integer constant
-        else if (std::all_of(name.begin(), name.end(), ::isdigit))
+        if (std::all_of(name.begin(), name.end(), ::isdigit))
         {
             return name;
         }
         // if negative integer constant
-        else if (name[0]=='-' && std::all_of(name.begin()+1, name.end(), ::isdigit))
+        else if (name[0]=='-' && name.size() > 1 && std::all_of(name.begin()+1, name.end(), ::isdigit))
         {
             // need to encode negative integer as unary minus of positive integer
             return  "(- " + name.substr(1,name.size()-1) + ")";
@@ -157,7 +87,6 @@ namespace logic {
     
     std::shared_ptr<const Symbol> Signature::fetchOrAdd(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration)
     {
-        
         auto pair = _signature.insert(std::make_pair(name, std::shared_ptr<Symbol>(new Symbol(name, argSorts, rngSort, noDeclaration))));
         
         auto symbol = pair.first->second;

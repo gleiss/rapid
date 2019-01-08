@@ -23,7 +23,6 @@ namespace program {
             Addition,
             Subtraction,
             Multiplication,
-            UnaryMinus,
             IntVariableAccess,
             IntArrayApplication,
         };
@@ -80,17 +79,6 @@ namespace program {
         const std::shared_ptr<const IntExpression> factor2;
         
         Type type() const override { return IntExpression::Type::Multiplication; }
-        std::string toString() const override;
-    };
-    
-    class UnaryMinus : public IntExpression
-    {
-    public:
-        UnaryMinus(std::shared_ptr<const IntExpression> child) :child(std::move(child)){}
-
-        const std::shared_ptr<const IntExpression> child;
-        
-        Type type() const override { return IntExpression::Type::UnaryMinus; }
         std::string toString() const override;
     };
     

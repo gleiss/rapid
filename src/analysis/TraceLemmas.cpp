@@ -199,7 +199,7 @@ namespace analysis {
         }
         
         // add lemma for each intArrayVar
-        auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
+        auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
         auto p = logic::Terms::var(pSymbol);
         for (const auto& v : locationToActiveVars.at(locationName))
         {
@@ -383,7 +383,7 @@ namespace analysis {
         }
 
         // add lemma for each arrayVar
-        auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
+        auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
         auto p = logic::Terms::var(pSymbol);
         for (const auto& v : locationToActiveVars.at(locationName))
         {

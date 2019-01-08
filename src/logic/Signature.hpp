@@ -12,7 +12,7 @@
 namespace logic {
     
     class Symbol {
-        // we need each symbol to be either defined in the signature or to be a variable (which will be defined by the quantifier)
+        // we need each symbol to be either declared in the signature or to be a variable (which will be declared by the quantifier)
         // We use the Signature-class below as a manager-class for symbols of the first kind
         friend class Signature;
         

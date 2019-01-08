@@ -111,7 +111,7 @@ namespace analysis {
                     else
                     {
                         // forall active non-const int-array-variables: forall p. v(l2,p) = v(l1,p)
-                        auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
+                        auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
                         auto p = logic::Terms::var(pSymbol);
                         auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(toTerm(var,l2,p), toTerm(var,l1,p)));
                         conjuncts.push_back(conjunct);
@@ -134,7 +134,7 @@ namespace analysis {
             conjuncts.push_back(eq1);
 
             // forall positions p. (p!=e(l1) => a(l2,p) = a(l1,p))
-            auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
+            auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
             auto p = logic::Terms::var(pSymbol);
             
             auto premise = logic::Formulas::disequality(p, toTerm(application->index,l1));
@@ -157,7 +157,7 @@ namespace analysis {
                         // forall other active non-const int-array-variables: forall p. v(l2,p) = v(l1,p)
                         if (*var != *application->array)
                         {
-                            auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
+                            auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
                             auto p = logic::Terms::var(pSymbol);
                             auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(toTerm(var, l2, p), toTerm(var, l1, p)));
                             conjuncts.push_back(conjunct);
@@ -205,7 +205,7 @@ namespace analysis {
                 else
                 {
                     // forall p. v(lLeftStart,p) = v(lStart,p)
-                    auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
+                    auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
                     auto p = logic::Terms::var(pSymbol);
                     auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(toTerm(var, lLeftStart, p), toTerm(var, lStart, p)));
                     conjuncts1.push_back(conjunct);
@@ -225,7 +225,7 @@ namespace analysis {
                 else
                 {
                     // forall p. v(lRightStart,p) = v(lStart,p)
-                    auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
+                    auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
                     auto p = logic::Terms::var(pSymbol);
                     auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(toTerm(var, lRightStart, p), toTerm(var, lStart, p)));
                     conjuncts1.push_back(conjunct);
@@ -257,7 +257,7 @@ namespace analysis {
                 }
                 else
                 {
-                    auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
+                    auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
                     auto p = logic::Terms::var(pSymbol);
                     
                     // condition(lStart) => forall p. v(lEnd,p) = v(lLeftEnd,p)
@@ -278,7 +278,7 @@ namespace analysis {
                 }
                 else
                 {
-                    auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
+                    auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
                     auto p = logic::Terms::var(pSymbol);
                     
                     // not condition(lStart) => forall p. v(lEnd,p) = v(lLeftEnd,p)
@@ -350,7 +350,7 @@ namespace analysis {
                 else
                 {
                     // forall p. v(lBodyStartIt,p) = v(lStartIt,p)
-                    auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
+                    auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
                     auto p = logic::Terms::var(pSymbol);
                     auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(toTerm(var, lBodyStartIt, p), toTerm(var, lStartIt, p)));
                     conjuncts1.push_back(conjunct);
@@ -394,7 +394,7 @@ namespace analysis {
                 else
                 {
                     // forall p. v(lEnd,p) = v(lStartN,p)
-                    auto pSymbol = logic::Signature::varSymbol("p", logic::Sorts::intSort());
+                    auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
                     auto p = logic::Terms::var(pSymbol);
                     auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(toTerm(var, lEnd, p), toTerm(var, lStartN, p)));
                     conjuncts3.push_back(conjunct);

@@ -109,11 +109,6 @@ namespace analysis {
                 auto castedExpr = std::static_pointer_cast<const program::Multiplication>(expr);
                 return logic::Theory::intMultiplication(toTerm(castedExpr->factor1, timePoint), toTerm(castedExpr->factor2, timePoint));
             }
-            case program::IntExpression::Type::UnaryMinus:
-            {
-                auto castedExpr = std::static_pointer_cast<const program::UnaryMinus>(expr);
-                return logic::Theory::intUnaryMinus(toTerm(castedExpr->child, timePoint));
-            }
             case program::IntExpression::Type::IntVariableAccess:
             {
                 auto castedExpr = std::static_pointer_cast<const program::IntVariableAccess>(expr);

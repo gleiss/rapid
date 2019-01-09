@@ -273,6 +273,11 @@ smtlib_quantvar_list:
 smtlib_quantvar:
   LPAR SMTLIB_ID TYPE RPAR 
   { 
+    // TODO: check that var hasn't been declared by enclosing quantifier
+    if(logic::Signature::isDeclared($2))
+    {
+      error(@2, $2 + " has already been declared");
+    }
     if($3 == "Int")
     { 
       $$ = logic::Signature::varSymbol($2, logic::Sorts::intSort());

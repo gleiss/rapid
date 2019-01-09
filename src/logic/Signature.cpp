@@ -73,14 +73,6 @@ namespace logic {
         return (it != _signature.end());
     }
     
-    std::shared_ptr<const Symbol> Signature::fetch(std::string name)
-    {
-        auto it = _signature.find(name);
-        assert(it != _signature.end());
-        
-        return it->second;
-    }
-    
     std::shared_ptr<const Symbol> Signature::add(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration)
     {
         // there must be no symbol with name name already added
@@ -89,6 +81,14 @@ namespace logic {
         auto pair = _signature.insert(std::make_pair(name,std::unique_ptr<Symbol>(new Symbol(name, argSorts, rngSort, noDeclaration))));
         assert(pair.second); // must succeed since we checked that no such symbols existed before the insertion
         return pair.first->second;
+    }
+    
+    std::shared_ptr<const Symbol> Signature::fetch(std::string name)
+    {
+        auto it = _signature.find(name);
+        assert(it != _signature.end());
+        
+        return it->second;
     }
     
     std::shared_ptr<const Symbol> Signature::fetchOrAdd(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration)

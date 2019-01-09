@@ -308,8 +308,10 @@ smtlib_term_list:
 smtlib_term:
 SMTLIB_ID                               
 {
-  // std::cout << "parsing smtlib const " << std::string($1) << "\n"; 
-  // TODO: propagate nonexisting-definition-error to parser and raise error
+  if(!logic::Signature::isDeclared($1))
+  {
+    error(@1, $1 + " has not been declared");
+  }
   auto symbol = context.fetch($1); 
 
   if(symbol->argSorts.size() > 0)
@@ -318,11 +320,16 @@ SMTLIB_ID
   }
   $$ = logic::Terms::func(symbol, std::vector<std::shared_ptr<const logic::Term>>());
 }
-| INTEGER                                 {$$ = logic::Theory::intConstant($1);}
+| INTEGER                                 
+  {
+    $$ = logic::Theory::intConstant($1);
+  }
 | LPAR SMTLIB_ID smtlib_term_list RPAR    
 {
-  // std::cout << "parsing smtlib term " << std::string($2) << "\n"; 
-  // TODO: propagate nonexisting-definition-error to parser and raise error
+  if(!logic::Signature::isDeclared($2))
+  {
+    error(@2, $2 + " has not been declared");
+  }
   auto symbol = context.fetch($2); 
 
   if(symbol->argSorts.size() != $3.size())

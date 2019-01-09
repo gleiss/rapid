@@ -67,6 +67,12 @@ namespace logic {
     
     std::unordered_map<std::string, std::shared_ptr<const Symbol>> Signature::_signature;
     
+    bool Signature::isDeclared(std::string name)
+    {
+        auto it = _signature.find(name);
+        return (it != _signature.end());
+    }
+    
     std::shared_ptr<const Symbol> Signature::fetch(std::string name)
     {
         auto it = _signature.find(name);

@@ -87,6 +87,8 @@ namespace logic {
     class Signature
     {
     public:
+        static bool isDeclared(std::string name);
+
         // construct new symbols
         static std::shared_ptr<const Symbol> add(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration=false);
         static std::shared_ptr<const Symbol> fetch(std::string name);

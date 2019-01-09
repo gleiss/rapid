@@ -36,6 +36,11 @@ namespace parser
         quantifiedVarsStack.pop_back();
     }
     
+    bool WhileParsingContext::isDeclared(std::string name)
+    {
+        return logic::Signature::isDeclared(name) || (quantifiedVarsDeclarations.count(name) > 0);
+    }
+    
     std::shared_ptr<const logic::Symbol> WhileParsingContext::fetch(std::string name)
     {
         if (quantifiedVarsDeclarations.count(name) > 0)

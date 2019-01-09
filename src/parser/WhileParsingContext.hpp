@@ -42,6 +42,7 @@ namespace parser
         // methods which are called by bison to interact with the context
         bool pushQuantifiedVars(std::vector<std::shared_ptr<const logic::Symbol>> quantifiedVars);
         void popQuantifiedVars();
+        bool isDeclared(std::string name);
         std::shared_ptr<const logic::Symbol> fetch(std::string name); // fetch symbol with given name from quantVarDecls or Signature.
         
         void pushProgramVars();

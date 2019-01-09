@@ -273,8 +273,7 @@ smtlib_quantvar_list:
 smtlib_quantvar:
   LPAR SMTLIB_ID TYPE RPAR 
   { 
-    // TODO: check that var hasn't been declared by enclosing quantifier
-    if(logic::Signature::isDeclared($2))
+    if(context.isDeclared($2))
     {
       error(@2, $2 + " has already been declared");
     }
@@ -313,7 +312,7 @@ smtlib_term_list:
 smtlib_term:
 SMTLIB_ID                               
 {
-  if(!logic::Signature::isDeclared($1))
+  if(!context.isDeclared($1))
   {
     error(@1, $1 + " has not been declared");
   }
@@ -331,7 +330,7 @@ SMTLIB_ID
   }
 | LPAR SMTLIB_ID smtlib_term_list RPAR    
 {
-  if(!logic::Signature::isDeclared($2))
+  if(!context.isDeclared($2))
   {
     error(@2, $2 + " has not been declared");
   }
@@ -345,7 +344,7 @@ SMTLIB_ID
   {
       if(symbol->argSorts[i] != $3[i]->symbol->rngSort)
       {
-        error(@3, "Argument at position " + std::to_string(i) + " has type " + $3[i]->symbol->rngSort->name + " instead of " + symbol->argSorts[i]->name);
+        error(@3, "Argument has type " + $3[i]->symbol->rngSort->name + " instead of " + symbol->argSorts[i]->name);
       }
   }
   $$ = logic::Terms::func(symbol, std::move($3));

@@ -16,6 +16,7 @@ namespace logic {
         intAddition(intConst,intConst);
         intSubtraction(intConst,intConst);
         intMultiplication(intConst,intConst);
+        intAbsolute(intConst);
         intLess(intConst, intConst);
         intLessEqual(intConst, intConst);
         intGreater(intConst, intConst);
@@ -45,6 +46,11 @@ namespace logic {
     std::shared_ptr<const FuncTerm> Theory::intMultiplication(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2)
     {
         return Terms::func("*", {t1,t2}, Sorts::intSort(), true);
+    }
+    
+    std::shared_ptr<const FuncTerm> Theory::intAbsolute(std::shared_ptr<const Term> t)
+    {
+        return Terms::func("abs", {t}, Sorts::intSort(), true);
     }
     
     std::shared_ptr<const Formula> Theory::intLess(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2, std::string label)

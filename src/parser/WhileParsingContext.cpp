@@ -1,5 +1,10 @@
 #include "WhileParsingContext.hpp"
 
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
 namespace parser
 {
     bool WhileParsingContext::pushQuantifiedVars(std::vector<std::shared_ptr<const logic::Symbol>> quantifiedVars)

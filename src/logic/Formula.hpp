@@ -1,7 +1,12 @@
 #ifndef __Formula__
 #define __Formula__
 
-#include <ostream>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "Term.hpp"
 
 namespace logic {

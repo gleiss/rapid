@@ -5,9 +5,13 @@
 
 #include "Variable.hpp"
 
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "Options.hpp"
 
-#include <iostream>
 namespace program {
     
 //    // hack needed for bison: std::vector has no overload for ostream, but these overloads are needed for bison

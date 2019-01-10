@@ -1,10 +1,15 @@
 #ifndef __Signature__
 #define __Signature__
 
-#include <cassert>
-#include <unordered_map>
+#include <cstddef>
+#include <functional>
+#include <iostream>
+#include <memory>
 #include <string>
+#include <unordered_map>
+#include <utility>
 #include <vector>
+
 #include "Sort.hpp"
 
 # pragma mark - Symbol

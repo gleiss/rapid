@@ -1,6 +1,8 @@
 #ifndef __SemanticsHelper__
 #define __SemanticsHelper__
 
+#include <memory>
+
 #include "Term.hpp"
 #include "Formula.hpp"
 

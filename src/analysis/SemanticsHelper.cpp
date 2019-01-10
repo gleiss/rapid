@@ -1,5 +1,8 @@
 #include "SemanticsHelper.hpp"
 
+#include <memory>
+#include <vector>
+
 #include "Variable.hpp"
 #include "Term.hpp"
 #include "Theory.hpp"

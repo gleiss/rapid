@@ -1,5 +1,10 @@
 #include "Statements.hpp"
 
+#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
+
 namespace program
 {
     std::ostream& operator<<(std::ostream& ostr, const Statement& v){ostr << v.toString(0); return ostr;};

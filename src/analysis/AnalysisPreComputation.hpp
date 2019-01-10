@@ -3,8 +3,8 @@
 
 #include "Program.hpp"
 
-#include <unordered_map>
 #include <memory>
+#include <unordered_map>
 
 #include "Term.hpp"
 #include "Formula.hpp"

@@ -4,9 +4,12 @@
 #include "Expression.hpp"
 #include "Variable.hpp"
 
+#include <functional>
 #include <iostream>
-#include <vector>
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace program
 {

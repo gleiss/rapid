@@ -1,9 +1,10 @@
 #ifndef __PropertiesTime__
 #define __PropertiesTime__
 
+#include <memory>
+#include <string>
+#include <unordered_map>
 #include <vector>
-#include <map>
-#include <utility>
 
 #include "Formula.hpp"
 #include "Sort.hpp"

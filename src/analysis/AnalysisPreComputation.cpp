@@ -1,5 +1,8 @@
 #include "AnalysisPreComputation.hpp"
 
+#include <memory>
+#include <vector>
+
 #include "Theory.hpp"
 #include "SymbolDeclarations.hpp"
 

@@ -1,7 +1,9 @@
 #ifndef __Sort__
 #define __Sort__
 
+#include <iostream>
 #include <map>
+#include <memory>
 #include <string>
 
 namespace logic {

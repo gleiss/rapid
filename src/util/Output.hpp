@@ -1,8 +1,7 @@
 #ifndef __Output__
 #define __Output__
 
-#include <ostream>
-#include <streambuf>
+#include <iostream>
 
 namespace util {
 

@@ -1,5 +1,9 @@
 #include "SymbolDeclarations.hpp"
 
+#include <memory>
+#include <string>
+#include <vector>
+
 std::shared_ptr<const logic::Symbol> locationSymbol(std::string location, unsigned numberOfLoops)
 {
     auto enclosingIteratorTypes = std::vector<const logic::Sort*>();

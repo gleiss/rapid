@@ -8,12 +8,13 @@
 #ifndef __ProgramVariable__
 #define __ProgramVariable__
 
+#include <iostream>
+#include <memory>
 #include <string>
-#include <ostream>
+#include <utility>
+#include <vector>
 
 #include "Expression.hpp"
-
-#include <iostream>
 
 namespace program {
     

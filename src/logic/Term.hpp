@@ -1,11 +1,12 @@
 #ifndef __Term__
 #define __Term__
 
-#include <cassert>
-#include <list>
-#include <ostream>
+#include <iostream>
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
+
 #include "Signature.hpp"
 #include "Sort.hpp"
 

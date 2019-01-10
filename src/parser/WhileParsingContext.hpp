@@ -2,7 +2,10 @@
 #define __WhileParsingContext__
 
 #include <memory>
+#include <string>
+#include <unordered_map>
 #include <vector>
+
 #include "Formula.hpp"
 #include "Program.hpp"
 #include "Signature.hpp"

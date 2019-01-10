@@ -1,10 +1,14 @@
 #ifndef __Semantics__
 #define __Semantics__
 
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 #include "Formula.hpp"
 #include "Program.hpp"
 #include "Statements.hpp"
-#include <unordered_map>
 
 #include "AnalysisPreComputation.hpp"
 

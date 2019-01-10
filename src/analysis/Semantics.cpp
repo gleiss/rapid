@@ -1,5 +1,9 @@
 #include "Semantics.hpp"
 
+#include <algorithm>
+#include <memory>
+#include <vector>
+
 #include "Sort.hpp"
 #include "Term.hpp"
 #include "Formula.hpp"

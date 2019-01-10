@@ -1,8 +1,10 @@
 #include "Formula.hpp"
 
-#include <set>
-#include <algorithm>
 #include <iostream>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 namespace logic {
     

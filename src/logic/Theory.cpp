@@ -1,6 +1,7 @@
 #include "Theory.hpp"
 
-#include <cassert>
+#include <memory>
+#include <string>
 
 namespace logic {
 

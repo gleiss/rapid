@@ -1,6 +1,8 @@
 #ifndef __SymbolDeclarations__
 #define __SymbolDeclarations__
 
+#include <memory>
+
 #include "Signature.hpp"
 #include "Statements.hpp"
 #include "Program.hpp"

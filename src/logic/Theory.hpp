@@ -1,7 +1,9 @@
 #ifndef __Theory__
 #define __Theory__
 
+#include <memory>
 #include <string>
+
 #include "Term.hpp"
 #include "Formula.hpp"
 

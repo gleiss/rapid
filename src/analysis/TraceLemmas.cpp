@@ -1,7 +1,8 @@
 #include "TraceLemmas.hpp"
 
-#include <cassert>
-#include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "Signature.hpp"
 #include "Theory.hpp"

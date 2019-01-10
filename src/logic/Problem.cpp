@@ -1,4 +1,7 @@
 #include "Problem.hpp"
+
+#include <iostream>
+
 #include "Output.hpp"
 
 namespace logic {

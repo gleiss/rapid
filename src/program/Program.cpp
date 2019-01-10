@@ -1,5 +1,7 @@
 #include "Program.hpp"
 
+#include <iostream>
+
 namespace program
 {
     std::ostream& operator<<(std::ostream& ostr, const Function& f)

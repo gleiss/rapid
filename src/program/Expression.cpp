@@ -1,5 +1,8 @@
 #include "Expression.hpp"
 
+#include <iostream>
+#include <string>
+
 #include "Options.hpp"
 
 namespace program {

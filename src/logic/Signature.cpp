@@ -1,8 +1,12 @@
 #include "Signature.hpp"
 
 #include <algorithm>
-
 #include <iostream>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 namespace logic {
     

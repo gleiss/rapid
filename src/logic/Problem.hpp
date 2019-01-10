@@ -1,8 +1,10 @@
 #ifndef __Problem__
 #define __Problem__
 
-#include <utility>
-#include <string>
+#include <iostream>
+#include <memory>
+#include <vector>
+
 #include "Formula.hpp"
 
 namespace logic {

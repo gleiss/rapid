@@ -2,8 +2,8 @@
 #define __Options__
 
 #include <map>
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace util {
     

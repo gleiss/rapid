@@ -1,7 +1,10 @@
 #ifndef __Program__
 #define __Program__
 
+#include <iostream>
 #include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "Expression.hpp"

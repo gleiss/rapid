@@ -1,6 +1,14 @@
 #ifndef __WhileParserWrapper__
 #define __WhileParserWrapper__
 
+#include <fstream>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
 #include "WhileParsingContext.hpp"
 #include "WhileScanner.cpp"
 #include "WhileParser.hpp"

@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <vector>
+#include <cassert>
 
 #include "Variable.hpp"
 #include "Term.hpp"

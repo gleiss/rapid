@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <cassert>
 
 #include "Signature.hpp"
 #include "Theory.hpp"

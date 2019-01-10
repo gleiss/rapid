@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <memory>
 #include <vector>
+#include <cassert>
 
 #include "Sort.hpp"
 #include "Term.hpp"

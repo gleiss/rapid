@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include <cassert>
 
 #include "WhileParsingContext.hpp"
 #include "WhileScanner.cpp"

@@ -6,6 +6,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <cassert>
 
 #include "Term.hpp"
 

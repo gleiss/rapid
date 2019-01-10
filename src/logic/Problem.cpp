@@ -1,6 +1,7 @@
 #include "Problem.hpp"
 
 #include <iostream>
+#include <cassert>
 
 #include "Output.hpp"
 

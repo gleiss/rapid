@@ -6,6 +6,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <cassert>
 
 #include "Signature.hpp"
 #include "Sort.hpp"

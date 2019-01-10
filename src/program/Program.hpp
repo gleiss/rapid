@@ -6,6 +6,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <cassert>
 
 #include "Expression.hpp"
 #include "Statements.hpp"

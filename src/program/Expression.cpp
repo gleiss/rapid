@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <string>
-#include <cassert>
 
 #include "Options.hpp"
 
@@ -19,6 +18,10 @@ namespace program {
     std::string Subtraction::toString() const
     {
         return "(" + child1->toString() + ") - (" + child2->toString() + ")";
+    }
+    std::string Modulo::toString() const
+    {
+        return "(" + child1->toString() + ") mod (" + child2->toString() + ")";
     }
     std::string Multiplication::toString() const
     {

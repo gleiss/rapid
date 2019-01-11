@@ -2,7 +2,6 @@
 
 #include <memory>
 #include <vector>
-#include <cassert>
 
 #include "Variable.hpp"
 #include "Term.hpp"
@@ -81,6 +80,11 @@ namespace analysis {
             {
                 auto castedExpr = std::static_pointer_cast<const program::Subtraction>(expr);
                 return logic::Theory::intSubtraction(toTerm(castedExpr->child1, timePoint, trace), toTerm(castedExpr->child2, timePoint, trace));
+            }
+            case program::IntExpression::Type::Modulo:
+            {
+                auto castedExpr = std::static_pointer_cast<const program::Modulo>(expr);
+                return logic::Theory::intModulo(toTerm(castedExpr->child1, timePoint, trace), toTerm(castedExpr->child2, timePoint, trace));
             }
             case program::IntExpression::Type::Multiplication:
             {

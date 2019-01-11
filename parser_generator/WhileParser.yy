@@ -78,6 +78,7 @@ YY_DECL;
   MUL           "*"
   PLUS          "+"
   MINUS         "-"
+  MOD           "mod"
   GT            ">"
   GE            ">="
   LT            "<"
@@ -136,7 +137,7 @@ YY_DECL;
 %left  EQ NEQ
 %left  GT GE LT LE
 %left  PLUS MINUS
-%left  MUL DIV
+%left  MUL DIV MOD
 %right NOT UMINUS
 
 %%
@@ -373,6 +374,18 @@ SMTLIB_ID
   } 
   $$ = logic::Theory::intSubtraction(std::move($3), std::move($4));
 }
+| LPAR MOD smtlib_term smtlib_term RPAR 
+{
+  if($3->symbol->rngSort != logic::Sorts::intSort())
+  {
+    error(@3, "Left argument type needs to be Int");
+  }
+  if($4->symbol->rngSort != logic::Sorts::intSort())
+  {
+    error(@4, "Right argument type needs to be Int");
+  } 
+  $$ = logic::Theory::intModulo(std::move($3), std::move($4));
+}
 | LPAR MUL smtlib_term smtlib_term RPAR 
 {
   if($3->symbol->rngSort != logic::Sorts::intSort())
@@ -600,6 +613,7 @@ expr:
 | expr MUL expr            { $$ = std::shared_ptr<const program::Multiplication>(new program::Multiplication(std::move($1),std::move($3)));}
 | expr PLUS expr           { $$ = std::shared_ptr<const program::Addition>(new program::Addition(std::move($1),std::move($3)));}
 | expr MINUS expr          { $$ = std::shared_ptr<const program::Subtraction>(new program::Subtraction(std::move($1),std::move($3)));}
+| expr MOD expr            { $$ = std::shared_ptr<const program::Modulo>(new program::Modulo(std::move($1),std::move($3)));}
 ;
 
 location:

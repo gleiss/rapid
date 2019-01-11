@@ -88,6 +88,7 @@ exists      	{ return parser::WhileParser::make_EXISTSSMTLIB(loc); }
 "*"          { return parser::WhileParser::make_MUL(loc); }
 "+"          { return parser::WhileParser::make_PLUS(loc); }
 "-"          { return parser::WhileParser::make_MINUS(loc); }
+mod          { return parser::WhileParser::make_MOD(loc); }
 ">"          { return parser::WhileParser::make_GT(loc); }
 ">="         { return parser::WhileParser::make_GE(loc); }
 "<"          { return parser::WhileParser::make_LT(loc); }

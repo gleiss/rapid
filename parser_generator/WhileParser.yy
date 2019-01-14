@@ -516,7 +516,7 @@ while_statement:
 ;
 
 skip_statement:
-  SKIP {$$ = std::shared_ptr<const program::SkipStatement>(new program::SkipStatement(@1.begin.line));}
+  SKIP SCOL {$$ = std::shared_ptr<const program::SkipStatement>(new program::SkipStatement(@1.begin.line));}
 ;
 
 active_vars_dummy:

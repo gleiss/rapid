@@ -115,12 +115,17 @@ namespace analysis {
         
         auto locationName = locationSymbol->name;
         
+        auto enclosingIteratorsSymbols = std::vector<std::shared_ptr<const logic::Symbol>>();
+
         auto enclosingIteratorsAndIt = std::vector<std::shared_ptr<const logic::Term>>();
         auto enclosingIteratorsAndSuccOfIt = std::vector<std::shared_ptr<const logic::Term>>();
         auto enclosingIteratorsAndZero = std::vector<std::shared_ptr<const logic::Term>>();
         auto enclosingIteratorsAndN = std::vector<std::shared_ptr<const logic::Term>>();
         for (const auto& enclosingLoop : *whileStatement->enclosingLoops)
         {
+            auto enclosingIteratorSymbol = iteratorSymbol(enclosingLoop);
+            enclosingIteratorsSymbols.push_back(enclosingIteratorSymbol);
+
             auto enclosingIterator = iteratorTermForLoop(enclosingLoop);
             enclosingIteratorsAndIt.push_back(enclosingIterator);
             enclosingIteratorsAndSuccOfIt.push_back(enclosingIterator);
@@ -144,7 +149,7 @@ namespace analysis {
             {
                 if (!v->isArray)
                 {
-                    // Part1: it<=n => v(l(it1,...,itk,it)) C v(l(it1,...,itk,s(it))), where C in {=,<,>,<=,>=}
+                    // Part1: forall it (it<=n => v(l(it1,...,itk,it)) C v(l(it1,...,itk,s(it)))), where C in {=,<,>,<=,>=}
                     auto ineq = logic::Theory::natSub(it, n);
                     
                     auto lhs1 = toTerm(v,lStartIt);
@@ -169,41 +174,43 @@ namespace analysis {
                             break;
                     }
                     auto imp = logic::Formulas::implication(ineq, formula1);
-                    auto universal = logic::Formulas::universal({it->symbol}, imp);
+                    auto part1 = logic::Formulas::universal({it->symbol}, imp);
                     
                     // Part2: v(l(it1,...,itk,0)) C v(l(it1,...,itk,n)), where C in {=,<,>,<=,>=}
                     auto lhs2 = toTerm(v,lStartZero);
                     auto rhs2 = toTerm(v,lStartN);
-                    std::shared_ptr<const Formula> formula2;
+                    std::shared_ptr<const Formula> part2;
                     switch (kind)
                     {
                         case InductionKind::Equal:
-                            formula2 = logic::Formulas::equality(lhs2, rhs2);
+                            part2 = logic::Formulas::equality(lhs2, rhs2);
                             break;
                         case InductionKind::Less:
-                            formula2 = logic::Theory::intLess(lhs2, rhs2);
+                            part2 = logic::Theory::intLess(lhs2, rhs2);
                             break;
                         case InductionKind::Greater:
-                            formula2 = logic::Theory::intGreater(lhs2, rhs2);
+                            part2 = logic::Theory::intGreater(lhs2, rhs2);
                             break;
                         case InductionKind::LessEqual:
-                            formula2 = logic::Theory::intLessEqual(lhs2, rhs2);
+                            part2 = logic::Theory::intLessEqual(lhs2, rhs2);
                             break;
                         case InductionKind::GreaterEqual:
-                            formula2 = logic::Theory::intGreaterEqual(lhs2, rhs2);
+                            part2 = logic::Theory::intGreaterEqual(lhs2, rhs2);
                             break;
                     }
-                    // Part1 => Part2
+                    // forall enclosingIterators: (Part1 => Part2)
+                    auto outermostImp = logic::Formulas::implication(part1, part2);
                     auto label = "Lemma: Induction on " + connective + " for var " + v->name + " and location " + whileStatement->location;
+
                     if (twoTraces)
                     {
-                        auto lemma = logic::Formulas::implication(universal, formula2);
+                        auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, outermostImp);
                         auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
                         lemmas.push_back(logic::Formulas::universal({tr}, lemma, label));
                     }
                     else
                     {
-                        auto lemma = logic::Formulas::implication(universal, formula2);
+                        auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, outermostImp, label);
                         lemmas.push_back(lemma);
                     }
                 }
@@ -244,43 +251,43 @@ namespace analysis {
                             break;
                     }
                     auto imp = logic::Formulas::implication(ineq, formula1);
-                    auto universal = logic::Formulas::universal({it->symbol}, imp);
+                    auto part1 = logic::Formulas::universal({it->symbol}, imp);
                     
                     // Part2: v(l(it1,...,itk,0), p) C v(l(it1,...,itk,n), p), where C in {=,<,>,<=,>=}
                     auto lhs2 = toTerm(v, lStartZero, p);
                     auto rhs2 = toTerm(v, lStartN, p);
-                    std::shared_ptr<const Formula> formula2;
+                    std::shared_ptr<const Formula> part2;
                     switch (kind)
                     {
                         case InductionKind::Equal:
-                            formula2 = logic::Formulas::equality(lhs2, rhs2);
+                            part2 = logic::Formulas::equality(lhs2, rhs2);
                             break;
                         case InductionKind::Less:
-                            formula2 = logic::Theory::intLess(lhs2, rhs2);
+                            part2 = logic::Theory::intLess(lhs2, rhs2);
                             break;
                         case InductionKind::Greater:
-                            formula2 = logic::Theory::intGreater(lhs2, rhs2);
+                            part2 = logic::Theory::intGreater(lhs2, rhs2);
                             break;
                         case InductionKind::LessEqual:
-                            formula2 = logic::Theory::intLessEqual(lhs2, rhs2);
+                            part2 = logic::Theory::intLessEqual(lhs2, rhs2);
                             break;
                         case InductionKind::GreaterEqual:
-                            formula2 = logic::Theory::intGreaterEqual(lhs2, rhs2);
+                            part2 = logic::Theory::intGreaterEqual(lhs2, rhs2);
                             break;
                     }
                     // forall p. (Part1 => Part2)
-                    auto outerImp = logic::Formulas::implication(universal, formula2);
+                    auto outerImp = logic::Formulas::implication(part1, part2);
                     auto label = "Lemma: Induction on " + connective + " for array var " + v->name + " and location " + whileStatement->location;
-                    
+                    auto universal = logic::Formulas::universal({pSymbol}, outerImp, label);
+                    auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal);
+
                     if (twoTraces)
                     {
-                        auto lemma = logic::Formulas::universal({pSymbol}, outerImp);
                         auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        lemmas.push_back(logic::Formulas::universal({tr}, lemma, label));
+                        lemmas.push_back(logic::Formulas::universal({tr}, lemma));
                     }
                     else
                     {
-                        auto lemma = logic::Formulas::universal({pSymbol}, outerImp, label);
                         lemmas.push_back(lemma);
                     }
                 }
@@ -343,17 +350,23 @@ namespace analysis {
         auto locationSymbol = locationSymbolForStatement(whileStatement);
         
         auto locationName = locationSymbol->name;
-        
+
+        auto enclosingIteratorsSymbols = std::vector<std::shared_ptr<const logic::Symbol>>();
+
         auto enclosingIteratorsAndIt = std::vector<std::shared_ptr<const logic::Term>>();
         auto enclosingIteratorsAndSuccOfIt = std::vector<std::shared_ptr<const logic::Term>>();
         auto enclosingIteratorsAndZero = std::vector<std::shared_ptr<const logic::Term>>();
         for (const auto& enclosingLoop : *whileStatement->enclosingLoops)
         {
+            auto enclosingIteratorSymbol = iteratorSymbol(enclosingLoop);
+            enclosingIteratorsSymbols.push_back(enclosingIteratorSymbol);
+
             auto enclosingIterator = iteratorTermForLoop(enclosingLoop);
             enclosingIteratorsAndIt.push_back(enclosingIterator);
             enclosingIteratorsAndSuccOfIt.push_back(enclosingIterator);
             enclosingIteratorsAndZero.push_back(enclosingIterator);
         }
+        
         enclosingIteratorsAndIt.push_back(it);
         enclosingIteratorsAndSuccOfIt.push_back(logic::Theory::natSucc(it));
         enclosingIteratorsAndZero.push_back(logic::Theory::natZero());
@@ -397,7 +410,8 @@ namespace analysis {
                     auto premise = logic::Formulas::conjunction({baseCase, inductiveCase});
                     
                     auto label = "Lemma: Var " + v->name + " at loop " + whileStatement->location + " has same values on both traces";
-                    auto lemma = logic::Formulas::implication(premise, conclusion, label);
+                    auto outerImplication = logic::Formulas::implication(premise, conclusion, label);
+                    auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, outerImplication);
                     lemmas.push_back(lemma);
                 }
             }
@@ -441,8 +455,8 @@ namespace analysis {
 
                     auto outerImp = logic::Formulas::implication(premise, conclusion);
                     auto label = "Lemma: Array var " + v->name + " at loop " + whileStatement->location + " has same values on both traces";
-                    auto lemma = logic::Formulas::universal({pSymbol}, outerImp, label);
-
+                    auto universal = logic::Formulas::universal({pSymbol}, outerImp, label);
+                    auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal);
                     lemmas.push_back(lemma);
 
                 }

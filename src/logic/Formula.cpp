@@ -284,13 +284,27 @@ namespace logic {
         return std::shared_ptr<const ImplicationFormula>(new ImplicationFormula(f1, f2, label));
     }
     
-    std::shared_ptr<const ExistentialFormula> Formulas::existential(std::vector<std::shared_ptr<const Symbol>> vars, std::shared_ptr<const Formula> f, std::string label)
+    std::shared_ptr<const Formula> Formulas::existential(std::vector<std::shared_ptr<const Symbol>> vars, std::shared_ptr<const Formula> f, std::string label)
     {
-        return std::shared_ptr<const ExistentialFormula>(new ExistentialFormula(std::move(vars), f, label));
+        if (vars.empty())
+        {
+            return f; // TODO: return copy of f which has label
+        }
+        else
+        {
+            return std::shared_ptr<const ExistentialFormula>(new ExistentialFormula(std::move(vars), f, label));
+        }
     }
-    std::shared_ptr<const UniversalFormula> Formulas::universal(std::vector<std::shared_ptr<const Symbol>> vars, std::shared_ptr<const Formula> f, std::string label)
+    std::shared_ptr<const Formula> Formulas::universal(std::vector<std::shared_ptr<const Symbol>> vars, std::shared_ptr<const Formula> f, std::string label)
     {
-        return std::shared_ptr<const UniversalFormula>(new UniversalFormula(std::move(vars), f, label));
+        if (vars.empty())
+        {
+            return f; // TODO: return copy of f which has label
+        }
+        else
+        {
+            return std::shared_ptr<const UniversalFormula>(new UniversalFormula(std::move(vars), f, label));
+        }
     }
 }
 

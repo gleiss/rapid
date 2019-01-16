@@ -24,6 +24,7 @@ namespace program {
             ArithmeticConstant,
             Addition,
             Subtraction,
+            Modulo,
             Multiplication,
             IntVariableAccess,
             IntArrayApplication,
@@ -68,6 +69,19 @@ namespace program {
         const std::shared_ptr<const IntExpression> child2;
         
         Type type() const override { return IntExpression::Type::Subtraction; }
+        std::string toString() const override;
+    };
+    
+    class Modulo : public IntExpression
+    {
+    public:
+        Modulo(std::shared_ptr<const IntExpression> child1, std::shared_ptr<const IntExpression> child2)
+        : child1(std::move(child1)), child2(std::move(child2)){}
+        
+        const std::shared_ptr<const IntExpression> child1;
+        const std::shared_ptr<const IntExpression> child2;
+        
+        Type type() const override { return IntExpression::Type::Modulo; }
         std::string toString() const override;
     };
     

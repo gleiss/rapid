@@ -16,6 +16,7 @@ namespace logic {
         static std::shared_ptr<const FuncTerm> intConstant(int i);
         static std::shared_ptr<const FuncTerm> intAddition(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2);
         static std::shared_ptr<const FuncTerm> intSubtraction(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2);
+        static std::shared_ptr<const FuncTerm> intModulo(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2);
         static std::shared_ptr<const FuncTerm> intMultiplication(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2);
         static std::shared_ptr<const FuncTerm> intAbsolute(std::shared_ptr<const Term> t);
 

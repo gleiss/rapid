@@ -20,6 +20,10 @@ namespace program {
     {
         return "(" + child1->toString() + ") - (" + child2->toString() + ")";
     }
+    std::string Modulo::toString() const
+    {
+        return "(" + child1->toString() + ") mod (" + child2->toString() + ")";
+    }
     std::string Multiplication::toString() const
     {
         return "(" + factor1->toString() + ") * (" + factor2->toString() + ")";

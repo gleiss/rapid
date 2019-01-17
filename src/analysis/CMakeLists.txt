@@ -3,12 +3,14 @@ set(SPECTRE_ANALYSIS_SOURCES
     SemanticsHelper.cpp
     AnalysisPreComputation.cpp
     TraceLemmas.cpp
+    StaticAnalysis.cpp
 )
 set(SPECTRE_ANALYSIS_HEADERS
     Semantics.hpp
     SemanticsHelper.hpp
     AnalysisPreComputation.hpp
     TraceLemmas.hpp
+    StaticAnalysis.hpp
 )
 
 add_library(analysis ${SPECTRE_ANALYSIS_SOURCES} ${SPECTRE_ANALYSIS_HEADERS})

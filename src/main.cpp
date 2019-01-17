@@ -14,6 +14,7 @@
 
 #include "analysis/Semantics.hpp"
 #include "analysis/TraceLemmas.hpp"
+#include "analysis/StaticAnalysis.hpp"
 
 void outputUsage()
 {
@@ -44,6 +45,8 @@ int main(int argc, char *argv[])
                 
                 analysis::TraceLemmas traceLemmas(*parserResult.program, parserResult.locationToActiveVars, parserResult.twoTraces);
                 problem.lemmas = traceLemmas.generate();
+                analysis::StaticAnalysis staticAnalysis(*parserResult.program, parserResult.locationToActiveVars, parserResult.twoTraces);
+                staticAnalysis.generateStaticAnalysisLemmas();
                 
                 problem.outputSMTLIB(util::Output::stream());
             }

@@ -29,7 +29,8 @@ namespace program {
         const bool isArray;
         const bool twoTraces;
                 
-        bool operator==(const Variable& rhs) const { return (name == rhs.name); }
+        bool operator==(const Variable& rhs) const { assert(isConstant == rhs.isConstant && isArray == rhs.isArray
+                                                            && twoTraces == rhs.isArray); return (name == rhs.name); }
         bool operator!=(const Variable& rhs) const { return !operator==(rhs); }
     };
 

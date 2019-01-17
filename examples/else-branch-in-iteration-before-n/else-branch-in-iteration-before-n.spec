@@ -19,6 +19,7 @@ func main()
 		if(x > 0)
 		{
 			x = x - 1;
+			found = 0;
 		}
 		else
 		{
@@ -74,8 +75,7 @@ func main()
 //	}
 //	
 //	What's the invariant: Need to prove that 
-//	(x>0 and found=false) or (x=0 and found=false) or (x=0 and found=true)
-
+	((found == 0) || (x<=0 && (found == 1)))
 
 //	Other ideas:
 //

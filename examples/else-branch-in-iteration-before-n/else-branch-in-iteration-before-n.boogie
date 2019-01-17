@@ -1,0 +1,20 @@
+// the version of Boogie from https://rise4fun.com/Boogie is not able to prove the following program without the currently commented out invariant, but succeeds with it.
+
+procedure F(n: int) returns (x: int)
+  ensures x <= 0;  
+{
+ 
+  var found: int;
+  found := 0;
+
+  while(found == 0) 
+//      invariant (found == 1 ==>  x<=0);
+  {
+    if(x > 0) {
+      x := x - 1;
+      found := 0;
+    } else {
+      found := 1;
+    }
+  }
+}

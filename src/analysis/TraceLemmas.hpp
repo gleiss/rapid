@@ -71,10 +71,10 @@ namespace analysis {
         void generateValuePreservationLemmas(const program::WhileStatement* whileStatement,
                                              std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
 
-        void generateValuePreservationTracesLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        void generateValuePreservationTracesLemmas(const program::Statement* statement,
+        void generateEqualityPreservationLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+        void generateEqualityPreservationLemmas(const program::Statement* statement,
                                              std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        void generateValuePreservationTracesLemmas(const program::WhileStatement* whileStatement,
+        void generateEqualityPreservationLemmas(const program::WhileStatement* whileStatement,
                                              std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
     };
 }

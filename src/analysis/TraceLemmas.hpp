@@ -64,6 +64,18 @@ namespace analysis {
                                              std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
         void generateIntermediateValueLemmas(const program::WhileStatement* whileStatement,
                                              std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+
+        void generateValuePreservationLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+        void generateValuePreservationLemmas(const program::Statement* statement,
+                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+        void generateValuePreservationLemmas(const program::WhileStatement* whileStatement,
+                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+
+        void generateValuePreservationTracesLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+        void generateValuePreservationTracesLemmas(const program::Statement* statement,
+                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+        void generateValuePreservationTracesLemmas(const program::WhileStatement* whileStatement,
+                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
     };
 }
 

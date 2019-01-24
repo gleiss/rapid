@@ -30,7 +30,7 @@ namespace program {
         const bool twoTraces;
                 
         bool operator==(const Variable& rhs) const { assert(isConstant == rhs.isConstant && isArray == rhs.isArray
-                                                            && twoTraces == rhs.isArray); return (name == rhs.name); }
+                                                            && twoTraces == rhs.twoTraces); return (name == rhs.name); }
         bool operator!=(const Variable& rhs) const { return !operator==(rhs); }
     };
 

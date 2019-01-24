@@ -2,6 +2,10 @@
 
 #include <cassert>
 
+#include "Theory.hpp"
+#include "SymbolDeclarations.hpp"
+#include "SemanticsHelper.hpp"
+
 namespace analysis
 {
     std::vector<std::shared_ptr<const logic::Formula>> StaticAnalysis::generateStaticAnalysisLemmas()
@@ -56,25 +60,54 @@ namespace analysis
     {
         auto activeVars = locationToActiveVars.at(whileStatement->location);
         auto assignedVars = computeAssignedVars(whileStatement);
-        
-        std::cout << "\nActive vars " << whileStatement->location << ": ";
-        for (const auto& var : activeVars)
+
+        auto iSymbol = iteratorSymbol(whileStatement);
+        auto it = iteratorTermForLoop(whileStatement);
+        auto locationSymbol = locationSymbolForStatement(whileStatement);
+        auto locationName = locationSymbol->name;
+
+        auto enclosingIteratorsSymbols = std::vector<std::shared_ptr<const logic::Symbol>>();
+        auto enclosingIteratorsAndIt = std::vector<std::shared_ptr<const logic::Term>>();
+        auto enclosingIteratorsAndZero = std::vector<std::shared_ptr<const logic::Term>>();
+
+        for (const auto& enclosingLoop : *whileStatement->enclosingLoops)
         {
-            std::cout << var->name << ", ";
+            auto enclosingIteratorSymbol = iteratorSymbol(enclosingLoop);
+            enclosingIteratorsSymbols.push_back(enclosingIteratorSymbol);
+
+            auto enclosingIterator = iteratorTermForLoop(enclosingLoop);
+            enclosingIteratorsAndIt.push_back(enclosingIterator);            
+            enclosingIteratorsAndZero.push_back(enclosingIterator);            
         }
-        std::cout << "\nAssigned vars " << whileStatement->location << ": ";
-        for (const auto& var : assignedVars)
-        {
-            std::cout << var->name << ", ";
-        }
-        std::cout << "\n";
+        enclosingIteratorsAndIt.push_back(it);
+        enclosingIteratorsAndZero.push_back(logic::Theory::natZero());
+                
+        auto lStartIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndIt);        
+        auto lStartZero = logic::Terms::func(locationSymbol, enclosingIteratorsAndZero);
+                
         // for each active var, which is not constant but not assigned to in any statement of the loop,
         // add a lemma asserting that var is the same in each iteration as in the first iteration.
         for (const auto& activeVar : activeVars)
         {
             if (!activeVar->isConstant && assignedVars.count(activeVar) == 0)
             {
-                std::cout << "need lemma for variable " << activeVar->name << " and loop " << whileStatement->location << "\n";
+                // forall (it : Nat) (v(l(it)) = v(l(zero)))
+                auto vit = toTerm(activeVar,lStartIt);
+                auto vzero = toTerm(activeVar,lStartZero);
+                auto eq = logic::Formulas::equality(vit,vzero);
+                auto label = "Static analysis lemma for var " + activeVar->name + " at location " + whileStatement->location;
+                auto bareLemma = logic::Formulas::universal({iSymbol},eq,label);
+                auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, bareLemma);
+
+                if (twoTraces)
+                {
+                    auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
+                    lemmas.push_back(logic::Formulas::universal({tr}, lemma));
+                }
+                else
+                {
+                    lemmas.push_back(lemma);
+                }
             }
         }
     }

@@ -764,7 +764,7 @@ namespace analysis {
                     std::vector<std::shared_ptr<const logic::Formula>> conjunctsLHS;      
 
                     // Part 1.1: v l(zero) <= x
-                    auto xSym = logic::Signature::varSymbol("x", logic::Sorts::intSort());
+                    auto xSym = logic::Signature::varSymbol("xInt", logic::Sorts::intSort());
                     auto x = logic::Terms::var(xSym);
         
                     auto  vzero = toTerm(v,lStartZero);
@@ -830,7 +830,7 @@ namespace analysis {
                     std::vector<std::shared_ptr<const logic::Formula>> conjunctsLHS;      
 
                     // Part 1.1: v l(zero) <= x
-                    auto xSym = logic::Signature::varSymbol("x", logic::Sorts::intSort());
+                    auto xSym = logic::Signature::varSymbol("xInt", logic::Sorts::intSort());
                     auto x = logic::Terms::var(xSym);
         
                     auto  vzero = toTerm(v,lStartZero,p);
@@ -974,7 +974,7 @@ namespace analysis {
         // add lemma for each intVar
         // Lemma: forall (x:Int) 
         //        (exists (it : Nat) (it < n & v(l(s(it))) = x) 
-        //             & forall (it' : Nat) (it < it'  => x(l(s(it'))) = x(l(it')))        
+        //             & forall (it' : Nat) ((it < it' & x(l(it')) = x) => x(l(s(it'))) = x)        
         //        => (v(l(n)) = x)
 
         for (const auto& v : locationToActiveVars.at(locationName))
@@ -985,7 +985,7 @@ namespace analysis {
                 {        
                     // Part 1:      
                     //  (exists (it : Nat) (it < n & v(l(s(it))) = x) 
-                    //    & forall (it' : Nat) (it < it'  => x(l(s(it'))) = x(l(it')))                       
+                    //    & forall (it' : Nat) ((it < it' & x(l(it')) = x) => x(l(s(it'))) = x)                    
                     std::vector<std::shared_ptr<const logic::Formula>> conjunctsLHS;                              
 
                     // Part 1.1: it < n
@@ -993,20 +993,29 @@ namespace analysis {
                     conjunctsLHS.push_back(p11);
 
                     // Part 1.2: v(l(s(it))) = x)                     
-                    auto xSym = logic::Signature::varSymbol("x", logic::Sorts::intSort());
+                    auto xSym = logic::Signature::varSymbol("xInt", logic::Sorts::intSort());
                     auto x = logic::Terms::var(xSym);
                     auto vsit2 = toTerm(v,lStartSuccOfIt2);
                     auto p12 = logic::Formulas::equality(vsit2,x);
                     conjunctsLHS.push_back(p12);
                 
-                    // Part 1.3: forall (it' : Nat) (it < it'  => x(l(s(it'))) = x(l(it')))                       
-                    // Part 1.3.1: it < it'
-                    auto p131 = logic::Theory::natSub(it2,it);                    
+                    // Part 1.3: & forall (it' : Nat) ((it < it' & x(l(it')) = x) => x(l(s(it'))) = x)
+                    // Part 1.3.1.1: it < it'
+                    std::vector<std::shared_ptr<const logic::Formula>> conjunctsp131;
+                    auto p1311 = logic::Theory::natSub(it2,it);     
+                    conjunctsp131.push_back(p1311);
 
-                    // Part 1.3.2: x(l(s(it'))) = x(l(it')))
-                    auto vit = toTerm(v,lStartIt);
-                    auto vsit = toTerm(v,lStartSuccOfIt);
-                    auto p132 = logic::Formulas::equality(vsit,vit);                    
+                    // Part 1.3.1.2: x(l(it')) = x
+                    auto vit = toTerm(v,lStartIt);                    
+                    auto p1312 = logic::Formulas::equality(vit,x); 
+                    conjunctsp131.push_back(p1312);   
+
+                    // Combine 1.3.1.1 and 1.3.1.2
+                    auto p131 = logic::Formulas::conjunction(conjunctsp131);
+
+                    // Part 1.3.2: x(l(s(it'))) = x)
+                    auto vsit = toTerm(v,lStartSuccOfIt); 
+                    auto p132 = logic::Formulas::equality(vsit,x);               
 
                     // Combine with implication and add universal quantification over all iterators
                     auto p13 = logic::Formulas::universal({iSymbol},logic::Formulas::implication(p131,p132));
@@ -1056,7 +1065,7 @@ namespace analysis {
                     conjunctsLHS.push_back(p11);
 
                     // Part 1.2: v(l(s(it))) = x)                     
-                    auto xSym = logic::Signature::varSymbol("x", logic::Sorts::intSort());
+                    auto xSym = logic::Signature::varSymbol("xInt", logic::Sorts::intSort());
                     auto x = logic::Terms::var(xSym);                   
                     auto vsit2 = toTerm(v,lStartSuccOfIt2,p);
                     auto p12 = logic::Formulas::equality(vsit2,x);
@@ -1154,6 +1163,7 @@ namespace analysis {
     void TraceLemmas::generateEqualityPreservationLemmas(const program::WhileStatement* whileStatement,
                                                       std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
     {     
+        assert(twoTraces);
 
         auto t1 = trace1Term();
         auto t2 = trace2Term();

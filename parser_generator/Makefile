@@ -4,7 +4,7 @@ PARSER_SRC=$(SRCDIR)/parser/WhileParser.cpp
 PARSER_HDR=$(SRCDIR)/parser/WhileParser.hpp
 SCANNER_SRC=$(SRCDIR)/parser/WhileScanner.cpp
 
-BISON=bison
+BISON=/usr/local/opt/bison/bin/bison
 FLEX=flex
 
 all: $(PARSER_SRC) $(PARSER_HDR) $(SCANNER_SRC)

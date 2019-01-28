@@ -45,8 +45,12 @@ int main(int argc, char *argv[])
                 
                 analysis::TraceLemmas traceLemmas(*parserResult.program, parserResult.locationToActiveVars, parserResult.twoTraces);
                 problem.lemmas = traceLemmas.generate();
+
                 analysis::StaticAnalysis staticAnalysis(*parserResult.program, parserResult.locationToActiveVars, parserResult.twoTraces);
-                staticAnalysis.generateStaticAnalysisLemmas();
+                // hack to work static analysis lemmas into output for now
+                // we should decide if we want to add them to the 'normal' lemmas
+                auto staticAnalysisLemmas = staticAnalysis.generateStaticAnalysisLemmas();
+                problem.lemmas.insert(problem.lemmas.end(),staticAnalysisLemmas.begin(),staticAnalysisLemmas.end());
                 
                 problem.outputSMTLIB(util::Output::stream());
             }

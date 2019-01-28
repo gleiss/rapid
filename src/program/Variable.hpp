@@ -29,9 +29,10 @@ namespace program {
         const bool isArray;
         const bool twoTraces;
                 
+
         bool operator==(const Variable& rhs) const { assert(isConstant == rhs.isConstant && isArray == rhs.isArray
                                                             && twoTraces == rhs.twoTraces); return (name == rhs.name); }
-        bool operator!=(const Variable& rhs) const { return !operator==(rhs); }
+                bool operator!=(const Variable& rhs) const { return !operator==(rhs); }
     };
 
     // hack needed for bison: std::vector has no overload for ostream, but these overloads are needed for bison

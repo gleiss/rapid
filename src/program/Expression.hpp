@@ -19,6 +19,8 @@ namespace program {
     class IntExpression
     {
     public:
+        virtual ~IntExpression() {}
+        
         enum class Type
         {
             ArithmeticConstant,
@@ -101,6 +103,8 @@ namespace program {
     class BoolExpression
     {
     public:
+        virtual ~BoolExpression() {}
+
         enum class Type
         {
             BooleanConstant,

@@ -17,7 +17,8 @@ namespace logic {
     {
     public:
         Term(std::shared_ptr<const Symbol> symbol) : symbol(symbol) {}
-        
+        virtual ~Term() {}
+
         std::shared_ptr<const Symbol> symbol;
         
         virtual std::string toSMTLIB() const = 0;

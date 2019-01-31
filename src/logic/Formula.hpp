@@ -16,7 +16,7 @@ namespace logic {
     {
     public:
         Formula(std::string label) : label(label) {}
-        
+        virtual ~Formula() {}
         const std::string label;
         
         std::string declareSMTLIB(std::string decl, bool conjecture = false) const;

@@ -19,6 +19,7 @@ namespace program
     {
     public:
         Statement(unsigned lineNumber) : location("l" + std::to_string(lineNumber)), enclosingLoops(std::make_unique<std::vector<const WhileStatement*>>()) {}
+        virtual ~Statement() {}
         
         const std::string location;
         /*

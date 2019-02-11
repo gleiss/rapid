@@ -91,22 +91,48 @@ namespace analysis
         {
             if (!activeVar->isConstant && assignedVars.count(activeVar) == 0)
             {
-                // forall (it : Nat) (v(l(it)) = v(l(zero)))
-                auto vit = toTerm(activeVar,lStartIt);
-                auto vzero = toTerm(activeVar,lStartZero);
-                auto eq = logic::Formulas::equality(vit,vzero);
-                auto label = "Static analysis lemma for var " + activeVar->name + " at location " + whileStatement->location;
-                auto bareLemma = logic::Formulas::universal({iSymbol},eq,label);
-                auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, bareLemma);
-
-                if (twoTraces)
+                if (!activeVar->isArray)
                 {
-                    auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                    lemmas.push_back(logic::Formulas::universal({tr}, lemma));
+                    // forall (it : Nat) (v(l(it)) = v(l(zero)))
+                    auto vit = toTerm(activeVar,lStartIt);
+                    auto vzero = toTerm(activeVar,lStartZero);
+                    auto eq = logic::Formulas::equality(vit,vzero);
+                    auto label = "Static analysis lemma for var " + activeVar->name + " at location " + whileStatement->location;
+                    auto bareLemma = logic::Formulas::universal({iSymbol},eq,label);
+                    auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, bareLemma);
+                    
+                    if (twoTraces)
+                    {
+                        auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
+                        lemmas.push_back(logic::Formulas::universal({tr}, lemma));
+                    }
+                    else
+                    {
+                        lemmas.push_back(lemma);
+                    }
                 }
                 else
                 {
-                    lemmas.push_back(lemma);
+                    auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
+                    auto p = logic::Terms::var(pSymbol);
+                    
+                    // forall (it : Nat, pos: Int) (v(l(it),pos) = v(l(zero), pos))
+                    auto vit = toTerm(activeVar,lStartIt,p);
+                    auto vzero = toTerm(activeVar,lStartZero,p);
+                    auto eq = logic::Formulas::equality(vit,vzero);
+                    auto label = "Static analysis lemma for array var " + activeVar->name + " at location " + whileStatement->location;
+                    auto bareLemma = logic::Formulas::universal({iSymbol,pSymbol},eq,label);
+                    auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, bareLemma);
+                    
+                    if (twoTraces)
+                    {
+                        auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
+                        lemmas.push_back(logic::Formulas::universal({tr}, lemma));
+                    }
+                    else
+                    {
+                        lemmas.push_back(lemma);
+                    }
                 }
             }
         }

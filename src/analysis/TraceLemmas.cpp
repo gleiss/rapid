@@ -25,7 +25,7 @@ namespace analysis {
         
         // generate standard induction lemmas for all loops, all variables and the predicates =,<,>,<=,>=.
         generateStandardInductionLemmas(lemmas);
-        generateLoopLemmas(lemmas);
+        generateAtLeastOneIterationLemmas(lemmas);
         generateIntermediateValueLemmas(lemmas);
         generateValuePreservationLemmas(lemmas);
 
@@ -565,7 +565,7 @@ namespace analysis {
     }
 
     #pragma mark - Loop Lemma    
-    void TraceLemmas::generateLoopLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
+    void TraceLemmas::generateAtLeastOneIterationLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
     
     {
         for(const auto& function : program.functions)
@@ -574,12 +574,12 @@ namespace analysis {
             
             for (const auto& statement : function->statements)
             {
-                generateLoopLemmas(statement.get(), lemmas);
+                generateAtLeastOneIterationLemmas(statement.get(), lemmas);
             }
         }
     }
 
-    void TraceLemmas::generateLoopLemmas(const program::Statement* statement,
+    void TraceLemmas::generateAtLeastOneIterationLemmas(const program::Statement* statement,
                                              std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
     {
         if (statement->type() == program::Statement::Type::IfElse)
@@ -588,28 +588,28 @@ namespace analysis {
             // recurse on both branches
             for (const auto& statement : castedStatement->ifStatements)
             {
-                generateLoopLemmas(statement.get(), lemmas);
+                generateAtLeastOneIterationLemmas(statement.get(), lemmas);
             }
             for (const auto& statement : castedStatement->elseStatements)
             {
-                generateLoopLemmas(statement.get(), lemmas);
+                generateAtLeastOneIterationLemmas(statement.get(), lemmas);
             }
         }
         else if (statement->type() == program::Statement::Type::WhileStatement)
         {
             auto castedStatement = static_cast<const program::WhileStatement*>(statement);
             // generate lemmas
-            generateLoopLemmas(castedStatement, lemmas);
+            generateAtLeastOneIterationLemmas(castedStatement, lemmas);
                
             // recurse on body
             for (const auto& statement : castedStatement->bodyStatements)
             {
-                generateLoopLemmas(statement.get(), lemmas);
+                generateAtLeastOneIterationLemmas(statement.get(), lemmas);
             }
         }
     }
 
-    void TraceLemmas::generateLoopLemmas(const program::WhileStatement* whileStatement,
+    void TraceLemmas::generateAtLeastOneIterationLemmas(const program::WhileStatement* whileStatement,
                                                       std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
     {               
         auto iSymbol = iteratorSymbol(whileStatement);

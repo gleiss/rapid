@@ -53,10 +53,10 @@ namespace analysis {
         void generateNEqualLemmas(const program::WhileStatement* whileStatement,
                                      std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
 
-        void generateLoopLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        void generateLoopLemmas(const program::Statement* statement,
+        void generateAtLeastOneIterationLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+        void generateAtLeastOneIterationLemmas(const program::Statement* statement,
                                              std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        void generateLoopLemmas(const program::WhileStatement* whileStatement,
+        void generateAtLeastOneIterationLemmas(const program::WhileStatement* whileStatement,
                                              std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
 
         void generateIntermediateValueLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);

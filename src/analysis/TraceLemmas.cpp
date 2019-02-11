@@ -972,11 +972,11 @@ namespace analysis {
         auto lStartN = logic::Terms::func(locationSymbol, enclosingIteratorsAndN);
         
         // add lemma for each intVar
-        // Lemma: forall (x:Int) 
-        //        (exists (it : Nat) (it < n & v(l(s(it))) = x) 
-        //             & forall (it' : Nat) ((it < it' & x(l(it')) = x) => x(l(s(it'))) = x)        
+        //  forall (x:Int)
+        //        (exists (it2 : Nat)
+        //               (it2 < n & v(l(s(it2))) = x)
+        //             & forall (it : Nat) (it2 < it => x(l(s(it))) = x(l(it))
         //        => (v(l(n)) = x)
-
         for (const auto& v : locationToActiveVars.at(locationName))
         {            
             if (!v->isConstant)
@@ -984,28 +984,29 @@ namespace analysis {
                 if (!v->isArray)
                 {        
                     // Part 1:      
-                    //  (exists (it : Nat) (it < n & v(l(s(it))) = x) 
-                    //    & forall (it' : Nat) ((it < it' & x(l(it')) = x) => x(l(s(it'))) = x)                    
+                    // (exists (it2 : Nat)
+                    //    (it2 < n & v(l(s(it2))) = x)
+                    //    & forall (it : Nat) (it2 < it => x(l(s(it))) = x(l(it))
                     std::vector<std::shared_ptr<const logic::Formula>> conjunctsLHS;                              
 
-                    // Part 1.1: it < n
+                    // Part 1.1: it2 < n
                     auto p11 = logic::Theory::natSub(it2,n);
                     conjunctsLHS.push_back(p11);
 
-                    // Part 1.2: v(l(s(it))) = x)                     
+                    // Part 1.2: v(l(s(it2))) = x)
                     auto xSym = logic::Signature::varSymbol("xInt", logic::Sorts::intSort());
                     auto x = logic::Terms::var(xSym);
                     auto vsit2 = toTerm(v,lStartSuccOfIt2);
                     auto p12 = logic::Formulas::equality(vsit2,x);
                     conjunctsLHS.push_back(p12);
                 
-                    // Part 1.3: & forall (it' : Nat) ((it < it' & x(l(it')) = x) => x(l(s(it'))) = x)
-                    // Part 1.3.1.1: it < it'
+                    // Part 1.3: forall (it : Nat) (it2 < it => x(l(s(it))) = x(l(it))
+                    // Part 1.3.1.1: it2 < it
                     std::vector<std::shared_ptr<const logic::Formula>> conjunctsp131;
                     auto p1311 = logic::Theory::natSub(it2,it);     
                     conjunctsp131.push_back(p1311);
 
-                    // Part 1.3.1.2: x(l(it')) = x
+                    // Part 1.3.1.2: v(l(it)) = x
                     auto vit = toTerm(v,lStartIt);                    
                     auto p1312 = logic::Formulas::equality(vit,x); 
                     conjunctsp131.push_back(p1312);   
@@ -1013,7 +1014,7 @@ namespace analysis {
                     // Combine 1.3.1.1 and 1.3.1.2
                     auto p131 = logic::Formulas::conjunction(conjunctsp131);
 
-                    // Part 1.3.2: x(l(s(it'))) = x)
+                    // Part 1.3.2: v(l(s(it))) = x)
                     auto vsit = toTerm(v,lStartSuccOfIt); 
                     auto p132 = logic::Formulas::equality(vsit,x);               
 
@@ -1021,7 +1022,7 @@ namespace analysis {
                     auto p13 = logic::Formulas::universal({iSymbol},logic::Formulas::implication(p131,p132));
                     conjunctsLHS.push_back(p13);
 
-                    // Combine 1.1 - 1.3 and add existential quantifier for it
+                    // Combine 1.1 - 1.3 and add existential quantifier for it2
                     auto lhs = logic::Formulas::existential({it2Symbol},logic::Formulas::conjunction(conjunctsLHS));
 
                     // Part 2: (v(l(n)) = x)
@@ -1046,9 +1047,14 @@ namespace analysis {
             }
         }
 
-        // add lemma for each intArrayVar
-        auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
-        auto p = logic::Terms::var(pSymbol);
+        // add lemma for each intArrayVar v
+        //  forall (x : Int, pos : Var)
+        //        (exists (it2 : Nat)
+        //             (it2 < n & v(l(s(it2)), pos) = x)
+        //             & forall (it : Nat) (it2 < it => v(l(s(it)), pos) = v(l(it), pos)
+        //        => (v(l(n), pos) = x)
+        auto posSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
+        auto pos = logic::Terms::var(posSymbol);
         for (const auto& v : locationToActiveVars.at(locationName))
         {
             if (!v->isConstant)
@@ -1056,28 +1062,29 @@ namespace analysis {
                 if (v->isArray)
                 {
                     // Part 1:      
-                    //  (exists (it : Nat) (it < n & v(l(s(it))) = x) 
-                    //    & forall (it' : Nat) (it < it'  => x(l(s(it'))) = x(l(it')))                       
+                    // (exists (it2 : Nat)
+                    //    (it2 < n & v(l(s(it2)), pos) = x)
+                    //    & forall (it : Nat) (it2 < it => v(l(s(it)), pos) = v(l(it), pos)
                     std::vector<std::shared_ptr<const logic::Formula>> conjunctsLHS;                              
 
-                    // Part 1.1: it < n
+                    // Part 1.1: it2 < n
                     auto p11 = logic::Theory::natSub(it2,n);
                     conjunctsLHS.push_back(p11);
 
-                    // Part 1.2: v(l(s(it))) = x)                     
+                    // Part 1.2: v(l(s(it2)), pos) = x)
                     auto xSym = logic::Signature::varSymbol("xInt", logic::Sorts::intSort());
                     auto x = logic::Terms::var(xSym);                   
-                    auto vsit2 = toTerm(v,lStartSuccOfIt2,p);
+                    auto vsit2 = toTerm(v,lStartSuccOfIt2,pos);
                     auto p12 = logic::Formulas::equality(vsit2,x);
                     conjunctsLHS.push_back(p12);
                 
-                    // Part 1.3: forall (it' : Nat) (it < it'  => x(l(s(it'))) = x(l(it')))                       
-                   // Part 1.3.1: it < it'
+                    // Part 1.3: forall (it : Nat) (it2 < it  => x(l(s(it))) = x(l(it)))
+                   // Part 1.3.1: it2 < it
                     auto p131 = logic::Theory::natSub(it2,it);                    
 
-                    // Part 1.3.2: x(l(s(it'))) = x(l(it')))
-                    auto vit = toTerm(v,lStartIt,p);
-                    auto vsit = toTerm(v,lStartSuccOfIt,p);
+                    // Part 1.3.2: x(l(s(it))) = x(l(it)))
+                    auto vit = toTerm(v,lStartIt,pos);
+                    auto vsit = toTerm(v,lStartSuccOfIt,pos);
                     auto p132 = logic::Formulas::equality(vsit,vit);                    
 
                     // Combine with implication and add universal quantification over all iterators
@@ -1088,15 +1095,15 @@ namespace analysis {
                     auto lhs = logic::Formulas::existential({it2Symbol},logic::Formulas::conjunction(conjunctsLHS));
 
                     // Part 2: (v(l(n)) = x)
-                    auto vn = toTerm(v,lStartN,p);
+                    auto vn = toTerm(v,lStartN,pos);
                     auto rhs = logic::Formulas::equality(vn,x);
 
                     // Combine parts 1 and 2, quantify over all x.
-                    auto label = "Lemma: Value preservation for var " + v->name + " at location " +whileStatement->location;                    
+                    auto label = "Lemma: Value preservation for array var " + v->name + " at location " +whileStatement->location;
                     auto bareLemma = logic::Formulas::universal({xSym},logic::Formulas::implication(lhs,rhs));          
                     
                     // Quanitify over all array positions
-                    auto bareArrayLemma = logic::Formulas::universal({pSymbol},bareLemma,label);
+                    auto bareArrayLemma = logic::Formulas::universal({posSymbol},bareLemma,label);
                     
                     auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, bareArrayLemma);
 

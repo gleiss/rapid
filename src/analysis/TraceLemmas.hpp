@@ -76,6 +76,14 @@ namespace analysis {
                                              std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
         void generateEqualityPreservationLemmas(const program::WhileStatement* whileStatement,
                                              std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+
+        void generateIterationInjectivityLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+        void generateIterationInjectivityLemmas(const program::Statement* statement,
+                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+        void generateIterationInjectivityLemmas(const program::WhileStatement* whileStatement,
+                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+
+
     };
 }
 

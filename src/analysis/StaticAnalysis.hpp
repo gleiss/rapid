@@ -35,6 +35,9 @@ namespace analysis
         void generateStaticAnalysisLemmas(const program::WhileStatement* whileStatement,
                                              std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
         
+        void generateStaticAnalysisLemmasUnassignedVars(const program::WhileStatement* whileStatement,
+                                                      std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+
         std::unordered_set<std::shared_ptr<const program::Variable>> computeAssignedVars(const program::Statement* statement);
     };
 }

@@ -45,7 +45,8 @@ namespace analysis
         {
             auto castedStatement = static_cast<const program::WhileStatement*>(statement);
             // generate lemmas
-            generateStaticAnalysisLemmas(castedStatement, lemmas);
+            generateStaticAnalysisLemmasUnassignedVars(castedStatement, lemmas);
+            //generateStaticAnalysisLemmasAssignedVars(castedStatement, lemmas);
             
             // recurse on body
             for (const auto& statement : castedStatement->bodyStatements)
@@ -55,7 +56,7 @@ namespace analysis
         }
     }
     
-    void StaticAnalysis::generateStaticAnalysisLemmas(const program::WhileStatement* whileStatement,
+    void StaticAnalysis::generateStaticAnalysisLemmasUnassignedVars(const program::WhileStatement* whileStatement,
                                                       std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
     {
         auto activeVars = locationToActiveVars.at(whileStatement->location);
@@ -86,7 +87,7 @@ namespace analysis
         auto lStartZero = logic::Terms::func(locationSymbol, enclosingIteratorsAndZero);
                 
         // for each active var, which is not constant but not assigned to in any statement of the loop,
-        // add a lemma asserting that var is the same in each iteration as in the first iteration.
+        // add a lemma asserting that var is the same in each iteration as in the first iteration.        
         for (const auto& activeVar : activeVars)
         {
             if (!activeVar->isConstant && assignedVars.count(activeVar) == 0)
@@ -134,9 +135,37 @@ namespace analysis
                         lemmas.push_back(lemma);
                     }
                 }
-            }
+            }    
+
         }
     }
+
+    // void StaticAnalysis::generateStaticAnalysisLemmasAssignedVars(const program::WhileStatement* whileStatement,
+    //                                                   std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
+    // {
+
+    //     // For every assignmend a = e, in which a is assigned a value exactly once in the loop and all vars in e are not changed during the iteration
+    //     // add a lemma saying that a (s (it)) = e(it)       
+
+    //     auto assignedVars = computeAssignedVars(whileStatement);
+    //     auto castedStatement = static_cast<const program::WhileStatement*>(statement);
+
+    //     for (const auto& statement : castedStatement->bodyStatements)
+    //     {
+    //         if (statement->type() == program::Statement::Type::IntAssignment)
+    //         {
+    //             auto castedAssignment = static_cast<const program::IntAssignment*>(statement);  
+    //             // get lhs var
+    //             auto lhs = static_cast<const program::IntVariableAccess*>(castedAssignment->lhs.get());
+    //             // extract all vars from rhs
+    //             auto rhs = ?
+
+    //             // if lhs  = assigned just once
+    //             // and everything in rhs is assigned 0 times OR is equal to LHS
+    //             // a (s (it)) = e(it)       
+    //         }
+    //     }
+    // }
     
     std::unordered_set<std::shared_ptr<const program::Variable>> StaticAnalysis::computeAssignedVars(const program::Statement* statement)
     {

@@ -203,19 +203,19 @@ namespace analysis {
                             part2 = logic::Theory::intGreaterEqual(lhs2, rhs2);
                             break;
                     }
-                    // forall enclosingIterators: (Part1 => Part2)
-                    auto outermostImp = logic::Formulas::implication(part1, part2);
+                    // forall enclosingIterators: (Part1 => Part2)                    
                     auto label = "Lemma: Induction on " + connective + " for var " + v->name + " and location " + whileStatement->location;
+                    auto outermostImp = logic::Formulas::implication(part1, part2,label);
 
                     if (twoTraces)
                     {
                         auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, outermostImp);
                         auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        lemmas.push_back(logic::Formulas::universal({tr}, lemma, label));
+                        lemmas.push_back(logic::Formulas::universal({tr}, lemma));
                     }
                     else
                     {
-                        auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, outermostImp, label);
+                        auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, outermostImp);
                         lemmas.push_back(lemma);
                     }
                 }

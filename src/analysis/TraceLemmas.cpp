@@ -1212,7 +1212,7 @@ namespace analysis {
         auto lStartIt2 = logic::Terms::func(locationSymbol, enclosingIteratorsAndIt2);
 
         // forall (it : Nat)
-        //    ((it < n) => (v(l(s(it))) =  v(l(it)) + 1))
+        //    (v(l(s(it))) =  v(l(it)) + 1))
         //    => (forall (it1 : Nat) (it2 : Nat)
         //          ((v(l(it1))) = (v(l(it2)))
         //           => (it1 = it2))))      
@@ -1223,18 +1223,11 @@ namespace analysis {
                 // We assume that loop counters are not array elements                
                 if (!v->isArray)
                 {   
-                    // Part 1. ((it < n) => (v(l(s(it))) =  v(l(it)) + 1))
-                    // Part 1.1.
-                    auto p11 = logic::Theory::natSub(it,n);
-
-                    // Part 1.2 (v(l(s(it))) =  v(l(it)) + 1)
+                    // Part 1. (v(l(s(it))) =  v(l(it)) + 1))
                     auto vit = toTerm(v,lStartIt);
                     auto vsit = toTerm(v,lStartSuccOfIt);
-                    auto p12 = logic::Formulas::equality(vsit,logic::Theory::intAddition(vit,logic::Theory::intConstant(1)));
+                    auto p1 = logic::Formulas::equality(vsit,logic::Theory::intAddition(vit,logic::Theory::intConstant(1)));
                     
-                    // Combine part 1.1 and 1.2
-                    auto p1 = logic::Formulas::implication(p11,p12);
-
                     // Part 2. ((v(l(it1))) = (v(l(it2))) => (it1 = it2))
                     // Part 2.1. ((v(l(it1))) = (v(l(it2)))
                     auto vit1 = toTerm(v,lStartIt1);

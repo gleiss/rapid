@@ -1079,14 +1079,23 @@ namespace analysis {
                     auto p12 = logic::Formulas::equality(vsit2,x);
                     conjunctsLHS.push_back(p12);
                 
-                    // Part 1.3: forall (it : Nat) (it2 < it  => x(l(s(it))) = x(l(it)))
-                   // Part 1.3.1: it2 < it
-                    auto p131 = logic::Theory::natSub(it2,it);                    
+                    // Part 1.3: forall (it : Nat) (it2 < it => v(l(s(it))) = v(l(it))
+                    // Part 1.3.1.1: it2 < it
+                    std::vector<std::shared_ptr<const logic::Formula>> conjunctsp131;
+                    auto p1311 = logic::Theory::natSub(it2,it);     
+                    conjunctsp131.push_back(p1311);
 
-                    // Part 1.3.2: x(l(s(it))) = x(l(it)))
-                    auto vit = toTerm(v,lStartIt,pos);
-                    auto vsit = toTerm(v,lStartSuccOfIt,pos);
-                    auto p132 = logic::Formulas::equality(vsit,vit);                    
+                    // Part 1.3.1.2: x(l(it)) = x
+                    auto vit = toTerm(v,lStartIt,pos);                    
+                    auto p1312 = logic::Formulas::equality(vit,x); 
+                    conjunctsp131.push_back(p1312);   
+
+                    // Combine 1.3.1.1 and 1.3.1.2
+                    auto p131 = logic::Formulas::conjunction(conjunctsp131);
+
+                    // Part 1.3.2: x(l(s(it))) = x)
+                    auto vsit = toTerm(v,lStartSuccOfIt,pos); 
+                    auto p132 = logic::Formulas::equality(vsit,x);               
 
                     // Combine with implication and add universal quantification over all iterators
                     auto p13 = logic::Formulas::universal({iSymbol},logic::Formulas::implication(p131,p132));

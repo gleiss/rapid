@@ -1001,20 +1001,10 @@ namespace analysis {
                     auto p12 = logic::Formulas::equality(vsit2,x);
                     conjunctsLHS.push_back(p12);
                 
-                    // Part 1.3: forall (it : Nat) (it2 < it => v(l(s(it))) = v(l(it))
-                    // Part 1.3.1.1: it2 < it
-                    std::vector<std::shared_ptr<const logic::Formula>> conjunctsp131;
-                    auto p1311 = logic::Theory::natSub(it2,it);     
-                    conjunctsp131.push_back(p1311);
-
-                    // Part 1.3.1.2: x(l(it)) = x
+                    // Part 1.3.1: forall (it : Nat) v(l(s(it))) = v(l(it))
                     auto vit = toTerm(v,lStartIt);                    
-                    auto p1312 = logic::Formulas::equality(vit,x); 
-                    conjunctsp131.push_back(p1312);   
-
-                    // Combine 1.3.1.1 and 1.3.1.2
-                    auto p131 = logic::Formulas::conjunction(conjunctsp131);
-
+                    auto p131 = logic::Formulas::equality(vit,x); 
+                   
                     // Part 1.3.2: x(l(s(it))) = x)
                     auto vsit = toTerm(v,lStartSuccOfIt); 
                     auto p132 = logic::Formulas::equality(vsit,x);               
@@ -1079,19 +1069,10 @@ namespace analysis {
                     auto p12 = logic::Formulas::equality(vsit2,x);
                     conjunctsLHS.push_back(p12);
                 
-                    // Part 1.3: forall (it : Nat) (it2 < it => v(l(s(it))) = v(l(it))
-                    // Part 1.3.1.1: it2 < it
-                    std::vector<std::shared_ptr<const logic::Formula>> conjunctsp131;
-                    auto p1311 = logic::Theory::natSub(it2,it);     
-                    conjunctsp131.push_back(p1311);
-
-                    // Part 1.3.1.2: x(l(it)) = x
+                    // Part 1.3: forall (it : Nat)  => v(l(s(it))) = v(l(it))
+                    // Part 1.3.1: x(l(it)) = x
                     auto vit = toTerm(v,lStartIt,pos);                    
-                    auto p1312 = logic::Formulas::equality(vit,x); 
-                    conjunctsp131.push_back(p1312);   
-
-                    // Combine 1.3.1.1 and 1.3.1.2
-                    auto p131 = logic::Formulas::conjunction(conjunctsp131);
+                    auto p131 = logic::Formulas::equality(vit,x); 
 
                     // Part 1.3.2: x(l(s(it))) = x)
                     auto vsit = toTerm(v,lStartSuccOfIt,pos); 
@@ -1233,9 +1214,14 @@ namespace analysis {
                 if (!v->isArray)
                 {   
                     // Part 1. (v(l(s(it))) =  v(l(it)) + 1))
+                    auto p1Con = std::vector<std::shared_ptr<const logic::Formula>>();
+                    auto p11 = logic::Theory::natSub(logic::Theory::natSucc(it),n);
+                    p1Con.push_back(p11);
                     auto vit = toTerm(v,lStartIt);
                     auto vsit = toTerm(v,lStartSuccOfIt);
-                    auto p1 = logic::Formulas::equality(vsit,logic::Theory::intAddition(vit,logic::Theory::intConstant(1)));
+                    auto p12 = logic::Formulas::equality(vsit,logic::Theory::intAddition(vit,logic::Theory::intConstant(1)));
+                    p1Con.push_back(p12);
+                    auto p1 = logic::Formulas::conjunction(p1Con);
                     
                     // Part 2. ((v(l(it1))) = (v(l(it2))) => (it1 = it2))
                     // Part 2.1. ((v(l(it1))) = (v(l(it2)))

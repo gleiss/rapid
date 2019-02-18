@@ -77,10 +77,10 @@ namespace analysis {
         auto castedStatement = static_cast<const program::WhileStatement*>(statement);
         // generate lemmas
         generateStandardInductionLemmas(castedStatement, lemmas, InductionKind::Equal);
-        generateStandardInductionLemmas(castedStatement, lemmas, InductionKind::Less);
-        generateStandardInductionLemmas(castedStatement, lemmas, InductionKind::Greater);
-        generateStandardInductionLemmas(castedStatement, lemmas, InductionKind::LessEqual);
-        generateStandardInductionLemmas(castedStatement, lemmas, InductionKind::GreaterEqual);
+        // generateStandardInductionLemmas(castedStatement, lemmas, InductionKind::Less);
+        // generateStandardInductionLemmas(castedStatement, lemmas, InductionKind::Greater);
+        // generateStandardInductionLemmas(castedStatement, lemmas, InductionKind::LessEqual);
+        // generateStandardInductionLemmas(castedStatement, lemmas, InductionKind::GreaterEqual);
         
         // recurse on body
         for (const auto& statement : castedStatement->bodyStatements)
@@ -764,7 +764,7 @@ namespace analysis {
                     // Part 1: (v l(zero) <= x & x < v l(n) & v l(s(it)) = (v l(it) +1) 
                     std::vector<std::shared_ptr<const logic::Formula>> conjunctsLHS;      
 
-                    // Part 1.1: v l(zero) <= x
+                    // Part 1.1: v l(zero) <= auto
                     auto xSym = logic::Signature::varSymbol("xInt", logic::Sorts::intSort());
                     auto x = logic::Terms::var(xSym);
         

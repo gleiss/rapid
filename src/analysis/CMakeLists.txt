@@ -4,6 +4,7 @@ set(SPECTRE_ANALYSIS_SOURCES
     AnalysisPreComputation.cpp
     TraceLemmas.cpp
     StaticAnalysis.cpp
+    TheoryAxioms.cpp
 )
 set(SPECTRE_ANALYSIS_HEADERS
     Semantics.hpp
@@ -11,6 +12,7 @@ set(SPECTRE_ANALYSIS_HEADERS
     AnalysisPreComputation.hpp
     TraceLemmas.hpp
     StaticAnalysis.hpp
+    TheoryAxioms.hpp
 )
 
 add_library(analysis ${SPECTRE_ANALYSIS_SOURCES} ${SPECTRE_ANALYSIS_HEADERS})

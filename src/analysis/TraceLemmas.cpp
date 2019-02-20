@@ -1627,7 +1627,7 @@ namespace analysis {
                     auto vsit = toTermFull(v,lStartSuccOfIt,tr3);
                     auto vit = toTermFull(v,lStartIt,tr3);
                     auto p13 = logic::Formulas::equality(vsit,logic::Theory::intAddition(vit,logic::Theory::intConstant(1)));
-                    conjunctsLHS.push_back(logic::Formulas::universal({tr3Symbol},p13));
+                    conjunctsLHS.push_back(logic::Formulas::universal({tr3Symbol,iSymbol},p13));
 
                     auto lhs = logic::Formulas::conjunction(conjunctsLHS);
 

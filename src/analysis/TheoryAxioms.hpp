@@ -20,6 +20,7 @@ namespace analysis {
          std::vector<std::shared_ptr<const logic::Formula>> generate();
         
     private:
-        void generateTheoryAxiom(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);    
+        void generateTheoryAxiom1(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);    
+        void generateTheoryAxiom2(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);    
     };
 }

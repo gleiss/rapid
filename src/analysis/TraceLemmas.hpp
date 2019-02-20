@@ -77,6 +77,25 @@ namespace analysis {
         void generateEqualityPreservationLemmas(const program::WhileStatement* whileStatement,
                                              std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
 
+
+        void generateEqualityPreservationLemmasZeroToRight(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+        void generateEqualityPreservationLemmasZeroToRight(const program::Statement* statement,
+                                              std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+        void generateEqualityPreservationLemmasZeroToRight(const program::WhileStatement* whileStatement,
+                                                                                  std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+
+        void generateEqualityPreservationLemmasLeftToEnd(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+        void generateEqualityPreservationLemmasLeftToEnd(const program::Statement* statement,
+                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+        void generateEqualityPreservationLemmasLeftToEnd(const program::WhileStatement* whileStatement,
+                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+
+        void generateEqualityPreservationLemmasLeftToRight(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+        void generateEqualityPreservationLemmasLeftToRight(const program::Statement* statement,
+                                            std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+        void generateEqualityPreservationLemmasLeftToRight(const program::WhileStatement* whileStatement,
+                                            std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+
         void generateIterationInjectivityLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
         void generateIterationInjectivityLemmas(const program::Statement* statement,
                                              std::vector<std::shared_ptr<const logic::Formula>>& lemmas);

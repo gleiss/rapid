@@ -27,7 +27,7 @@ namespace analysis {
         generateStandardInductionLemmas(lemmas);
         generateAtLeastOneIterationLemmas(lemmas);
         generateIntermediateValueLemmas(lemmas);
-        generateValuePreservationLemmas(lemmas);
+        // generateValuePreservationLemmas(lemmas);
         generateIterationInjectivityLemmas(lemmas);
 
         if (twoTraces)
@@ -36,6 +36,7 @@ namespace analysis {
             generateTwoTracesLemmas(lemmas);
             generateNEqualLemmas(lemmas);
             generateEqualityPreservationLemmas(lemmas);
+            generateOrderingSynchronizationLemmas(lemmas);
         }
         return lemmas;
     }
@@ -1304,7 +1305,6 @@ namespace analysis {
     }
 
 
-
     void TraceLemmas::generateEqualityPreservationLemmas(const program::WhileStatement* whileStatement,
                                                       std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
     {     
@@ -1415,7 +1415,7 @@ namespace analysis {
                     auto rhs = logic::Formulas::equality(vitrt1,vitrt2);
 
                     // Combine 1 and 2, quantify over all itL and itR
-                    auto label = "Lemma: Equality preservation over traces for var " + v->name + " at location " + whileStatement->location;
+                    auto label = "Lemma: Value preservation over traces for var " + v->name + " at location " + whileStatement->location;
                     auto imp = logic::Formulas::implication(lhs,rhs);
                     auto bareLemma = logic::Formulas::universal({itLSymbol,itRSymbol},imp, label);
                     auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, bareLemma);
@@ -1482,7 +1482,7 @@ namespace analysis {
                     auto rhs = logic::Formulas::equality(vitrt1,vitrt2);
 
                     // Combine 1 and 2, quantify over all itL and itR
-                    auto label = "Lemma: Equality preservation over traces for array var " + v->name + " at location " + whileStatement->location;
+                    auto label = "Lemma: Value preservation over traces for array var " + v->name + " at location " + whileStatement->location;
                     auto imp = logic::Formulas::implication(lhs,rhs);
                     auto bareLemma = logic::Formulas::universal({itLSymbol,itRSymbol},imp, label);
                     auto bareArrayLemma = logic::Formulas::universal({pSymbol},bareLemma,label);
@@ -1491,6 +1491,157 @@ namespace analysis {
                 }
             }
         }
+    }
+
+        #pragma mark - Synchronization of orderings Lemma
+    void TraceLemmas::generateOrderingSynchronizationLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
+    
+    {
+        for(const auto& function : program.functions)
+        {
+            std::vector<std::shared_ptr<const logic::Formula>> conjunctsFunction;
+            
+            for (const auto& statement : function->statements)
+            {
+                generateOrderingSynchronizationLemmas(statement.get(), lemmas);
+            }
+        }
+    }
+
+    void TraceLemmas::generateOrderingSynchronizationLemmas(const program::Statement* statement,
+                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
+    {
+        if (statement->type() == program::Statement::Type::IfElse)
+        {
+            auto castedStatement = static_cast<const program::IfElse*>(statement);
+            // recurse on both branches
+            for (const auto& statement : castedStatement->ifStatements)
+            {
+                generateOrderingSynchronizationLemmas(statement.get(), lemmas);
+            }
+            for (const auto& statement : castedStatement->elseStatements)
+            {
+                generateOrderingSynchronizationLemmas(statement.get(), lemmas);
+            }
+        }
+        else if (statement->type() == program::Statement::Type::WhileStatement)
+        {
+            auto castedStatement = static_cast<const program::WhileStatement*>(statement);
+            // generate lemmas
+            generateOrderingSynchronizationLemmas(castedStatement, lemmas);
+               
+            // recurse on body
+            for (const auto& statement : castedStatement->bodyStatements)
+            {
+                generateOrderingSynchronizationLemmas(statement.get(), lemmas);
+            }
+        }
+    }
+
+
+
+    void TraceLemmas::generateOrderingSynchronizationLemmas(const program::WhileStatement* whileStatement,
+                                                      std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
+    {     
+        assert(twoTraces);
+
+        auto t1 = trace1Term();
+        auto t2 = trace2Term();
+
+        auto iSymbol = iteratorSymbol(whileStatement);
+        auto it = iteratorTermForLoop(whileStatement);   
+        auto it1Symbol = logic::Signature::varSymbol("it1", logic::Sorts::natSort());
+        auto it1 = logic::Terms::var(it1Symbol);
+        auto it2Symbol = logic::Signature::varSymbol("it2", logic::Sorts::natSort());
+        auto it2 = logic::Terms::var(it2Symbol);
+     
+        auto locationSymbol = locationSymbolForStatement(whileStatement);        
+        auto locationName = locationSymbol->name;
+        
+        auto enclosingIteratorsSymbols = std::vector<std::shared_ptr<const logic::Symbol>>();
+
+        auto enclosingIterators = std::vector<std::shared_ptr<const logic::Term>>();
+        auto enclosingIteratorsAndIt = std::vector<std::shared_ptr<const logic::Term>>();
+        auto enclosingIteratorsAndZero = std::vector<std::shared_ptr<const logic::Term>>();
+        auto enclosingIteratorsAndSuccOfIt = std::vector<std::shared_ptr<const logic::Term>>();
+        auto enclosingIteratorsAndIt1 = std::vector<std::shared_ptr<const logic::Term>>();
+        auto enclosingIteratorsAndIt2 = std::vector<std::shared_ptr<const logic::Term>>();
+
+        for (const auto& enclosingLoop : *whileStatement->enclosingLoops)
+        {
+            auto enclosingIteratorSymbol = iteratorSymbol(enclosingLoop);
+            enclosingIteratorsSymbols.push_back(enclosingIteratorSymbol);
+
+            auto enclosingIterator = iteratorTermForLoop(enclosingLoop);
+            enclosingIterators.push_back(enclosingIterator);
+            enclosingIteratorsAndIt.push_back(enclosingIterator);
+            enclosingIteratorsAndZero.push_back(enclosingIterator);
+            enclosingIteratorsAndSuccOfIt.push_back(enclosingIterator);
+            enclosingIteratorsAndIt1.push_back(enclosingIterator);
+            enclosingIteratorsAndIt2.push_back(enclosingIterator);
+            
+        }
+        enclosingIteratorsAndIt.push_back(it);
+        enclosingIteratorsAndZero.push_back(logic::Theory::natZero());
+        enclosingIteratorsAndSuccOfIt.push_back(logic::Theory::natSucc(it));
+        enclosingIteratorsAndIt1.push_back(it1);
+        enclosingIteratorsAndIt2.push_back(it2);
+        
+
+        auto lStartIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndIt);
+        auto lStartZero = logic::Terms::func(locationSymbol, enclosingIteratorsAndZero);
+        auto lStartSuccOfIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndSuccOfIt); 
+        auto lStartIt1 = logic::Terms::func(locationSymbol, enclosingIteratorsAndIt1);
+        auto lStartIt2 = logic::Terms::func(locationSymbol, enclosingIteratorsAndIt2);
+
+        
+        // add lemma for each intVar
+        // Lemma: forall ((tr : Trace) (it1: Nat) (it2 : Nat))
+        //   (it1 < it2 & v(l(zero) t1) = v(l(zero) t2) & forall (it : Nat). v(l(s(it))) = v(l(it)) + 1)
+        //      => (i (l(it1)) tr) < (i (l(it2) tr))        
+        for (const auto& v : locationToActiveVars.at(locationName))
+        {            
+            if (!v->isConstant)
+            {
+                if (!v->isArray)
+                {              
+                    // Symbol declarations
+                    auto trSymbol = logic::Signature::varSymbol("tr",logic::Sorts::traceSort());
+                    auto tr = logic::Terms::var(trSymbol);
+                    // Part 1: (it1 < it2 & v(l(zero) t1) = v(l(zero) t2) & forall (it : Nat). v(l(s(it))) = v(l(it)) + 1)                    
+                    std::vector<std::shared_ptr<const logic::Formula>> conjunctsLHS;          
+            
+                    // Part 1.1: it1 < it2 
+                    auto p11 = logic::Theory::natSub(it1,it2);
+                    conjunctsLHS.push_back(p11);
+
+                    // Part 1.2: v(l(zero) t1) = v(l(zero) t2)
+                    auto vitzt1 = toTermFull(v,lStartZero,t1);
+                    auto vitzt2 = toTermFull(v,lStartZero,t2);
+                    auto p12 = logic::Formulas::equality(vitzt1,vitzt2);
+                    conjunctsLHS.push_back(p12);
+
+                    // Part 1.3:  forall (it : Nat). v(l(s(it))) = v(l(it)) + 1)
+                    auto tr3Symbol = logic::Signature::varSymbol("tr3", logic::Sorts::traceSort());
+                    auto tr3 = logic::Terms::var(tr3Symbol);                    
+                    auto vsit = toTermFull(v,lStartSuccOfIt,tr3);
+                    auto vit = toTermFull(v,lStartIt,tr3);
+                    auto p13 = logic::Formulas::equality(vsit,logic::Theory::intAddition(vit,logic::Theory::intConstant(1)));
+                    conjunctsLHS.push_back(logic::Formulas::universal({tr3Symbol},p13));
+
+                    auto lhs = logic::Formulas::conjunction(conjunctsLHS);
+
+                    // // Part 2: (i (l(it1)) tr) < ((i (l(it2) tr))   
+                    auto rhs = logic::Theory::intLess(toTermFull(v,lStartIt1,tr),toTermFull(v,lStartIt2,tr));
+
+                    auto impl = logic::Formulas::implication(lhs,rhs);
+                    auto label = "Lemma: Synchronization of orderings for var " + v->name + " at location " + whileStatement->location;
+                    auto bareLemma = logic::Formulas::universal({trSymbol,it1Symbol,it2Symbol},impl,label);
+                    auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, bareLemma);
+                    lemmas.push_back(lemma);             
+                }
+            }
+        }            
     }
 }
 

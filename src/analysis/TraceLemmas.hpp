@@ -83,6 +83,11 @@ namespace analysis {
         void generateIterationInjectivityLemmas(const program::WhileStatement* whileStatement,
                                              std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
 
+        void generateOrderingSynchronizationLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+        void generateOrderingSynchronizationLemmas(const program::Statement* statement,
+                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+        void generateOrderingSynchronizationLemmas(const program::WhileStatement* whileStatement,
+                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
 
     };
 }

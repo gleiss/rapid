@@ -1537,6 +1537,9 @@ namespace analysis {
         auto itLSymbol = logic::Signature::varSymbol("itL", logic::Sorts::natSort());
         auto itL = logic::Terms::var(itLSymbol);
         auto n = lastIterationTermForLoop(whileStatement, twoTraces);
+        auto nT1 = lastIterationTermForLoop(whileStatement, t1, true);
+        auto nT2 = lastIterationTermForLoop(whileStatement, t2, true);
+
         auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
 
         auto locationSymbol = locationSymbolForStatement(whileStatement);
@@ -1549,6 +1552,8 @@ namespace analysis {
         auto enclosingIteratorsAndSuccOfIt = std::vector<std::shared_ptr<const logic::Term>>();
         auto enclosingIteratorsAndItL = std::vector<std::shared_ptr<const logic::Term>>();
         auto enclosingIteratorsAndN = std::vector<std::shared_ptr<const logic::Term>>();
+        auto enclosingIteratorsAndNT1 = std::vector<std::shared_ptr<const logic::Term>>();
+        auto enclosingIteratorsAndNT2 = std::vector<std::shared_ptr<const logic::Term>>();
 
         for (const auto& enclosingLoop : *whileStatement->enclosingLoops)
         {
@@ -1561,23 +1566,31 @@ namespace analysis {
             enclosingIteratorsAndSuccOfIt.push_back(enclosingIterator);
             enclosingIteratorsAndItL.push_back(enclosingIterator);
             enclosingIteratorsAndN.push_back(enclosingIterator);
+            enclosingIteratorsAndNT1.push_back(enclosingIterator);
+            enclosingIteratorsAndNT2.push_back(enclosingIterator);
+
         }
         enclosingIteratorsAndIt.push_back(it);
         enclosingIteratorsAndSuccOfIt.push_back(logic::Theory::natSucc(it));
         enclosingIteratorsAndItL.push_back(itL);
         enclosingIteratorsAndN.push_back(n);
+        enclosingIteratorsAndNT1.push_back(nT1);
+        enclosingIteratorsAndNT2.push_back(nT2);
+
 
         auto lStartIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndIt);
         auto lStartSuccOfIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndSuccOfIt);
         auto lStartItL = logic::Terms::func(locationSymbol, enclosingIteratorsAndItL);
         auto lStartN = logic::Terms::func(locationSymbol, enclosingIteratorsAndN);
-
+        auto lStartNT1 = logic::Terms::func(locationSymbol, enclosingIteratorsAndNT1);
+        auto lStartNT2 = logic::Terms::func(locationSymbol, enclosingIteratorsAndNT2);
 
         // add lemma for each intVar
         // Lemma: forall ((itL: Nat))
-        //      (v(l(itL),t1) = v(l(itL),t2) &
-        //          forall (it : Nat) ((itL <= it < n & v(l(it),t1) = v(l(it),t2))) => v(l(s(it)),t1) = v(l(s(it)),t2))
-        //          => v(l(n),t1) =  v(l(n),t2)
+        //      (v(l(itL),t1) = v(l(itL),t2)
+        //          & ((n t1) = (n t2))
+        //          & forall (it : Nat) ((itL <= it < n & v(l(it),t1) = v(l(it),t2))) => v(l(s(it)),t1) = v(l(s(it)),t2))
+        //          => v(l(n t1),t1) =  v(l(n t1),t2)
         for (const auto& v : locationToActiveVars.at(locationName))
         {
             if (!v->isConstant)
@@ -1603,7 +1616,7 @@ namespace analysis {
                     conjunctsP12.push_back(p121);
 
                     // Part 1.2.2 it < n
-                    auto p122 = logic::Theory::natSub(it, n);
+                    auto p122 = logic::Theory::natSub(it, nT1);
                     conjunctsP12.push_back(p122);
 
                     // Part 1.2.3 v(l(it),t1) = v(l(it),t2)))
@@ -1624,18 +1637,22 @@ namespace analysis {
                     auto p12 = logic::Formulas::universal({iSymbol},logic::Formulas::implication(p12LHS,p12RHS));
                     conjunctsLHS.push_back(p12);
 
-                    // Combine 1.1 and 1.2
+                    // Part 1.3: (n t1) = (n t2) ensures soundness
+                    auto p13 = logic::Formulas::equality(lStartNT1, lStartNT2);
+                    conjunctsLHS.push_back(p13);
+
+                    // Combine 1.1 and 1.2 and 1.3
                     auto lhs = logic::Formulas::conjunction(conjunctsLHS);
 
                     // Part 2: v(l(n),t1) =  v(l(n),t2)
-                    auto vnt1 = toTermFull(v,lStartN,t1);
-                    auto vnt2 = toTermFull(v,lStartN,t2);
+                    auto vnt1 = toTermFull(v,lStartNT1,t1);
+                    auto vnt2 = toTermFull(v,lStartNT1,t2);
                     auto rhs = logic::Formulas::equality(vnt1,vnt2);
 
                     // Combine 1 and 2, quantify over all itL
                     auto label = "Lemma: Equality preservation over traces for var " + v->name + " at location " + whileStatement->location;
                     auto imp = logic::Formulas::implication(lhs,rhs);
-                    auto bareLemma = logic::Formulas::universal({tr, itLSymbol},imp, label);
+                    auto bareLemma = logic::Formulas::universal({itLSymbol},imp, label);
                     auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, bareLemma);
                     lemmas.push_back(lemma);
                 }
@@ -1652,7 +1669,9 @@ namespace analysis {
                 if (v->isArray)
                 {
                     // Part 1: (v(l(itL),t1) = v(l(itL),t2)
-                    //  & forall (it : Nat) ((itL <= it < n & v(l(it),t1) = v(l(it),t2))) => v(l(s(it)),t1) = v(l(s(it)),t2))
+                    //  & ((n t1) = (n t2))
+                    //  & forall (it : Nat) ((itL <= it < n & v(l(it),t1) = v(l(it),t2)))
+                    // => v(l(s(it)),t1) = v(l(s(it)),t2))
                     std::vector<std::shared_ptr<const logic::Formula>> conjunctsLHS;
 
                     // Part 1.1: (v(l(itL),t1) = v(l(itL),t2)
@@ -1670,7 +1689,7 @@ namespace analysis {
                     conjunctsP12.push_back(p121);
 
                     // Part 1.2.2 it < n
-                    auto p122 = logic::Theory::natSub(it, n);
+                    auto p122 = logic::Theory::natSub(it, nT1);
                     conjunctsP12.push_back(p122);
 
                     // Part 1.2.3 v(l(it),t1) = v(l(it),t2)))
@@ -1691,18 +1710,22 @@ namespace analysis {
                     auto p12 = logic::Formulas::universal({iSymbol},logic::Formulas::implication(p12LHS,p12RHS));
                     conjunctsLHS.push_back(p12);
 
-                    // Combine 1.1 and 1.2
+                    // Part 1.3: (n t1) = (n t2) ensures soundness
+                    auto p13 = logic::Formulas::equality(lStartNT1, lStartNT2);
+                    conjunctsLHS.push_back(p13);
+
+                    // Combine 1.1 and 1.2 and 1.3
                     auto lhs = logic::Formulas::conjunction(conjunctsLHS);
 
                     // Part 2: v(l(n),t1) =  v(l(n),t2)
-                    auto vnt1 = toTermFull(v,lStartN,p,t1);
-                    auto vnt2 = toTermFull(v,lStartN,p,t2);
+                    auto vnt1 = toTermFull(v,lStartNT1,p,t1);
+                    auto vnt2 = toTermFull(v,lStartNT1,p,t2);
                     auto rhs = logic::Formulas::equality(vnt1,vnt2);
 
                     // Combine 1 and 2, quantify over all itL
                     auto label = "Lemma: Equality preservation over traces for array var " + v->name + " at location " + whileStatement->location;
                     auto imp = logic::Formulas::implication(lhs,rhs);
-                    auto bareLemma = logic::Formulas::universal({tr, itLSymbol},imp, label);
+                    auto bareLemma = logic::Formulas::universal({itLSymbol},imp, label);
                     auto bareArrayLemma = logic::Formulas::universal({pSymbol},bareLemma,label);
                     auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, bareArrayLemma);
                     lemmas.push_back(lemma);

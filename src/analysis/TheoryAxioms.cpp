@@ -23,7 +23,7 @@ namespace analysis {
     {
         std::vector<std::shared_ptr<const logic::Formula>> lemmas;        
 
-        generateTheoryAxiom1(lemmas);     
+        // generateTheoryAxiom1(lemmas);     
         generateTheoryAxiom2(lemmas);     
         return lemmas;
     }

@@ -1,16 +1,16 @@
 # Overview
 
-SPECTRE is a software verification tool that takes a program together with a property as input and
+RAPID is a software verification tool that takes a program together with a property as input and
 produces a first-order-encoding of correctness in SMTLIB syntax.
 This encoding can then be passed to an arbitrary first-order reasoning engine which supports SMTLIB, e.g. Vampire.
 
-SPECTRE is focused on 
+RAPID is focused on 
 - programs containing arrays
 - functional properties, hyperproperties, possibly with quantifier alternations
 - proving properties instead of disproving them (we don't try to find bugs)
 
-# Using SPECTRE
-SPECTRE is intended to be used as follows: 
+# Using RAPID
+RAPID is intended to be used as follows: 
 - Write your program in the supported while-language,
 - Write the property you want to prove in the supported SMTLIB-syntax,
 - Pass the file containing the program and the property to SPECTRE, which generates an SMTLIB-encoding.
@@ -18,13 +18,13 @@ SPECTRE is intended to be used as follows:
 
 ### Building the executable
 
-There are two steps involved in building SPECTRE.
+There are two steps involved in building RAPID.
 
-First, we generate the source-code files for the SPECTRE-parser using Flex and Bison:
+First, we generate the source-code files for the RAPID-parser using Flex and Bison:
 Make sure you have these two tools installed and that the paths are properly set in parser_generator/Makefile.
 Then, while being in parser_generator, run make (which produces the necessary files in src/parser/).
 
-Secondly, we use CMake to generate the necessary files which are needed while building SPECTRE. Make sure you have CMake installed.
+Secondly, we use CMake to generate the necessary files which are needed while building RAPID. Make sure you have CMake installed.
 
 Starting from the main directory, make a new folder (to do an out-of-source-build) and switch to it by running
 ```
@@ -36,7 +36,7 @@ If you want to use make as build-tool, run
 ```
 $ cmake ..
 ```
-and build SPECTRE by running
+and build RAPID by running
 ```
 $ make
 ```
@@ -46,7 +46,7 @@ If you want to use XCode as build-tool, run
 ```
 $ cmake -G Xcode ..
 ```
-and build SPECTRE from the generated XCode project (which will be generated in /build/)
+and build RAPID from the generated XCode project (which will be generated in /build/)
 
 For other build-tools like ninja, Visual Studio, Eclipse or Sublime2, consult the CMake documentation.
 

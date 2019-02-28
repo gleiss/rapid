@@ -15,6 +15,7 @@
 #include "analysis/Semantics.hpp"
 #include "analysis/TraceLemmas.hpp"
 #include "analysis/StaticAnalysis.hpp"
+#include "analysis/TheoryAxioms.hpp"
 
 void outputUsage()
 {
@@ -52,6 +53,10 @@ int main(int argc, char *argv[])
                 auto staticAnalysisLemmas = staticAnalysis.generateStaticAnalysisLemmas();
                 problem.lemmas.insert(problem.lemmas.end(),staticAnalysisLemmas.begin(),staticAnalysisLemmas.end());
                 
+                analysis::TheoryAxioms theoryAxioms;
+                auto theoryAxiomLemmas = theoryAxioms.generate();
+                problem.lemmas.insert(problem.lemmas.end(),theoryAxiomLemmas.begin(),theoryAxiomLemmas.end());
+
                 problem.outputSMTLIB(util::Output::stream());
             }
         }

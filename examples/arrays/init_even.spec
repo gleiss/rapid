@@ -2,13 +2,12 @@ func main()
 {
 	Int[] a;
 	const Int alength;
-	const Int v;
 
 	Int i = 0;
-	while(i < alength)
+	while(i < (alength / 2))
 	{
-		a[i] = v;
-		i = i+1;
+      a[i*2] = 1;
+      i = i + 1;
 	}
 }
 
@@ -17,10 +16,10 @@ func main()
       (=>
          (and
             (<= 0 pos)
-            (< pos alength)
+            (< pos (/ alength 2))
             (<= 0 alength)
          )
-         (= (a main_end pos) v)
+         (= (a main_end (* pos 2)) 1)
       )
    )
 )

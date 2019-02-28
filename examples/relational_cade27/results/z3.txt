@@ -1,0 +1,39 @@
+Running all benchmarks for 5 seconds
+Spectre arguments:
+Z3 arguments:  -smt2 -T:60
+
+Scanning directory /Users/pamina/Uni/Master_Thesis/benchmarking_cade19/output/z3/input
+testing file ./hamming-weight1.spec.smtlib: SUCCESS
+testing file ./hamming-weight2.spec.smtlib: SUCCESS
+testing file ./hamming-weight3.spec.smtlib: DIDN'T WORK
+testing file ./hamming-weight4-full.spec.smtlib: DIDN'T WORK
+testing file ./hamming-weight4-lemma.spec.smtlib: DIDN'T WORK
+testing file ./non-interference1.spec.smtlib: SUCCESS
+testing file ./non-interference2.spec.smtlib: SUCCESS
+testing file ./non-interference3.spec.smtlib: SUCCESS
+testing file ./non-interference4.spec.smtlib: SUCCESS
+testing file ./non-interference5.spec.smtlib: SUCCESS
+testing file ./non-interference6.spec.smtlib: SUCCESS
+testing file ./non-interference7.spec.smtlib: SUCCESS
+testing file ./non-interference8.spec.smtlib: SUCCESS
+testing file ./non-interference9.spec.smtlib: SUCCESS
+testing file ./rsa-exponentiation.spec.smtlib: DIDN'T WORK
+testing file ./sensitivity1.spec.smtlib: SUCCESS
+testing file ./sensitivity10.spec.smtlib: DIDN'T WORK
+testing file ./sensitivity11.spec.smtlib: DIDN'T WORK
+testing file ./sensitivity12.spec.smtlib: DIDN'T WORK
+testing file ./sensitivity2.spec.smtlib: DIDN'T WORK
+testing file ./sensitivity3.spec.smtlib: SUCCESS
+testing file ./sensitivity4.spec.smtlib: DIDN'T WORK
+testing file ./sensitivity5.spec.smtlib: DIDN'T WORK
+testing file ./sensitivity6.spec.smtlib: DIDN'T WORK
+testing file ./sensitivity7.spec.smtlib: DIDN'T WORK
+testing file ./sensitivity8.spec.smtlib: DIDN'T WORK
+testing file ./sensitivity9.spec.smtlib: DIDN'T WORK
+
+SPECTRE: Overall Test results:
+Running all benchmarks for 5 seconds
+Spectre arguments:
+Z3 arguments:  -smt2 -T:60
+#success:13
+#fail:14

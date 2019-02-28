@@ -1,25 +1,11 @@
-//int [] a, b;
-//int i, blength, k;
-//
-//requires 0 <= blength;
-//
-//requires k <= blength;
-//requires i == 0;
-//ensures forall int j, 0 <= j & j < k ==> a[j] == b[j];
-//
-//while (i < k) do
-//:: true -> a[i] = b[i]; i = i + 1;
-//od
-
 func main()
 {
 	Int[] a;
-	Int[] b;
-	Int i;
-	Int blength;
-	Int k;
+	const Int[] b;
+	const Int blength;
+	const Int k;
 
-	i = 0;
+	Int i = 0;
 	while(i < k)
 	{
 		a[i] = b[i];
@@ -29,14 +15,14 @@ func main()
 
 (assert-not
 	(=>
-		(<= (k main_end) (blength main_end))
+		(<= k blength)
 		(forall ((j Int))
 			(=>
 				(and
 					(<= 0 j)
-					(< j (k main_end))
+					(< j k)
 				)
-				(= (a main_end j) (b main_end j))
+				(= (a main_end j) (b j))
 			)
 		)
 	)

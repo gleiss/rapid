@@ -1,0 +1,43 @@
+Running all benchmarks for 60 seconds
+Spectre arguments:    
+Vampire arguments:  --input_syntax smtlib2 -tha on -av off 
+
+Scanning directory /Users/pamina/Uni/Master_Thesis/cav19/benchmarking/non-interference
+testing file non-interference/1-ni-assign-to-high.spec: SUCCESS
+testing file non-interference/10-ni-rsa-exponentiation.spec: SUCCESS
+testing file non-interference/2-ni-branch-on-high-twice.spec: SUCCESS
+testing file non-interference/3-branch-on-high-same-assignment.spec: SUCCESS
+testing file non-interference/4-ni-branch-on-high-twice-prop2.spec: DIDN'T WORK
+testing file non-interference/5-ni-temp-impl-flow.spec: SUCCESS
+testing file non-interference/6-ni-branch-assign-equal-val.spec: SUCCESS
+testing file non-interference/7-ni-explicit-flow.spec: SUCCESS
+testing file non-interference/8-ni-explicit-flow-while.spec: DIDN'T WORK
+testing file non-interference/9-ni-equal-output.spec: DIDN'T WORK
+
+Scanning directory /Users/pamina/Uni/Master_Thesis/cav19/benchmarking/sensitivity
+testing file sensitivity/1-sens-equal-sums.spec: SUCCESS
+testing file sensitivity/10-sens-equal-k.spec: SUCCESS
+testing file sensitivity/11-sens-equal-k-twice.spec: SUCCESS
+testing file sensitivity/12-sens-diff-up-to-forall-k.spec: SUCCESS
+testing file sensitivity/2-sens-equal-sums-two-arrays.spec: SUCCESS
+testing file sensitivity/3-sens-abs-diff-up-to-k.spec: DIDN'T WORK
+testing file sensitivity/4-sens-abs-diff-up-to-k-two-arrays.spec: DIDN'T WORK
+testing file sensitivity/5-sens-equal-sums-two-arrays-equal-k.spec: SUCCESS
+testing file sensitivity/6-sens-diff-up-to-explicit-k.spec: SUCCESS
+testing file sensitivity/7-sens-diff-up-to-explicit-k-sum.spec: SUCCESS
+testing file sensitivity/8-sens-equal-sum-explicit-swap.spec: SUCCESS
+testing file sensitivity/9-sens-equal-sum-explicit-swap-prop2.spec: SUCCESS
+
+Scanning directory /Users/pamina/Uni/Master_Thesis/cav19/benchmarking/hamming-weight
+testing file hamming-weight/1-hw-equal-arrays.spec: DIDN'T WORK
+testing file hamming-weight/2-hw-last-position-swapped.spec: DIDN'T WORK
+testing file hamming-weight/3-hw-swap-and-two-arrays.spec: DIDN'T WORK
+testing file hamming-weight/4-hw-swap-in-array-full.spec: DIDN'T WORK
+testing file hamming-weight/4-hw-swap-in-array-lemma.spec: DIDN'T WORK
+
+SPECTRE: Overall Test results:
+Running all benchmarks for 60 seconds
+Spectre arguments:    
+Vampire arguments:  --input_syntax smtlib2 -tha on -av off 
+#success:17
+#fail:10

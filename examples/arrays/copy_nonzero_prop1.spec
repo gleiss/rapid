@@ -1,20 +1,22 @@
 func main()
 {
 	Int[] a;
-	const Int[] b;
 
+	const Int[] b;
 	const Int blength;
 
 	Int i = 0;
+	Int alength = 0;
 	while(i < blength)
 	{
-		if(b[i] >= 0)
+		if (b[i] != 0)
 		{
-			a[i] = b[i];
+			a[alength] = b[i];
+			alength = alength + 1;
 		}
 		else
 		{
-			a[i] = -b[i];
+			skip;
 		}
 		i = i + 1;
 	}
@@ -24,13 +26,11 @@ func main()
 	(forall ((k Int))
 		(=>
 			(and
+				(<= 0 blength)
 				(<= 0 k)
-				(< k blength)
+				(< k (alength main_end))
 			)
-			(or
-				(= (a main_end k) (b main_end k) )
-				(= (a main_end k) (- (b main_end k)) )
-			)
+			(not (= (a main_end k) 0))
 		)
 	)
 )

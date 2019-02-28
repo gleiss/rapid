@@ -7,7 +7,7 @@ func main()
 	Int i = 0;
 	while(i < alength)
 	{
-		a[i] = v;
+		a[i] = (2 * i) + v;
 		i = i+1;
 	}
 }
@@ -20,7 +20,7 @@ func main()
             (< pos alength)
             (<= 0 alength)
          )
-         (= (a main_end pos) v)
+         (= (a main_end pos) (+ (* 2 pos) v))
       )
    )
 )

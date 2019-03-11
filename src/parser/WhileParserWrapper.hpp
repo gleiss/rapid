@@ -16,6 +16,8 @@
 
 #include "Program.hpp"
 
+#include "Options.hpp"
+
 namespace parser
 {
     /*
@@ -76,10 +78,13 @@ namespace parser
         assert(context.program);
         assert(context.conjecture);
         
-        util::Output::stream() << util::Output::comment;
-        util::Output::stream() << *context.program;
-        util::Output::stream() << util::Output::nocomment;
-        
+        if(!util::Configuration::instance().generateBenchmark().getValue())
+        {
+            util::Output::stream() << util::Output::comment;
+            util::Output::stream() << *context.program;
+            util::Output::stream() << util::Output::nocomment;
+        }
+
         return WhileParserResult(std::move(context.program), std::move(context.locationToActiveVars), std::move(context.conjecture), context.twoTraces);
     }
 }

@@ -74,9 +74,11 @@ namespace util {
     public:
         Configuration() :
         _outputFile("output", ""),
+        _generateBenchmark("generateBenchmark", false),
         _allOptions()
         {
             registerOption(&_outputFile);
+            registerOption(&_generateBenchmark);
         }
         
         bool setAllValues(int argc, char *argv[]);
@@ -84,12 +86,14 @@ namespace util {
         Option* getOption(std::string name);
         
         StringOption outputFile() { return _outputFile; }
-        
+        BooleanOption generateBenchmark() { return _generateBenchmark; }
+
         static Configuration instance() { return _instance; }
         
     protected:
         StringOption _outputFile;
-        
+        BooleanOption _generateBenchmark;
+
         std::map<std::string, Option*> _allOptions;
         
         void registerOption(Option* o);

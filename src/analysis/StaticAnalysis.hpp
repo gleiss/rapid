@@ -11,33 +11,18 @@
 #include "Variable.hpp"
 #include "Formula.hpp"
 
+#include "ProgramTraverser.hpp"
+
 namespace analysis
 {
-    class StaticAnalysis
+    class StaticAnalysisLemmas : public ProgramTraverser
     {
     public:
-        StaticAnalysis(const program::Program& program,
-                    std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars,
-                    bool twoTraces) :
-        program(program),
-        locationToActiveVars(locationToActiveVars),
-        twoTraces(twoTraces) {}
+        using ProgramTraverser::ProgramTraverser; // inherit initializer, note: doesn't allow additional members in subclass!
         
-        std::vector<std::shared_ptr<const logic::Formula>> generateStaticAnalysisLemmas();
-
     private:
-        const program::Program& program;
-        const std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars;
-        const bool twoTraces;
+        virtual void generateFormulasFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::Formula>>& formulas) override;
         
-        void generateStaticAnalysisLemmas(const program::Statement* statement,
-                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        void generateStaticAnalysisLemmas(const program::WhileStatement* whileStatement,
-                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        
-        void generateStaticAnalysisLemmasUnassignedVars(const program::WhileStatement* whileStatement,
-                                                      std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-
         std::unordered_set<std::shared_ptr<const program::Variable>> computeAssignedVars(const program::Statement* statement);
     };
 }

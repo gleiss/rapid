@@ -16,82 +16,62 @@
 using namespace logic;
 
 namespace analysis {
-    
+
 #pragma mark - High level methods
     
-    std::vector<std::shared_ptr<const logic::Formula>> TraceLemmas::generate()
+    std::vector<std::shared_ptr<const logic::Formula>> generateTraceLemmas(const program::Program& program,
+                                                                           std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars,
+                                                                           bool twoTraces)
     {
         std::vector<std::shared_ptr<const logic::Formula>> lemmas;
         
-        // generate standard induction lemmas for all loops, all variables and the predicates =,<,>,<=,>=.
-        generateStandardInductionLemmas(lemmas);
-        generateAtLeastOneIterationLemmas(lemmas);
-        generateIntermediateValueLemmas(lemmas);
-        // generateValuePreservationLemmas(lemmas);
-        generateIterationInjectivityLemmas(lemmas);
+        // generate standard induction lemmas for all loops, all variables and the predicate =,<,>,<=,>=.
+        StandardInductionLemmas standardInductionLemmas(program, locationToActiveVars, twoTraces);
+        standardInductionLemmas.generateFormulas(lemmas);
+        
+        AtLeastOneIterationLemmas atLeastOneIterationLemmas(program, locationToActiveVars, twoTraces);
+        atLeastOneIterationLemmas.generateFormulas(lemmas);
+        
+        IntermediateValueLemmas intermediateValueLemmas(program, locationToActiveVars, twoTraces);
+        intermediateValueLemmas.generateFormulas(lemmas);
+        
+//        ValuePreservationLemmas valuePreservationLemmas(program, locationToActiveVars, twoTraces);
+//        valuePreservationLemmas.generateFormulas(lemmas);
+
+        IterationInjectivityLemmas iterationInjectivityLemmas(program, locationToActiveVars, twoTraces);
+        iterationInjectivityLemmas.generateFormulas(lemmas);
 
         if (twoTraces)
         {
             // generate for each active variable at each loop an induction lemma for equality of the variable on both traces
-            generateTwoTracesLemmas(lemmas);
-            generateNEqualLemmas(lemmas);
-            generateEqualityPreservationLemmas(lemmas);
-            generateOrderingSynchronizationLemmas(lemmas);
+            TwoTracesLemmas twoTracesLemmas(program, locationToActiveVars, twoTraces);
+            twoTracesLemmas.generateFormulas(lemmas);
+            
+            NEqualLemmas nEqualLemmas(program, locationToActiveVars, twoTraces);
+            nEqualLemmas.generateFormulas(lemmas);
+            
+            EqualityPreservationLemmas equalityPreservationLemmas(program, locationToActiveVars, twoTraces);
+            equalityPreservationLemmas.generateFormulas(lemmas);
+            
+            OrderingSynchronizationLemmas orderingSynchronizationLemmas(program, locationToActiveVars, twoTraces);
+            orderingSynchronizationLemmas.generateFormulas(lemmas);
         }
         return lemmas;
     }
 
 #pragma mark - Standard Induction Lemmas
     
-    void TraceLemmas::generateStandardInductionLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
-    
+    void StandardInductionLemmas::generateFormulasFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Formula> > &formulas)
     {
-        for(const auto& function : program.functions)
-        {
-            std::vector<std::shared_ptr<const logic::Formula>> conjunctsFunction;
-            
-            for (const auto& statement : function->statements)
-            {
-                generateStandardInductionLemmas(statement.get(), lemmas);
-            }
-        }
-    }
-
-    void TraceLemmas::generateStandardInductionLemmas(const program::Statement* statement,
-                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
-{
-    if (statement->type() == program::Statement::Type::IfElse)
-    {
-        auto castedStatement = static_cast<const program::IfElse*>(statement);
-        // recurse on both branches
-        for (const auto& statement : castedStatement->ifStatements)
-        {
-            generateStandardInductionLemmas(statement.get(), lemmas);
-        }
-        for (const auto& statement : castedStatement->elseStatements)
-        {
-            generateStandardInductionLemmas(statement.get(), lemmas);
-        }
-    }
-    else if (statement->type() == program::Statement::Type::WhileStatement)
-    {
-        auto castedStatement = static_cast<const program::WhileStatement*>(statement);
         // generate lemmas
-        generateStandardInductionLemmas(castedStatement, lemmas, InductionKind::Equal);
-        // generateStandardInductionLemmas(castedStatement, lemmas, InductionKind::Less);
-        // generateStandardInductionLemmas(castedStatement, lemmas, InductionKind::Greater);
-        // generateStandardInductionLemmas(castedStatement, lemmas, InductionKind::LessEqual);
-        // generateStandardInductionLemmas(castedStatement, lemmas, InductionKind::GreaterEqual);
-        
-        // recurse on body
-        for (const auto& statement : castedStatement->bodyStatements)
-        {
-            generateStandardInductionLemmas(statement.get(), lemmas);
-        }
+        generateStandardInductionLemmas(statement, formulas, InductionKind::Equal);
+//        generateStandardInductionLemmas(statement, formulas, InductionKind::Less);
+//        generateStandardInductionLemmas(statement, formulas, InductionKind::Greater);
+//        generateStandardInductionLemmas(statement, formulas, InductionKind::LessEqual);
+//        generateStandardInductionLemmas(statement, formulas, InductionKind::GreaterEqual);
     }
-}
     
-    void TraceLemmas::generateStandardInductionLemmas(const program::WhileStatement* whileStatement,
+    void StandardInductionLemmas::generateStandardInductionLemmas(const program::WhileStatement* whileStatement,
                                                       std::vector<std::shared_ptr<const logic::Formula>>& lemmas,
                                                       const InductionKind kind)
     {
@@ -302,58 +282,15 @@ namespace analysis {
     }
     
 #pragma mark - Lemmas for two traces
-    void TraceLemmas::generateTwoTracesLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
-    {
-        for(const auto& function : program.functions)
-        {
-            std::vector<std::shared_ptr<const logic::Formula>> conjunctsFunction;
-            
-            for (const auto& statement : function->statements)
-            {
-                generateTwoTracesLemmas(statement.get(), lemmas);
-            }
-        }
-    }
     
-    void TraceLemmas::generateTwoTracesLemmas(const program::Statement* statement,
-                                                      std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
-    {
-        if (statement->type() == program::Statement::Type::IfElse)
-        {
-            auto castedStatement = static_cast<const program::IfElse*>(statement);
-            // recurse on both branches
-            for (const auto& statement : castedStatement->ifStatements)
-            {
-                generateTwoTracesLemmas(statement.get(), lemmas);
-            }
-            for (const auto& statement : castedStatement->elseStatements)
-            {
-                generateTwoTracesLemmas(statement.get(), lemmas);
-            }
-        }
-        else if (statement->type() == program::Statement::Type::WhileStatement)
-        {
-            auto castedStatement = static_cast<const program::WhileStatement*>(statement);
-            // generate lemmas
-            generateTwoTracesLemmas(castedStatement, lemmas);
-            
-            // recurse on body
-            for (const auto& statement : castedStatement->bodyStatements)
-            {
-                generateTwoTracesLemmas(statement.get(), lemmas);
-            }
-        }
-    }
-    
-    void TraceLemmas::generateTwoTracesLemmas(const program::WhileStatement* whileStatement,
-                                              std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
+    void TwoTracesLemmas::generateFormulasFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Formula> > &formulas)
     {
         auto t1 = trace1Term();
         auto t2 = trace2Term();
         
-        auto itSymbol = iteratorSymbol(whileStatement);
+        auto itSymbol = iteratorSymbol(statement);
         auto it = logic::Terms::var(itSymbol);
-        auto locationSymbol = locationSymbolForStatement(whileStatement);
+        auto locationSymbol = locationSymbolForStatement(statement);
         
         auto locationName = locationSymbol->name;
 
@@ -362,7 +299,7 @@ namespace analysis {
         auto enclosingIteratorsAndIt = std::vector<std::shared_ptr<const logic::Term>>();
         auto enclosingIteratorsAndSuccOfIt = std::vector<std::shared_ptr<const logic::Term>>();
         auto enclosingIteratorsAndZero = std::vector<std::shared_ptr<const logic::Term>>();
-        for (const auto& enclosingLoop : *whileStatement->enclosingLoops)
+        for (const auto& enclosingLoop : *statement->enclosingLoops)
         {
             auto enclosingIteratorSymbol = iteratorSymbol(enclosingLoop);
             enclosingIteratorsSymbols.push_back(enclosingIteratorSymbol);
@@ -415,10 +352,10 @@ namespace analysis {
                     // (Part1a and Part1b) => Part2
                     auto premise = logic::Formulas::conjunction({baseCase, inductiveCase});
                     
-                    auto label = "Lemma: Var " + v->name + " at loop " + whileStatement->location + " has same values on both traces";
+                    auto label = "Lemma: Var " + v->name + " at loop " + statement->location + " has same values on both traces";
                     auto outerImplication = logic::Formulas::implication(premise, conclusion, label);
                     auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, outerImplication);
-                    lemmas.push_back(lemma);
+                    formulas.push_back(lemma);
                 }
             }
         }
@@ -460,77 +397,33 @@ namespace analysis {
                     auto premise = logic::Formulas::conjunction({baseCase, inductiveCase});
 
                     auto outerImp = logic::Formulas::implication(premise, conclusion);
-                    auto label = "Lemma: Array var " + v->name + " at loop " + whileStatement->location + " has same values on both traces";
+                    auto label = "Lemma: Array var " + v->name + " at loop " + statement->location + " has same values on both traces";
                     auto universal = logic::Formulas::universal({pSymbol}, outerImp, label);
                     auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal);
-                    lemmas.push_back(lemma);
-
+                    formulas.push_back(lemma);
                 }
             }
         }
     }
     
-    void TraceLemmas::generateNEqualLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
-    {
-        for(const auto& function : program.functions)
-        {
-            std::vector<std::shared_ptr<const logic::Formula>> conjunctsFunction;
-            
-            for (const auto& statement : function->statements)
-            {
-                generateNEqualLemmas(statement.get(), lemmas);
-            }
-        }
-    }
-    
-    void TraceLemmas::generateNEqualLemmas(const program::Statement* statement,
-                                              std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
-    {
-        if (statement->type() == program::Statement::Type::IfElse)
-        {
-            auto castedStatement = static_cast<const program::IfElse*>(statement);
-            // recurse on both branches
-            for (const auto& statement : castedStatement->ifStatements)
-            {
-                generateNEqualLemmas(statement.get(), lemmas);
-            }
-            for (const auto& statement : castedStatement->elseStatements)
-            {
-                generateNEqualLemmas(statement.get(), lemmas);
-            }
-        }
-        else if (statement->type() == program::Statement::Type::WhileStatement)
-        {
-            auto castedStatement = static_cast<const program::WhileStatement*>(statement);
-            // generate lemmas
-            generateNEqualLemmas(castedStatement, lemmas);
-            
-            // recurse on body
-            for (const auto& statement : castedStatement->bodyStatements)
-            {
-                generateNEqualLemmas(statement.get(), lemmas);
-            }
-        }
-    }
-    
-
-    void TraceLemmas::generateNEqualLemmas(const program::WhileStatement* whileStatement,
-                                              std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
+#pragma mark - Lemmas for same iteration numbers
+ 
+    void NEqualLemmas::generateFormulasFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Formula> > &formulas)
     {
         assert(twoTraces);
 
         auto t1 = trace1Term();
         auto t2 = trace2Term();
         
-        auto it = iteratorTermForLoop(whileStatement);
-        auto nT1 = lastIterationTermForLoop(whileStatement, t1, true);
-        auto nT2 = lastIterationTermForLoop(whileStatement, t2, true);
+        auto it = iteratorTermForLoop(statement);
+        auto nT1 = lastIterationTermForLoop(statement, t1, true);
+        auto nT2 = lastIterationTermForLoop(statement, t2, true);
         
         auto iteratorsItTerms = std::vector<std::shared_ptr<const logic::Term>>();
         auto iteratorsNT2Terms = std::vector<std::shared_ptr<const logic::Term>>();
         auto enclosingIteratorsSymbols = std::vector<std::shared_ptr<const logic::Symbol>>();
 
-        for (const auto& enclosingLoop : *whileStatement->enclosingLoops)
+        for (const auto& enclosingLoop : *statement->enclosingLoops)
         {
             auto enclosingIteratorSymbol = iteratorSymbol(enclosingLoop);
             enclosingIteratorsSymbols.push_back(enclosingIteratorSymbol);
@@ -543,88 +436,44 @@ namespace analysis {
         iteratorsItTerms.push_back(it);
         iteratorsNT2Terms.push_back(nT2);
 
-        auto lStartIt = logic::Terms::func(locationSymbolForStatement(whileStatement), iteratorsItTerms);
-        auto lStartNT2 = logic::Terms::func(locationSymbolForStatement(whileStatement), iteratorsNT2Terms);
+        auto lStartIt = logic::Terms::func(locationSymbolForStatement(statement), iteratorsItTerms);
+        auto lStartNT2 = logic::Terms::func(locationSymbolForStatement(statement), iteratorsNT2Terms);
 
         // Part 1: Loop condition holds at main-loop-location in t1 for all iterations before n(t2)
         auto sub = logic::Theory::natSub(it, nT2);
-        auto condition1 = toFormula(whileStatement->condition, lStartIt, t1);
+        auto condition1 = toFormula(statement->condition, lStartIt, t1);
         auto imp = logic::Formulas::implication(sub, condition1);
         auto part1 = logic::Formulas::universal({it->symbol}, imp);
         
         // Part 2: Loop condition doesn't hold at main-loop-location in t1 for iteration n(t2)
-        auto condition2 = toFormula(whileStatement->condition, lStartNT2, t1);
+        auto condition2 = toFormula(statement->condition, lStartNT2, t1);
         auto part2 = logic::Formulas::negation(condition2);
         
         // (Part1 and Part2) => nT1=nT2
         auto premise = logic::Formulas::conjunction({part1, part2});
         auto conclusion = logic::Formulas::equality(nT2, nT1);
         auto nName = nT1->symbol->name;
-        auto label = "Lemma: If " + nName + "(t2) has same properties as " + nName + "(t1), then " + nName + "(t2)=" + nName + "(t1) (for loop at " + whileStatement->location + ")";
+        auto label = "Lemma: If " + nName + "(t2) has same properties as " + nName + "(t1), then " + nName + "(t2)=" + nName + "(t1) (for loop at " + statement->location + ")";
         auto lemma = logic::Formulas::implication(premise, conclusion, label);
         auto lemmaEnclosed = logic::Formulas::universal(enclosingIteratorsSymbols, lemma);
-        lemmas.push_back(lemmaEnclosed);
+        formulas.push_back(lemmaEnclosed);
     }
 
-    #pragma mark - Loop Lemma    
-    void TraceLemmas::generateAtLeastOneIterationLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
-    
+    #pragma mark - Loop Lemma
+
+    void AtLeastOneIterationLemmas::generateFormulasFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Formula> > &formulas)
     {
-        for(const auto& function : program.functions)
-        {
-            std::vector<std::shared_ptr<const logic::Formula>> conjunctsFunction;
-            
-            for (const auto& statement : function->statements)
-            {
-                generateAtLeastOneIterationLemmas(statement.get(), lemmas);
-            }
-        }
-    }
-
-    void TraceLemmas::generateAtLeastOneIterationLemmas(const program::Statement* statement,
-                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
-    {
-        if (statement->type() == program::Statement::Type::IfElse)
-        {
-            auto castedStatement = static_cast<const program::IfElse*>(statement);
-            // recurse on both branches
-            for (const auto& statement : castedStatement->ifStatements)
-            {
-                generateAtLeastOneIterationLemmas(statement.get(), lemmas);
-            }
-            for (const auto& statement : castedStatement->elseStatements)
-            {
-                generateAtLeastOneIterationLemmas(statement.get(), lemmas);
-            }
-        }
-        else if (statement->type() == program::Statement::Type::WhileStatement)
-        {
-            auto castedStatement = static_cast<const program::WhileStatement*>(statement);
-            // generate lemmas
-            generateAtLeastOneIterationLemmas(castedStatement, lemmas);
-               
-            // recurse on body
-            for (const auto& statement : castedStatement->bodyStatements)
-            {
-                generateAtLeastOneIterationLemmas(statement.get(), lemmas);
-            }
-        }
-    }
-
-    void TraceLemmas::generateAtLeastOneIterationLemmas(const program::WhileStatement* whileStatement,
-                                                      std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
-    {               
-        auto iSymbol = iteratorSymbol(whileStatement);
-        auto it = iteratorTermForLoop(whileStatement);
-        auto n = lastIterationTermForLoop(whileStatement, twoTraces);
-        auto locationSymbol = locationSymbolForStatement(whileStatement);
+        auto iSymbol = iteratorSymbol(statement);
+        auto it = iteratorTermForLoop(statement);
+        auto n = lastIterationTermForLoop(statement, twoTraces);
+        auto locationSymbol = locationSymbolForStatement(statement);
         
         auto locationName = locationSymbol->name;
         
         auto enclosingIteratorsSymbols = std::vector<std::shared_ptr<const logic::Symbol>>();
         
         auto enclosingIteratorsAndZero = std::vector<std::shared_ptr<const logic::Term>>();        
-        for (const auto& enclosingLoop : *whileStatement->enclosingLoops)
+        for (const auto& enclosingLoop : *statement->enclosingLoops)
         {
             auto enclosingIteratorSymbol = iteratorSymbol(enclosingLoop);
             enclosingIteratorsSymbols.push_back(enclosingIteratorSymbol);
@@ -636,87 +485,39 @@ namespace analysis {
                 
         auto lStartZero = logic::Terms::func(locationSymbol, enclosingIteratorsAndZero);
         
-
         // The lemma says: if the loop condition holds, there should be at least one loop iteration
         // C => exists it. s(it) = n
         // Constuct lhs: loop condition holds at first iteration
-        auto c = toFormula(whileStatement->condition,lStartZero);
+        auto c = toFormula(statement->condition,lStartZero);
 
         // Construct rhs: exists it (s(it) = n)
         auto lhs = logic::Formulas::existential({iSymbol},logic::Formulas::equality(logic::Theory::natSucc(it),n));        
-        auto label = "Lemma: if the condition of the loop at " + whileStatement->location + " holds initially, there is at least one loop iteration";     
+        auto label = "Lemma: if the condition of the loop at " + statement->location + " holds initially, there is at least one loop iteration";
         auto loopLemma = logic::Formulas::implication(c,lhs,label);        
         auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, loopLemma);
                 
         if (twoTraces)
         {
             auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-            lemmas.push_back(logic::Formulas::universal({tr}, lemma));
+            formulas.push_back(logic::Formulas::universal({tr}, lemma));
         }
         else
         {
-            lemmas.push_back(lemma);
+            formulas.push_back(lemma);
         }
-
     }
 
     #pragma mark - Intermediate Value Lemma
-
-
-    void TraceLemmas::generateIntermediateValueLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
     
-    {
-        for(const auto& function : program.functions)
-        {
-            std::vector<std::shared_ptr<const logic::Formula>> conjunctsFunction;
-            
-            for (const auto& statement : function->statements)
-            {
-                generateIntermediateValueLemmas(statement.get(), lemmas);
-            }
-        }
-    }
-
-    void TraceLemmas::generateIntermediateValueLemmas(const program::Statement* statement,
-                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
-    {
-        if (statement->type() == program::Statement::Type::IfElse)
-        {
-            auto castedStatement = static_cast<const program::IfElse*>(statement);
-            // recurse on both branches
-            for (const auto& statement : castedStatement->ifStatements)
-            {
-                generateIntermediateValueLemmas(statement.get(), lemmas);
-            }
-            for (const auto& statement : castedStatement->elseStatements)
-            {
-                generateIntermediateValueLemmas(statement.get(), lemmas);
-            }
-        }
-        else if (statement->type() == program::Statement::Type::WhileStatement)
-        {
-            auto castedStatement = static_cast<const program::WhileStatement*>(statement);
-            // generate lemmas
-            generateIntermediateValueLemmas(castedStatement, lemmas);
-               
-            // recurse on body
-            for (const auto& statement : castedStatement->bodyStatements)
-            {
-                generateIntermediateValueLemmas(statement.get(), lemmas);
-            }
-        }
-    }
-
-    void TraceLemmas::generateIntermediateValueLemmas(const program::WhileStatement* whileStatement,
-                                                      std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
+    void IntermediateValueLemmas::generateFormulasFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Formula> > &formulas)
     {                 
-        auto iSymbol = iteratorSymbol(whileStatement);
-        auto it = iteratorTermForLoop(whileStatement);
+        auto iSymbol = iteratorSymbol(statement);
+        auto it = iteratorTermForLoop(statement);
         auto it2Symbol = logic::Signature::varSymbol("it", logic::Sorts::natSort());
         auto it2 = logic::Terms::var(it2Symbol);
 
-        auto n = lastIterationTermForLoop(whileStatement, twoTraces);
-        auto locationSymbol = locationSymbolForStatement(whileStatement);
+        auto n = lastIterationTermForLoop(statement, twoTraces);
+        auto locationSymbol = locationSymbolForStatement(statement);
         
         auto locationName = locationSymbol->name;
         
@@ -728,7 +529,7 @@ namespace analysis {
         auto enclosingIteratorsAndSuccOfIt = std::vector<std::shared_ptr<const logic::Term>>();
         auto enclosingIteratorsAndZero = std::vector<std::shared_ptr<const logic::Term>>();
         auto enclosingIteratorsAndN = std::vector<std::shared_ptr<const logic::Term>>();
-        for (const auto& enclosingLoop : *whileStatement->enclosingLoops)
+        for (const auto& enclosingLoop : *statement->enclosingLoops)
         {
             auto enclosingIteratorSymbol = iteratorSymbol(enclosingLoop);
             enclosingIteratorsSymbols.push_back(enclosingIteratorSymbol);
@@ -801,7 +602,7 @@ namespace analysis {
 
                     // Combine lhs and rhs, then quantify
                     auto combined = logic::Formulas::implication(lhs,qrhs);
-                    auto label = "Lemma: Intermediate value for var " + v->name + " at location " + whileStatement->location;
+                    auto label = "Lemma: Intermediate value for var " + v->name + " at location " + statement->location;
                     auto bareLemma = logic::Formulas::universal({xSym,iSymbol},combined,label);
 
                     auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, bareLemma);
@@ -809,11 +610,11 @@ namespace analysis {
                     if (twoTraces)
                     {
                         auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        lemmas.push_back(logic::Formulas::universal({tr}, lemma));
+                        formulas.push_back(logic::Formulas::universal({tr}, lemma));
                     }
                     else
                     {
-                        lemmas.push_back(lemma);
+                        formulas.push_back(lemma);
                     }
                 }
             }
@@ -867,7 +668,7 @@ namespace analysis {
 
                     // Combine lhs and rhs, then quantify
                     auto combined = logic::Formulas::implication(lhs,qrhs);
-                    auto label = "Lemma: Intermediate value for array var " + v->name + " at location " + whileStatement->location;
+                    auto label = "Lemma: Intermediate value for array var " + v->name + " at location " + statement->location;
                     auto bareArrayLemma = logic::Formulas::universal({xSym,iSymbol,pSymbol},combined,label);
 
                     auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, bareArrayLemma);
@@ -875,11 +676,11 @@ namespace analysis {
                     if (twoTraces)
                     {
                         auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        lemmas.push_back(logic::Formulas::universal({tr}, lemma));
+                        formulas.push_back(logic::Formulas::universal({tr}, lemma));
                     }
                     else
                     {
-                        lemmas.push_back(lemma);
+                        formulas.push_back(lemma);
                     }
                 }
             }
@@ -887,59 +688,15 @@ namespace analysis {
     }
 
     #pragma mark - Value Preservation Lemma
-    void TraceLemmas::generateValuePreservationLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
-    
-    {
-        for(const auto& function : program.functions)
-        {
-            std::vector<std::shared_ptr<const logic::Formula>> conjunctsFunction;
-            
-            for (const auto& statement : function->statements)
-            {
-                generateValuePreservationLemmas(statement.get(), lemmas);
-            }
-        }
-    }
-
-    void TraceLemmas::generateValuePreservationLemmas(const program::Statement* statement,
-                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
-    {
-        if (statement->type() == program::Statement::Type::IfElse)
-        {
-            auto castedStatement = static_cast<const program::IfElse*>(statement);
-            // recurse on both branches
-            for (const auto& statement : castedStatement->ifStatements)
-            {
-                generateValuePreservationLemmas(statement.get(), lemmas);
-            }
-            for (const auto& statement : castedStatement->elseStatements)
-            {
-                generateValuePreservationLemmas(statement.get(), lemmas);
-            }
-        }
-        else if (statement->type() == program::Statement::Type::WhileStatement)
-        {
-            auto castedStatement = static_cast<const program::WhileStatement*>(statement);
-            // generate lemmas
-            generateValuePreservationLemmas(castedStatement, lemmas);
-               
-            // recurse on body
-            for (const auto& statement : castedStatement->bodyStatements)
-            {
-                generateValuePreservationLemmas(statement.get(), lemmas);
-            }
-        }
-    }
-
-    void TraceLemmas::generateValuePreservationLemmas(const program::WhileStatement* whileStatement,
-                                                      std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
+   
+    void ValuePreservationLemmas::generateFormulasFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Formula> > &formulas)
     {                 
-        auto iSymbol = iteratorSymbol(whileStatement);
-        auto it = iteratorTermForLoop(whileStatement);
+        auto iSymbol = iteratorSymbol(statement);
+        auto it = iteratorTermForLoop(statement);
         auto it2Symbol = logic::Signature::varSymbol("it", logic::Sorts::natSort());
         auto it2 = logic::Terms::var(it2Symbol);
-        auto n = lastIterationTermForLoop(whileStatement, twoTraces);
-        auto locationSymbol = locationSymbolForStatement(whileStatement);
+        auto n = lastIterationTermForLoop(statement, twoTraces);
+        auto locationSymbol = locationSymbolForStatement(statement);
         
         auto locationName = locationSymbol->name;
         
@@ -951,7 +708,7 @@ namespace analysis {
         auto enclosingIteratorsAndSuccOfIt2 = std::vector<std::shared_ptr<const logic::Term>>();        
         auto enclosingIteratorsAndN = std::vector<std::shared_ptr<const logic::Term>>();
 
-        for (const auto& enclosingLoop : *whileStatement->enclosingLoops)
+        for (const auto& enclosingLoop : *statement->enclosingLoops)
         {
             auto enclosingIteratorSymbol = iteratorSymbol(enclosingLoop);
             enclosingIteratorsSymbols.push_back(enclosingIteratorSymbol);
@@ -1022,18 +779,18 @@ namespace analysis {
                     auto rhs = logic::Formulas::equality(vn,x);
 
                     // Combine parts 1 and 2, quantify over all x.
-                    auto label = "Lemma: Value preservation for var " + v->name + " at location " + whileStatement->location;                    
+                    auto label = "Lemma: Value preservation for var " + v->name + " at location " + statement->location;
                     auto bareLemma = logic::Formulas::universal({xSym},logic::Formulas::implication(lhs,rhs),label);                  
                     auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, bareLemma);
 
                     if (twoTraces)
                     {
                         auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        lemmas.push_back(logic::Formulas::universal({tr}, lemma));
+                        formulas.push_back(logic::Formulas::universal({tr}, lemma));
                     }
                     else
                     {
-                        lemmas.push_back(lemma);
+                        formulas.push_back(lemma);
                     }
                 }
             }
@@ -1091,7 +848,7 @@ namespace analysis {
                     auto rhs = logic::Formulas::equality(vn,x);
 
                     // Combine parts 1 and 2, quantify over all x.
-                    auto label = "Lemma: Value preservation for array var " + v->name + " at location " +whileStatement->location;
+                    auto label = "Lemma: Value preservation for array var " + v->name + " at location " +statement->location;
                     auto bareLemma = logic::Formulas::universal({xSym},logic::Formulas::implication(lhs,rhs));          
                     
                     // Quanitify over all array positions
@@ -1102,11 +859,11 @@ namespace analysis {
                     if (twoTraces)
                     {
                         auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        lemmas.push_back(logic::Formulas::universal({tr}, lemma));
+                        formulas.push_back(logic::Formulas::universal({tr}, lemma));
                     }
                     else
                     {
-                        lemmas.push_back(lemma);
+                        formulas.push_back(lemma);
                     }
                 }
             }
@@ -1114,61 +871,17 @@ namespace analysis {
     }
 
         #pragma mark - Iteration Injection Lemma
-    void TraceLemmas::generateIterationInjectivityLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
-    
-    {
-        for(const auto& function : program.functions)
-        {
-            std::vector<std::shared_ptr<const logic::Formula>> conjunctsFunction;
-            
-            for (const auto& statement : function->statements)
-            {
-                generateIterationInjectivityLemmas(statement.get(), lemmas);
-            }
-        }
-    }
 
-    void TraceLemmas::generateIterationInjectivityLemmas(const program::Statement* statement,
-                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
+    void IterationInjectivityLemmas::generateFormulasFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Formula> > &formulas)
     {
-        if (statement->type() == program::Statement::Type::IfElse)
-        {
-            auto castedStatement = static_cast<const program::IfElse*>(statement);
-            // recurse on both branches
-            for (const auto& statement : castedStatement->ifStatements)
-            {
-                generateIterationInjectivityLemmas(statement.get(), lemmas);
-            }
-            for (const auto& statement : castedStatement->elseStatements)
-            {
-                generateIterationInjectivityLemmas(statement.get(), lemmas);
-            }
-        }
-        else if (statement->type() == program::Statement::Type::WhileStatement)
-        {
-            auto castedStatement = static_cast<const program::WhileStatement*>(statement);
-            // generate lemmas
-            generateIterationInjectivityLemmas(castedStatement, lemmas);
-               
-            // recurse on body
-            for (const auto& statement : castedStatement->bodyStatements)
-            {
-                generateIterationInjectivityLemmas(statement.get(), lemmas);
-            }
-        }
-    }
-
-    void TraceLemmas::generateIterationInjectivityLemmas(const program::WhileStatement* whileStatement,
-                                                      std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
-    {
-        auto iSymbol = iteratorSymbol(whileStatement);
-        auto it = iteratorTermForLoop(whileStatement);
+        auto iSymbol = iteratorSymbol(statement);
+        auto it = iteratorTermForLoop(statement);
         auto it1Symbol = logic::Signature::varSymbol("it1", logic::Sorts::natSort());
         auto it1 = logic::Terms::var(it1Symbol);
         auto it2Symbol = logic::Signature::varSymbol("it2", logic::Sorts::natSort());
         auto it2 = logic::Terms::var(it2Symbol);
-        auto n = lastIterationTermForLoop(whileStatement, twoTraces);
-        auto locationSymbol = locationSymbolForStatement(whileStatement);
+        auto n = lastIterationTermForLoop(statement, twoTraces);
+        auto locationSymbol = locationSymbolForStatement(statement);
         
         auto locationName = locationSymbol->name;
         
@@ -1180,7 +893,7 @@ namespace analysis {
         auto enclosingIteratorsAndIt2 = std::vector<std::shared_ptr<const logic::Term>>();     
         auto enclosingIteratorsAndSuccOfIt = std::vector<std::shared_ptr<const logic::Term>>();
         
-        for (const auto& enclosingLoop : *whileStatement->enclosingLoops)
+        for (const auto& enclosingLoop : *statement->enclosingLoops)
         {
             auto enclosingIteratorSymbol = iteratorSymbol(enclosingLoop);
             enclosingIteratorsSymbols.push_back(enclosingIteratorSymbol);
@@ -1247,11 +960,11 @@ namespace analysis {
                     if (twoTraces)
                     {
                         auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        lemmas.push_back(logic::Formulas::universal({tr}, lemma));
+                        formulas.push_back(logic::Formulas::universal({tr}, lemma));
                     }
                     else
                     {
-                        lemmas.push_back(lemma);
+                        formulas.push_back(lemma);
                     }
                 }                
             }    
@@ -1260,57 +973,17 @@ namespace analysis {
 
 
     #pragma mark - Equality preservation over traces Lemma
-    void TraceLemmas::generateEqualityPreservationLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
-
+    void EqualityPreservationLemmas::generateFormulasFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Formula> > &formulas)
     {
-        for(const auto& function : program.functions)
-        {
-            std::vector<std::shared_ptr<const logic::Formula>> conjunctsFunction;
-
-            for (const auto& statement : function->statements)
-            {
-                // from zero to right bound
-                generateEqualityPreservationLemmasZeroToRight(statement.get(), lemmas);
-                // from left bound to n
-                generateEqualityPreservationLemmasLeftToEnd(statement.get(), lemmas);
-                // from left bound to right bound - skipped for now
-                // generateEqualityPreservationLemmasLeftToRight(statement.get(), lemmas);
-            }
-        }
+        // from zero to right bound
+        generateEqualityPreservationLemmasZeroToRight(statement, formulas);
+        // from left bound to n
+        generateEqualityPreservationLemmasLeftToEnd(statement, formulas);
+        // from left bound to right bound - skipped for now
+        //generateEqualityPreservationLemmasLeftToRight(statement, formulas);
     }
 
-    void TraceLemmas::generateEqualityPreservationLemmasZeroToRight(const program::Statement* statement,
-                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
-    {
-        if (statement->type() == program::Statement::Type::IfElse)
-        {
-            auto castedStatement = static_cast<const program::IfElse*>(statement);
-            // recurse on both branches
-            for (const auto& statement : castedStatement->ifStatements)
-            {
-                generateEqualityPreservationLemmasZeroToRight(statement.get(), lemmas);
-            }
-            for (const auto& statement : castedStatement->elseStatements)
-            {
-                generateEqualityPreservationLemmasZeroToRight(statement.get(), lemmas);
-            }
-        }
-        else if (statement->type() == program::Statement::Type::WhileStatement)
-        {
-            auto castedStatement = static_cast<const program::WhileStatement*>(statement);
-            // generate lemmas
-            // from zero to right bound
-            generateEqualityPreservationLemmasZeroToRight(castedStatement, lemmas);
-
-            // recurse on body
-            for (const auto& statement : castedStatement->bodyStatements)
-            {
-                generateEqualityPreservationLemmasZeroToRight(statement.get(), lemmas);
-            }
-        }
-    }
-
-    void TraceLemmas::generateEqualityPreservationLemmasZeroToRight(const program::WhileStatement* whileStatement,
+    void EqualityPreservationLemmas::generateEqualityPreservationLemmasZeroToRight(const program::WhileStatement* whileStatement,
                                                       std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
     {
         assert(twoTraces);
@@ -1493,38 +1166,7 @@ namespace analysis {
         }
     }
 
-    void TraceLemmas::generateEqualityPreservationLemmasLeftToEnd(const program::Statement* statement,
-                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
-    {
-        if (statement->type() == program::Statement::Type::IfElse)
-        {
-            auto castedStatement = static_cast<const program::IfElse*>(statement);
-            // recurse on both branches
-            for (const auto& statement : castedStatement->ifStatements)
-            {
-                generateEqualityPreservationLemmasLeftToEnd(statement.get(), lemmas);
-            }
-            for (const auto& statement : castedStatement->elseStatements)
-            {
-                generateEqualityPreservationLemmasLeftToEnd(statement.get(), lemmas);
-            }
-        }
-        else if (statement->type() == program::Statement::Type::WhileStatement)
-        {
-            auto castedStatement = static_cast<const program::WhileStatement*>(statement);
-            // generate lemmas
-            // from zero to right bound
-            generateEqualityPreservationLemmasLeftToEnd(castedStatement, lemmas);
-
-            // recurse on body
-            for (const auto& statement : castedStatement->bodyStatements)
-            {
-                generateEqualityPreservationLemmasLeftToEnd(statement.get(), lemmas);
-            }
-        }
-    }
-
-    void TraceLemmas::generateEqualityPreservationLemmasLeftToEnd(const program::WhileStatement* whileStatement,
+    void EqualityPreservationLemmas::generateEqualityPreservationLemmasLeftToEnd(const program::WhileStatement* whileStatement,
                                                       std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
     {
         assert(twoTraces);
@@ -1734,39 +1376,7 @@ namespace analysis {
         }
     }
 
-
-    void TraceLemmas::generateEqualityPreservationLemmasLeftToRight(const program::Statement* statement,
-                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
-    {
-        if (statement->type() == program::Statement::Type::IfElse)
-        {
-            auto castedStatement = static_cast<const program::IfElse*>(statement);
-            // recurse on both branches
-            for (const auto& statement : castedStatement->ifStatements)
-            {
-                generateEqualityPreservationLemmasLeftToRight(statement.get(), lemmas);
-            }
-            for (const auto& statement : castedStatement->elseStatements)
-            {
-                generateEqualityPreservationLemmasLeftToRight(statement.get(), lemmas);
-            }
-        }
-        else if (statement->type() == program::Statement::Type::WhileStatement)
-        {
-            auto castedStatement = static_cast<const program::WhileStatement*>(statement);
-            // generate lemmas
-            // from zero to right bound
-            generateEqualityPreservationLemmasLeftToRight(castedStatement, lemmas);
-
-            // recurse on body
-            for (const auto& statement : castedStatement->bodyStatements)
-            {
-                generateEqualityPreservationLemmasLeftToRight(statement.get(), lemmas);
-            }
-        }
-    }
-
-    void TraceLemmas::generateEqualityPreservationLemmasLeftToRight(const program::WhileStatement* whileStatement,
+    void EqualityPreservationLemmas::generateEqualityPreservationLemmasLeftToRight(const program::WhileStatement* whileStatement,
                                                       std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
     {
         assert(twoTraces);
@@ -1955,68 +1565,22 @@ namespace analysis {
     }
 
     #pragma mark - Synchronization of orderings Lemma
-    void TraceLemmas::generateOrderingSynchronizationLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
     
-    {
-        for(const auto& function : program.functions)
-        {
-            std::vector<std::shared_ptr<const logic::Formula>> conjunctsFunction;
-            
-            for (const auto& statement : function->statements)
-            {
-                generateOrderingSynchronizationLemmas(statement.get(), lemmas);
-            }
-        }
-    }
-
-    void TraceLemmas::generateOrderingSynchronizationLemmas(const program::Statement* statement,
-                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
-    {
-        if (statement->type() == program::Statement::Type::IfElse)
-        {
-            auto castedStatement = static_cast<const program::IfElse*>(statement);
-            // recurse on both branches
-            for (const auto& statement : castedStatement->ifStatements)
-            {
-                generateOrderingSynchronizationLemmas(statement.get(), lemmas);
-            }
-            for (const auto& statement : castedStatement->elseStatements)
-            {
-                generateOrderingSynchronizationLemmas(statement.get(), lemmas);
-            }
-        }
-        else if (statement->type() == program::Statement::Type::WhileStatement)
-        {
-            auto castedStatement = static_cast<const program::WhileStatement*>(statement);
-            // generate lemmas
-            generateOrderingSynchronizationLemmas(castedStatement, lemmas);
-               
-            // recurse on body
-            for (const auto& statement : castedStatement->bodyStatements)
-            {
-                generateOrderingSynchronizationLemmas(statement.get(), lemmas);
-            }
-        }
-    }
-
-
-
-    void TraceLemmas::generateOrderingSynchronizationLemmas(const program::WhileStatement* whileStatement,
-                                                      std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
+    void OrderingSynchronizationLemmas::generateFormulasFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Formula> > &formulas)
     {     
         assert(twoTraces);
 
         auto t1 = trace1Term();
         auto t2 = trace2Term();
 
-        auto iSymbol = iteratorSymbol(whileStatement);
-        auto it = iteratorTermForLoop(whileStatement);   
+        auto iSymbol = iteratorSymbol(statement);
+        auto it = iteratorTermForLoop(statement);
         auto it1Symbol = logic::Signature::varSymbol("it1", logic::Sorts::natSort());
         auto it1 = logic::Terms::var(it1Symbol);
         auto it2Symbol = logic::Signature::varSymbol("it2", logic::Sorts::natSort());
         auto it2 = logic::Terms::var(it2Symbol);
      
-        auto locationSymbol = locationSymbolForStatement(whileStatement);        
+        auto locationSymbol = locationSymbolForStatement(statement);
         auto locationName = locationSymbol->name;
         
         auto enclosingIteratorsSymbols = std::vector<std::shared_ptr<const logic::Symbol>>();
@@ -2028,7 +1592,7 @@ namespace analysis {
         auto enclosingIteratorsAndIt1 = std::vector<std::shared_ptr<const logic::Term>>();
         auto enclosingIteratorsAndIt2 = std::vector<std::shared_ptr<const logic::Term>>();
 
-        for (const auto& enclosingLoop : *whileStatement->enclosingLoops)
+        for (const auto& enclosingLoop : *statement->enclosingLoops)
         {
             auto enclosingIteratorSymbol = iteratorSymbol(enclosingLoop);
             enclosingIteratorsSymbols.push_back(enclosingIteratorSymbol);
@@ -2096,10 +1660,10 @@ namespace analysis {
                     auto rhs = logic::Theory::intLess(toTermFull(v,lStartIt1,tr),toTermFull(v,lStartIt2,tr));
 
                     auto impl = logic::Formulas::implication(lhs,rhs);
-                    auto label = "Lemma: Synchronization of orderings for var " + v->name + " at location " + whileStatement->location;
+                    auto label = "Lemma: Synchronization of orderings for var " + v->name + " at location " + statement->location;
                     auto bareLemma = logic::Formulas::universal({trSymbol,it1Symbol,it2Symbol},impl,label);
                     auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, bareLemma);
-                    lemmas.push_back(lemma);             
+                    formulas.push_back(lemma);
                 }
             }
         }            

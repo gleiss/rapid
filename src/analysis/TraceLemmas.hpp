@@ -12,103 +12,106 @@
 #include "Expression.hpp"
 #include "Variable.hpp"
 #include "Program.hpp"
+#include "ProgramTraverser.hpp"
 
 namespace analysis {
     
-    class TraceLemmas
+    class StandardInductionLemmas : public ProgramTraverser
     {
     public:
-        TraceLemmas(const program::Program& program,
-                    std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars,
-                    bool twoTraces) :
-        program(program),
-        locationToActiveVars(locationToActiveVars),
-        twoTraces(twoTraces) {}
-        
-        std::vector<std::shared_ptr<const logic::Formula>> generate();
+        using ProgramTraverser::ProgramTraverser; // inherit initializer, note: doesn't allow additional members in subclass!
+       
+        virtual void generateFormulasFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::Formula>>& formulas) override;
         
     private:
-        const program::Program& program;
-        const std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars;
-        const bool twoTraces;
-        
         enum class InductionKind { Equal, Less, Greater, LessEqual, GreaterEqual};
-        
-        void generateStandardInductionLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        void generateStandardInductionLemmas(const program::Statement* statement,
-                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+
         void generateStandardInductionLemmas(const program::WhileStatement* whileStatement,
                                              std::vector<std::shared_ptr<const logic::Formula>>& lemmas,
                                              const InductionKind kind);
-        
-        void generateTwoTracesLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        void generateTwoTracesLemmas(const program::Statement* statement,
-                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        void generateTwoTracesLemmas(const program::WhileStatement* whileStatement,
-                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        
-        void generateNEqualLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        void generateNEqualLemmas(const program::Statement* statement,
-                                     std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        void generateNEqualLemmas(const program::WhileStatement* whileStatement,
-                                     std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-
-        void generateAtLeastOneIterationLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        void generateAtLeastOneIterationLemmas(const program::Statement* statement,
-                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        void generateAtLeastOneIterationLemmas(const program::WhileStatement* whileStatement,
-                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-
-        void generateIntermediateValueLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        void generateIntermediateValueLemmas(const program::Statement* statement,
-                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        void generateIntermediateValueLemmas(const program::WhileStatement* whileStatement,
-                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-
-        void generateValuePreservationLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        void generateValuePreservationLemmas(const program::Statement* statement,
-                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        void generateValuePreservationLemmas(const program::WhileStatement* whileStatement,
-                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-
-        void generateEqualityPreservationLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        void generateEqualityPreservationLemmas(const program::Statement* statement,
-                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        void generateEqualityPreservationLemmas(const program::WhileStatement* whileStatement,
-                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-
-
-        void generateEqualityPreservationLemmasZeroToRight(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        void generateEqualityPreservationLemmasZeroToRight(const program::Statement* statement,
-                                              std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        void generateEqualityPreservationLemmasZeroToRight(const program::WhileStatement* whileStatement,
-                                                                                  std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-
-        void generateEqualityPreservationLemmasLeftToEnd(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        void generateEqualityPreservationLemmasLeftToEnd(const program::Statement* statement,
-                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        void generateEqualityPreservationLemmasLeftToEnd(const program::WhileStatement* whileStatement,
-                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-
-        void generateEqualityPreservationLemmasLeftToRight(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        void generateEqualityPreservationLemmasLeftToRight(const program::Statement* statement,
-                                            std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        void generateEqualityPreservationLemmasLeftToRight(const program::WhileStatement* whileStatement,
-                                            std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-
-        void generateIterationInjectivityLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        void generateIterationInjectivityLemmas(const program::Statement* statement,
-                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        void generateIterationInjectivityLemmas(const program::WhileStatement* whileStatement,
-                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-
-        void generateOrderingSynchronizationLemmas(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        void generateOrderingSynchronizationLemmas(const program::Statement* statement,
-                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-        void generateOrderingSynchronizationLemmas(const program::WhileStatement* whileStatement,
-                                             std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
-
     };
+    
+    class TwoTracesLemmas : public ProgramTraverser
+    {
+    public:
+        using ProgramTraverser::ProgramTraverser; // inherit initializer, note: doesn't allow additional members in subclass!
+        
+    private:
+        virtual void generateFormulasFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::Formula>>& formulas) override;
+    };
+
+    class NEqualLemmas : public ProgramTraverser
+    {
+    public:
+        using ProgramTraverser::ProgramTraverser; // inherit initializer, note: doesn't allow additional members in subclass!
+        
+    private:
+        virtual void generateFormulasFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::Formula>>& formulas) override;
+    };
+    
+    class AtLeastOneIterationLemmas : public ProgramTraverser
+    {
+    public:
+        using ProgramTraverser::ProgramTraverser; // inherit initializer, note: doesn't allow additional members in subclass!
+        
+    private:
+        virtual void generateFormulasFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::Formula>>& formulas) override;
+    };
+    
+    class IntermediateValueLemmas : public ProgramTraverser
+    {
+    public:
+        using ProgramTraverser::ProgramTraverser; // inherit initializer, note: doesn't allow additional members in subclass!
+        
+    private:
+        virtual void generateFormulasFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::Formula>>& formulas) override;
+    };
+    
+    class ValuePreservationLemmas : public ProgramTraverser
+    {
+    public:
+        using ProgramTraverser::ProgramTraverser; // inherit initializer, note: doesn't allow additional members in subclass!
+        
+    private:
+        virtual void generateFormulasFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::Formula>>& formulas) override;
+    };
+    
+    class EqualityPreservationLemmas : public ProgramTraverser
+    {
+    public:
+        using ProgramTraverser::ProgramTraverser; // inherit initializer, note: doesn't allow additional members in subclass!
+        
+    private:
+        virtual void generateFormulasFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::Formula>>& formulas) override;
+        void generateEqualityPreservationLemmasZeroToRight(const program::WhileStatement* whileStatement,
+                                                           std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+        void generateEqualityPreservationLemmasLeftToEnd(const program::WhileStatement* whileStatement,
+                                                         std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+        void generateEqualityPreservationLemmasLeftToRight(const program::WhileStatement* whileStatement,
+                                                           std::vector<std::shared_ptr<const logic::Formula>>& lemmas);
+    };
+    
+    class IterationInjectivityLemmas : public ProgramTraverser
+    {
+    public:
+        using ProgramTraverser::ProgramTraverser; // inherit initializer, note: doesn't allow additional members in subclass!
+        
+    private:
+        virtual void generateFormulasFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::Formula>>& formulas) override;
+    };
+    
+    class OrderingSynchronizationLemmas : public ProgramTraverser
+    {
+    public:
+        using ProgramTraverser::ProgramTraverser; // inherit initializer, note: doesn't allow additional members in subclass!
+        
+    private:
+        virtual void generateFormulasFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::Formula>>& formulas) override;
+    };
+    
+    std::vector<std::shared_ptr<const logic::Formula>> generateTraceLemmas(const program::Program& program,
+                                                                               std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars,
+                                                                               bool twoTraces);
 }
 
 #endif

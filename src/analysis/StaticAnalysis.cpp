@@ -8,70 +8,21 @@
 
 namespace analysis
 {
-    std::vector<std::shared_ptr<const logic::Formula>> StaticAnalysis::generateStaticAnalysisLemmas()
+    void StaticAnalysisLemmas::generateFormulasFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Formula> > &formulas)
     {
-        std::vector<std::shared_ptr<const logic::Formula>> lemmas;
+        auto activeVars = locationToActiveVars.at(statement->location);
+        auto assignedVars = computeAssignedVars(statement);
 
-        for(const auto& function : program.functions)
-        {
-            std::vector<std::shared_ptr<const logic::Formula>> conjunctsFunction;
-            
-            for (const auto& statement : function->statements)
-            {
-                generateStaticAnalysisLemmas(statement.get(), lemmas);
-            }
-        }
-        
-        return lemmas;
-    }
-    
-    void StaticAnalysis::generateStaticAnalysisLemmas(const program::Statement* statement,
-                                                      std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
-    {
-        if (statement->type() == program::Statement::Type::IfElse)
-        {
-            auto castedStatement = static_cast<const program::IfElse*>(statement);
-            // recurse on both branches
-            for (const auto& statement : castedStatement->ifStatements)
-            {
-                generateStaticAnalysisLemmas(statement.get(), lemmas);
-            }
-            for (const auto& statement : castedStatement->elseStatements)
-            {
-                generateStaticAnalysisLemmas(statement.get(), lemmas);
-            }
-        }
-        else if (statement->type() == program::Statement::Type::WhileStatement)
-        {
-            auto castedStatement = static_cast<const program::WhileStatement*>(statement);
-            // generate lemmas
-            generateStaticAnalysisLemmasUnassignedVars(castedStatement, lemmas);
-            //generateStaticAnalysisLemmasAssignedVars(castedStatement, lemmas);
-            
-            // recurse on body
-            for (const auto& statement : castedStatement->bodyStatements)
-            {
-                generateStaticAnalysisLemmas(statement.get(), lemmas);
-            }
-        }
-    }
-    
-    void StaticAnalysis::generateStaticAnalysisLemmasUnassignedVars(const program::WhileStatement* whileStatement,
-                                                      std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
-    {
-        auto activeVars = locationToActiveVars.at(whileStatement->location);
-        auto assignedVars = computeAssignedVars(whileStatement);
-
-        auto iSymbol = iteratorSymbol(whileStatement);
-        auto it = iteratorTermForLoop(whileStatement);
-        auto locationSymbol = locationSymbolForStatement(whileStatement);
+        auto iSymbol = iteratorSymbol(statement);
+        auto it = iteratorTermForLoop(statement);
+        auto locationSymbol = locationSymbolForStatement(statement);
         auto locationName = locationSymbol->name;
 
         auto enclosingIteratorsSymbols = std::vector<std::shared_ptr<const logic::Symbol>>();
         auto enclosingIteratorsAndIt = std::vector<std::shared_ptr<const logic::Term>>();
         auto enclosingIteratorsAndZero = std::vector<std::shared_ptr<const logic::Term>>();
 
-        for (const auto& enclosingLoop : *whileStatement->enclosingLoops)
+        for (const auto& enclosingLoop : *statement->enclosingLoops)
         {
             auto enclosingIteratorSymbol = iteratorSymbol(enclosingLoop);
             enclosingIteratorsSymbols.push_back(enclosingIteratorSymbol);
@@ -98,18 +49,18 @@ namespace analysis
                     auto vit = toTerm(activeVar,lStartIt);
                     auto vzero = toTerm(activeVar,lStartZero);
                     auto eq = logic::Formulas::equality(vit,vzero);
-                    auto label = "Static analysis lemma for var " + activeVar->name + " at location " + whileStatement->location;
+                    auto label = "Static analysis lemma for var " + activeVar->name + " at location " + statement->location;
                     auto bareLemma = logic::Formulas::universal({iSymbol},eq,label);
                     auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, bareLemma);
                     
                     if (twoTraces)
                     {
                         auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        lemmas.push_back(logic::Formulas::universal({tr}, lemma));
+                        formulas.push_back(logic::Formulas::universal({tr}, lemma));
                     }
                     else
                     {
-                        lemmas.push_back(lemma);
+                        formulas.push_back(lemma);
                     }
                 }
                 else
@@ -121,53 +72,26 @@ namespace analysis
                     auto vit = toTerm(activeVar,lStartIt,p);
                     auto vzero = toTerm(activeVar,lStartZero,p);
                     auto eq = logic::Formulas::equality(vit,vzero);
-                    auto label = "Static analysis lemma for array var " + activeVar->name + " at location " + whileStatement->location;
+                    auto label = "Static analysis lemma for array var " + activeVar->name + " at location " + statement->location;
                     auto bareLemma = logic::Formulas::universal({iSymbol,pSymbol},eq,label);
                     auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, bareLemma);
                     
                     if (twoTraces)
                     {
                         auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        lemmas.push_back(logic::Formulas::universal({tr}, lemma));
+                        formulas.push_back(logic::Formulas::universal({tr}, lemma));
                     }
                     else
                     {
-                        lemmas.push_back(lemma);
+                        formulas.push_back(lemma);
                     }
                 }
             }    
 
         }
     }
-
-    // void StaticAnalysis::generateStaticAnalysisLemmasAssignedVars(const program::WhileStatement* whileStatement,
-    //                                                   std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
-    // {
-
-    //     // For every assignmend a = e, in which a is assigned a value exactly once in the loop and all vars in e are not changed during the iteration
-    //     // add a lemma saying that a (s (it)) = e(it)       
-
-    //     auto assignedVars = computeAssignedVars(whileStatement);
-    //     auto castedStatement = static_cast<const program::WhileStatement*>(statement);
-
-    //     for (const auto& statement : castedStatement->bodyStatements)
-    //     {
-    //         if (statement->type() == program::Statement::Type::IntAssignment)
-    //         {
-    //             auto castedAssignment = static_cast<const program::IntAssignment*>(statement);  
-    //             // get lhs var
-    //             auto lhs = static_cast<const program::IntVariableAccess*>(castedAssignment->lhs.get());
-    //             // extract all vars from rhs
-    //             auto rhs = ?
-
-    //             // if lhs  = assigned just once
-    //             // and everything in rhs is assigned 0 times OR is equal to LHS
-    //             // a (s (it)) = e(it)       
-    //         }
-    //     }
-    // }
     
-    std::unordered_set<std::shared_ptr<const program::Variable>> StaticAnalysis::computeAssignedVars(const program::Statement* statement)
+    std::unordered_set<std::shared_ptr<const program::Variable>> StaticAnalysisLemmas::computeAssignedVars(const program::Statement* statement)
     {
         std::unordered_set<std::shared_ptr<const program::Variable>> assignedVars;
         

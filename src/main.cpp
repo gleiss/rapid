@@ -44,14 +44,12 @@ int main(int argc, char *argv[])
                 problem.axioms = s.generateSemantics();
                 problem.conjecture = std::move(parserResult.conjecture);
                 
-                analysis::TraceLemmas traceLemmas(*parserResult.program, parserResult.locationToActiveVars, parserResult.twoTraces);
-                problem.lemmas = traceLemmas.generate();
+                problem.lemmas = analysis::generateTraceLemmas(*parserResult.program, parserResult.locationToActiveVars, parserResult.twoTraces);
 
-                analysis::StaticAnalysis staticAnalysis(*parserResult.program, parserResult.locationToActiveVars, parserResult.twoTraces);
+                analysis::StaticAnalysisLemmas staticAnalysisLemmas(*parserResult.program, parserResult.locationToActiveVars, parserResult.twoTraces);
                 // hack to work static analysis lemmas into output for now
                 // we should decide if we want to add them to the 'normal' lemmas
-                auto staticAnalysisLemmas = staticAnalysis.generateStaticAnalysisLemmas();
-                problem.lemmas.insert(problem.lemmas.end(),staticAnalysisLemmas.begin(),staticAnalysisLemmas.end());
+                staticAnalysisLemmas.generateFormulas(problem.lemmas);
                 
                 analysis::TheoryAxioms theoryAxioms;
                 auto theoryAxiomLemmas = theoryAxioms.generate();

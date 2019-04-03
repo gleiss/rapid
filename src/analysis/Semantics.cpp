@@ -317,24 +317,10 @@ namespace analysis {
         auto i = logic::Terms::var(iSymbol);
         auto n = lastIterationTermForLoop(whileStatement, twoTraces);
 
-        auto lStart0 = startTimePointMap.at(whileStatement);
-        
-        auto iteratorsItTerms = std::vector<std::shared_ptr<const logic::Term>>();
-        auto iteratorsNTerms = std::vector<std::shared_ptr<const logic::Term>>();
-        for (const auto& enclosingLoop : *whileStatement->enclosingLoops)
-        {
-            auto enclosingIterator = iteratorTermForLoop(enclosingLoop);
-            iteratorsItTerms.push_back(enclosingIterator);
-            iteratorsNTerms.push_back(enclosingIterator);
-        }
-        iteratorsItTerms.push_back(i);
-        iteratorsNTerms.push_back(n);
-
-        auto lStartIt = logic::Terms::func(locationSymbolForStatement(whileStatement), iteratorsItTerms);
-        auto lStartN = logic::Terms::func(locationSymbolForStatement(whileStatement), iteratorsNTerms);
-        
+        auto lStart0 = timepointForLoopStatement(whileStatement, logic::Theory::natZero());
+        auto lStartIt = timepointForLoopStatement(whileStatement, i);
+        auto lStartN = timepointForLoopStatement(whileStatement, n);
         auto lBodyStartIt = startTimePointMap.at(whileStatement->bodyStatements.front().get());
-        
         auto lEnd = endTimePointMap.at(whileStatement);
         
         auto lStartName = lStart0->symbol->name;

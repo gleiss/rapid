@@ -5,6 +5,7 @@
 
 #include "Theory.hpp"
 #include "SymbolDeclarations.hpp"
+#include "SemanticsHelper.hpp"
 
 namespace analysis
 {
@@ -27,20 +28,16 @@ namespace analysis
     void AnalysisPreComputation::addStartTimePointForStatement(const program::Statement* statement,
                                                                    StartTimePointMap& startTimePointMap)
     {
-        auto enclosingLoops = *statement->enclosingLoops;
-        auto enclosingIteratorTerms = std::vector<std::shared_ptr<const logic::Term>>();
-        for (const auto& enclosingLoop : enclosingLoops)
+        if (statement->type() != program::Statement::Type::WhileStatement)
         {
-            auto enclosingIteratorSymbol = iteratorSymbol(enclosingLoop);
-            enclosingIteratorTerms.push_back(logic::Terms::var(enclosingIteratorSymbol));
+            startTimePointMap[statement] = timepointForNonLoopStatement(statement);
         }
-        
-        if (statement->type() == program::Statement::Type::WhileStatement)
+        else
         {
-            enclosingIteratorTerms.push_back(logic::Theory::natZero());
+            auto whileStatement = static_cast<const program::WhileStatement*>(statement);
+            startTimePointMap[statement] = timepointForLoopStatement(whileStatement, logic::Theory::natZero());
         }
-        startTimePointMap[statement] = logic::Terms::func(locationSymbolForStatement(statement), enclosingIteratorTerms);
-        
+
         if (statement->type() == program::Statement::Type::IfElse)
         {
             auto castedStatement = static_cast<const program::IfElse*>(statement);

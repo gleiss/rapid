@@ -11,7 +11,18 @@
 
 namespace analysis {
 
-# pragma mark - Convenience methods for converting program-expressions to terms/predicates
+# pragma mark - Methods for generating most used trace terms
+    std::shared_ptr<const logic::Term> trace1Term();
+    std::shared_ptr<const logic::Term> trace2Term();
+    
+# pragma mark - Methods for generating most used timepoint terms
+    std::shared_ptr<const logic::LVariable> iteratorTermForLoop(const program::WhileStatement* whileStatement);
+    std::shared_ptr<const logic::Term> lastIterationTermForLoop(const program::WhileStatement* whileStatement, std::shared_ptr<const logic::Term> trace, bool twoTraces);
+
+    std::shared_ptr<const logic::Term> timepointForNonLoopStatement(const program::Statement* statement);
+    std::shared_ptr<const logic::Term> timepointForLoopStatement(const program::WhileStatement* whileStatement, std::shared_ptr<const logic::Term> innerIteration);
+
+# pragma mark - Methods for generating most used terms/predicates denoting program-expressions
     /*
      * convert a program variable to a logical term refering to the value of Variable var at the Timepoint timepoint in the Trace trace.
      * The first version must only be used for non-array variables, the second version must only be used for array-variables (where position refers to the position in the array).
@@ -31,9 +42,6 @@ namespace analysis {
      */
     std::shared_ptr<const logic::Formula> toFormula(std::shared_ptr<const program::BoolExpression> expr, std::shared_ptr<const logic::Term> timePoint, std::shared_ptr<const logic::Term> trace);
 
-    std::shared_ptr<const logic::LVariable> iteratorTermForLoop(const program::WhileStatement* whileStatement);
-    std::shared_ptr<const logic::Term> lastIterationTermForLoop(const program::WhileStatement* whileStatement, std::shared_ptr<const logic::Term> trace, bool twoTraces);
-
     /*
      * convenience methods which call the corresponding methods with a logical variable tr of Sort Trace as argument for trace.
      * the main use case of these methods is that we don't need to add the tr-variable everywhere in the semantics.
@@ -43,11 +51,6 @@ namespace analysis {
     std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const program::IntExpression> expr, std::shared_ptr<const logic::Term> timePoint);
     std::shared_ptr<const logic::Formula> toFormula(std::shared_ptr<const program::BoolExpression> expr, std::shared_ptr<const logic::Term> timePoint);
     std::shared_ptr<const logic::Term> lastIterationTermForLoop(const program::WhileStatement* whileStatement, bool twoTraces);
-
-    
-    std::shared_ptr<const logic::Term> trace1Term();
-    std::shared_ptr<const logic::Term> trace2Term();
-
 }
 
 

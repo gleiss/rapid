@@ -16,26 +16,15 @@ namespace analysis
         auto iSymbol = iteratorSymbol(statement);
         auto it = iteratorTermForLoop(statement);
         auto locationSymbol = locationSymbolForStatement(statement);
-        auto locationName = locationSymbol->name;
 
         auto enclosingIteratorsSymbols = std::vector<std::shared_ptr<const logic::Symbol>>();
-        auto enclosingIteratorsAndIt = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndZero = std::vector<std::shared_ptr<const logic::Term>>();
-
         for (const auto& enclosingLoop : *statement->enclosingLoops)
         {
-            auto enclosingIteratorSymbol = iteratorSymbol(enclosingLoop);
-            enclosingIteratorsSymbols.push_back(enclosingIteratorSymbol);
-
-            auto enclosingIterator = iteratorTermForLoop(enclosingLoop);
-            enclosingIteratorsAndIt.push_back(enclosingIterator);            
-            enclosingIteratorsAndZero.push_back(enclosingIterator);            
+            enclosingIteratorsSymbols.push_back(iteratorSymbol(enclosingLoop));
         }
-        enclosingIteratorsAndIt.push_back(it);
-        enclosingIteratorsAndZero.push_back(logic::Theory::natZero());
-                
-        auto lStartIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndIt);        
-        auto lStartZero = logic::Terms::func(locationSymbol, enclosingIteratorsAndZero);
+
+        auto lStartIt = timepointForLoopStatement(statement, it);
+        auto lStartZero = timepointForLoopStatement(statement, logic::Theory::natZero());
                 
         // for each active var, which is not constant but not assigned to in any statement of the loop,
         // add a lemma asserting that var is the same in each iteration as in the first iteration.        

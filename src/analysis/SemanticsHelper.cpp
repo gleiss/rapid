@@ -12,6 +12,77 @@
 
 namespace analysis {
     
+# pragma mark - Methods for generating most used trace terms
+    
+    std::shared_ptr<const logic::Term> trace1Term()
+    {
+        return logic::Terms::func(trace1Symbol(), {});
+    }
+    std::shared_ptr<const logic::Term> trace2Term()
+    {
+        return logic::Terms::func(trace2Symbol(), {});
+    }
+
+# pragma mark - Methods for generating most used timepoint terms
+    
+    std::shared_ptr<const logic::LVariable> iteratorTermForLoop(const program::WhileStatement* whileStatement)
+    {
+        assert(whileStatement != nullptr);
+        
+        return logic::Terms::var(iteratorSymbol(whileStatement));
+    }
+    
+    std::shared_ptr<const logic::Term> lastIterationTermForLoop(const program::WhileStatement* whileStatement, std::shared_ptr<const logic::Term> trace, bool twoTraces)
+    {
+        assert(whileStatement != nullptr);
+        assert(trace != nullptr);
+
+        auto symbol = lastIterationSymbol(whileStatement, twoTraces);
+        std::vector<std::shared_ptr<const logic::Term>> subterms;
+        for (const auto& loop : *whileStatement->enclosingLoops)
+        {
+            subterms.push_back(iteratorTermForLoop(loop));
+        }
+        if (twoTraces)
+        {
+            subterms.push_back(trace);
+        }
+        return logic::Terms::func(symbol, subterms);
+    }
+    
+    std::shared_ptr<const logic::Term> timepointForNonLoopStatement(const program::Statement* statement)
+    {
+        assert(statement != nullptr);
+        assert(statement->type() != program::Statement::Type::WhileStatement);
+        
+        auto enclosingLoops = *statement->enclosingLoops;
+        auto enclosingIteratorTerms = std::vector<std::shared_ptr<const logic::Term>>();
+        for (const auto& enclosingLoop : enclosingLoops)
+        {
+            auto enclosingIteratorSymbol = iteratorSymbol(enclosingLoop);
+            enclosingIteratorTerms.push_back(logic::Terms::var(enclosingIteratorSymbol));
+        }
+
+        return logic::Terms::func(locationSymbolForStatement(statement), enclosingIteratorTerms);
+    }
+    
+    std::shared_ptr<const logic::Term> timepointForLoopStatement(const program::WhileStatement* whileStatement, std::shared_ptr<const logic::Term> innerIteration)
+    {
+        assert(whileStatement != nullptr);
+        assert(innerIteration != nullptr);
+        
+        auto enclosingLoops = *whileStatement->enclosingLoops;
+        auto enclosingIteratorTerms = std::vector<std::shared_ptr<const logic::Term>>();
+        for (const auto& enclosingLoop : enclosingLoops)
+        {
+            auto enclosingIteratorSymbol = iteratorSymbol(enclosingLoop);
+            enclosingIteratorTerms.push_back(logic::Terms::var(enclosingIteratorSymbol));
+        }
+        enclosingIteratorTerms.push_back(innerIteration);
+        return logic::Terms::func(locationSymbolForStatement(whileStatement), enclosingIteratorTerms);
+    }
+
+# pragma mark - Methods for generating most used terms/predicates denoting program-expressions
     std::shared_ptr<const logic::Term> toTermFull(std::shared_ptr<const program::Variable> var, std::shared_ptr<const logic::Term> timePoint, std::shared_ptr<const logic::Term> trace)
     {
         assert(var != nullptr);
@@ -152,26 +223,6 @@ namespace analysis {
         }
     }
     
-    std::shared_ptr<const logic::LVariable> iteratorTermForLoop(const program::WhileStatement* whileStatement)
-    {
-        return logic::Terms::var(iteratorSymbol(whileStatement));
-    }
-    
-    std::shared_ptr<const logic::Term> lastIterationTermForLoop(const program::WhileStatement* whileStatement, std::shared_ptr<const logic::Term> trace, bool twoTraces)
-    {
-        auto symbol = lastIterationSymbol(whileStatement, twoTraces);
-        std::vector<std::shared_ptr<const logic::Term>> subterms;
-        for (const auto& loop : *whileStatement->enclosingLoops)
-        {
-            subterms.push_back(iteratorTermForLoop(loop));
-        }
-        if (twoTraces)
-        {
-            subterms.push_back(trace);
-        }
-        return logic::Terms::func(symbol, subterms);
-    }
-    
     std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const program::Variable> var, std::shared_ptr<const logic::Term> timePoint)
     {
         assert(var != nullptr);
@@ -216,14 +267,6 @@ namespace analysis {
         return lastIterationTermForLoop(whileStatement, tr, twoTraces);
     }
     
-    std::shared_ptr<const logic::Term> trace1Term()
-    {
-        return logic::Terms::func(trace1Symbol(), {});
-    }
-    std::shared_ptr<const logic::Term> trace2Term()
-    {
-        return logic::Terms::func(trace2Symbol(), {});
-    }
 
     
 }

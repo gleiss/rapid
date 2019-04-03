@@ -99,37 +99,19 @@ namespace analysis {
         auto n = lastIterationTermForLoop(whileStatement, twoTraces);
         auto locationSymbol = locationSymbolForStatement(whileStatement);
         
-        auto locationName = locationSymbol->name;
-        
         auto enclosingIteratorsSymbols = std::vector<std::shared_ptr<const logic::Symbol>>();
-
-        auto enclosingIteratorsAndIt = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndSuccOfIt = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndZero = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndN = std::vector<std::shared_ptr<const logic::Term>>();
         for (const auto& enclosingLoop : *whileStatement->enclosingLoops)
         {
-            auto enclosingIteratorSymbol = iteratorSymbol(enclosingLoop);
-            enclosingIteratorsSymbols.push_back(enclosingIteratorSymbol);
-
-            auto enclosingIterator = iteratorTermForLoop(enclosingLoop);
-            enclosingIteratorsAndIt.push_back(enclosingIterator);
-            enclosingIteratorsAndSuccOfIt.push_back(enclosingIterator);
-            enclosingIteratorsAndZero.push_back(enclosingIterator);
-            enclosingIteratorsAndN.push_back(enclosingIterator);
+            enclosingIteratorsSymbols.push_back(iteratorSymbol(enclosingLoop));
         }
-        enclosingIteratorsAndIt.push_back(it);
-        enclosingIteratorsAndSuccOfIt.push_back(logic::Theory::natSucc(it));
-        enclosingIteratorsAndZero.push_back(logic::Theory::natZero());
-        enclosingIteratorsAndN.push_back(n);
-        
-        auto lStartIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndIt);
-        auto lStartSuccOfIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndSuccOfIt);
-        auto lStartZero = logic::Terms::func(locationSymbol, enclosingIteratorsAndZero);
-        auto lStartN = logic::Terms::func(locationSymbol, enclosingIteratorsAndN);
+
+        auto lStartIt = timepointForLoopStatement(whileStatement, it);
+        auto lStartSuccOfIt = timepointForLoopStatement(whileStatement, logic::Theory::natSucc(it));
+        auto lStartZero = timepointForLoopStatement(whileStatement, logic::Theory::natZero());
+        auto lStartN = timepointForLoopStatement(whileStatement, n);
         
         // add lemma for each intVar
-        for (const auto& v : locationToActiveVars.at(locationName))
+        for (const auto& v : locationToActiveVars.at(locationSymbol->name))
         {
             if (!v->isConstant)
             {
@@ -206,7 +188,7 @@ namespace analysis {
         // add lemma for each intArrayVar
         auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
         auto p = logic::Terms::var(pSymbol);
-        for (const auto& v : locationToActiveVars.at(locationName))
+        for (const auto& v : locationToActiveVars.at(locationSymbol->name))
         {
             if (!v->isConstant)
             {
@@ -291,35 +273,19 @@ namespace analysis {
         auto itSymbol = iteratorSymbol(statement);
         auto it = logic::Terms::var(itSymbol);
         auto locationSymbol = locationSymbolForStatement(statement);
-        
-        auto locationName = locationSymbol->name;
 
         auto enclosingIteratorsSymbols = std::vector<std::shared_ptr<const logic::Symbol>>();
-
-        auto enclosingIteratorsAndIt = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndSuccOfIt = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndZero = std::vector<std::shared_ptr<const logic::Term>>();
         for (const auto& enclosingLoop : *statement->enclosingLoops)
         {
-            auto enclosingIteratorSymbol = iteratorSymbol(enclosingLoop);
-            enclosingIteratorsSymbols.push_back(enclosingIteratorSymbol);
-
-            auto enclosingIterator = iteratorTermForLoop(enclosingLoop);
-            enclosingIteratorsAndIt.push_back(enclosingIterator);
-            enclosingIteratorsAndSuccOfIt.push_back(enclosingIterator);
-            enclosingIteratorsAndZero.push_back(enclosingIterator);
+            enclosingIteratorsSymbols.push_back(iteratorSymbol(enclosingLoop));
         }
-        
-        enclosingIteratorsAndIt.push_back(it);
-        enclosingIteratorsAndSuccOfIt.push_back(logic::Theory::natSucc(it));
-        enclosingIteratorsAndZero.push_back(logic::Theory::natZero());
-        
-        auto lStartIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndIt);
-        auto lStartSuccOfIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndSuccOfIt);
-        auto lStartZero = logic::Terms::func(locationSymbol, enclosingIteratorsAndZero);
+
+        auto lStartIt = timepointForLoopStatement(statement, it);
+        auto lStartSuccOfIt = timepointForLoopStatement(statement, logic::Theory::natSucc(it));
+        auto lStartZero = timepointForLoopStatement(statement, logic::Theory::natZero());
 
         // add lemma for each intVar
-        for (const auto& v : locationToActiveVars.at(locationName))
+        for (const auto& v : locationToActiveVars.at(locationSymbol->name))
         {
             if (!v->isConstant)
             {
@@ -363,7 +329,7 @@ namespace analysis {
         // add lemma for each arrayVar
         auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
         auto p = logic::Terms::var(pSymbol);
-        for (const auto& v : locationToActiveVars.at(locationName))
+        for (const auto& v : locationToActiveVars.at(locationSymbol->name))
         {
             if (!v->isConstant)
             {
@@ -419,25 +385,14 @@ namespace analysis {
         auto nT1 = lastIterationTermForLoop(statement, t1, true);
         auto nT2 = lastIterationTermForLoop(statement, t2, true);
         
-        auto iteratorsItTerms = std::vector<std::shared_ptr<const logic::Term>>();
-        auto iteratorsNT2Terms = std::vector<std::shared_ptr<const logic::Term>>();
         auto enclosingIteratorsSymbols = std::vector<std::shared_ptr<const logic::Symbol>>();
-
         for (const auto& enclosingLoop : *statement->enclosingLoops)
         {
-            auto enclosingIteratorSymbol = iteratorSymbol(enclosingLoop);
-            enclosingIteratorsSymbols.push_back(enclosingIteratorSymbol);
-
-            auto enclosingIteratorTerm = iteratorTermForLoop(enclosingLoop);
-            iteratorsItTerms.push_back(enclosingIteratorTerm);
-            iteratorsNT2Terms.push_back(enclosingIteratorTerm);
-
+            enclosingIteratorsSymbols.push_back(iteratorSymbol(enclosingLoop));
         }
-        iteratorsItTerms.push_back(it);
-        iteratorsNT2Terms.push_back(nT2);
-
-        auto lStartIt = logic::Terms::func(locationSymbolForStatement(statement), iteratorsItTerms);
-        auto lStartNT2 = logic::Terms::func(locationSymbolForStatement(statement), iteratorsNT2Terms);
+        
+        auto lStartIt = timepointForLoopStatement(statement, it);
+        auto lStartNT2 = timepointForLoopStatement(statement, nT2);
 
         // Part 1: Loop condition holds at main-loop-location in t1 for all iterations before n(t2)
         auto sub = logic::Theory::natSub(it, nT2);
@@ -463,27 +418,18 @@ namespace analysis {
 
     void AtLeastOneIterationLemmas::generateFormulasFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Formula> > &formulas)
     {
-        auto iSymbol = iteratorSymbol(statement);
+        auto itSymbol = iteratorSymbol(statement);
         auto it = iteratorTermForLoop(statement);
         auto n = lastIterationTermForLoop(statement, twoTraces);
         auto locationSymbol = locationSymbolForStatement(statement);
         
-        auto locationName = locationSymbol->name;
-        
         auto enclosingIteratorsSymbols = std::vector<std::shared_ptr<const logic::Symbol>>();
-        
-        auto enclosingIteratorsAndZero = std::vector<std::shared_ptr<const logic::Term>>();        
         for (const auto& enclosingLoop : *statement->enclosingLoops)
         {
-            auto enclosingIteratorSymbol = iteratorSymbol(enclosingLoop);
-            enclosingIteratorsSymbols.push_back(enclosingIteratorSymbol);
-
-            auto enclosingIterator = iteratorTermForLoop(enclosingLoop);            
-            enclosingIteratorsAndZero.push_back(enclosingIterator);            
+            enclosingIteratorsSymbols.push_back(iteratorSymbol(enclosingLoop));
         }
-        enclosingIteratorsAndZero.push_back(logic::Theory::natZero());
-                
-        auto lStartZero = logic::Terms::func(locationSymbol, enclosingIteratorsAndZero);
+        
+        auto lStartZero = timepointForLoopStatement(statement, logic::Theory::natZero());
         
         // The lemma says: if the loop condition holds, there should be at least one loop iteration
         // C => exists it. s(it) = n
@@ -491,7 +437,7 @@ namespace analysis {
         auto c = toFormula(statement->condition,lStartZero);
 
         // Construct rhs: exists it (s(it) = n)
-        auto lhs = logic::Formulas::existential({iSymbol},logic::Formulas::equality(logic::Theory::natSucc(it),n));        
+        auto lhs = logic::Formulas::existential({itSymbol},logic::Formulas::equality(logic::Theory::natSucc(it),n));
         auto label = "Lemma: if the condition of the loop at " + statement->location + " holds initially, there is at least one loop iteration";
         auto loopLemma = logic::Formulas::implication(c,lhs,label);        
         auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, loopLemma);
@@ -519,45 +465,22 @@ namespace analysis {
         auto n = lastIterationTermForLoop(statement, twoTraces);
         auto locationSymbol = locationSymbolForStatement(statement);
         
-        auto locationName = locationSymbol->name;
-        
         auto enclosingIteratorsSymbols = std::vector<std::shared_ptr<const logic::Symbol>>();
-
-        auto enclosingIterators = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndIt = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndIt2 = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndSuccOfIt = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndZero = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndN = std::vector<std::shared_ptr<const logic::Term>>();
         for (const auto& enclosingLoop : *statement->enclosingLoops)
         {
-            auto enclosingIteratorSymbol = iteratorSymbol(enclosingLoop);
-            enclosingIteratorsSymbols.push_back(enclosingIteratorSymbol);
-
-            auto enclosingIterator = iteratorTermForLoop(enclosingLoop);
-            enclosingIterators.push_back(enclosingIterator);
-            enclosingIteratorsAndIt2.push_back(enclosingIterator);
-            enclosingIteratorsAndIt.push_back(enclosingIterator);
-            enclosingIteratorsAndSuccOfIt.push_back(enclosingIterator);
-            enclosingIteratorsAndZero.push_back(enclosingIterator);
-            enclosingIteratorsAndN.push_back(enclosingIterator);
+            enclosingIteratorsSymbols.push_back(iteratorSymbol(enclosingLoop));
         }
-        enclosingIteratorsAndIt.push_back(it);
-        enclosingIteratorsAndIt2.push_back(it2);
-        enclosingIteratorsAndSuccOfIt.push_back(logic::Theory::natSucc(it));
-        enclosingIteratorsAndZero.push_back(logic::Theory::natZero());
-        enclosingIteratorsAndN.push_back(n);
         
-        auto lStartIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndIt);
-        auto lStartIt2 = logic::Terms::func(locationSymbol, enclosingIteratorsAndIt2);
-        auto lStartSuccOfIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndSuccOfIt);
-        auto lStartZero = logic::Terms::func(locationSymbol, enclosingIteratorsAndZero);
-        auto lStartN = logic::Terms::func(locationSymbol, enclosingIteratorsAndN);
+        auto lStartIt = timepointForLoopStatement(statement, it);
+        auto lStartIt2 = timepointForLoopStatement(statement, it2);
+        auto lStartSuccOfIt = timepointForLoopStatement(statement, logic::Theory::natSucc(it));
+        auto lStartZero = timepointForLoopStatement(statement, logic::Theory::natZero());
+        auto lStartN = timepointForLoopStatement(statement, n);
         
         // add lemma for each intVar
         // Lemma: forall ((x : Int) (it : Nat)). (v l(zero) <= x & x < v l(n) & v l(s(it)) = (v l(it) +1) 
         //                                        =>  exists (it2 : Nat) v l(it2) = x & it2 < n)
-        for (const auto& v : locationToActiveVars.at(locationName))
+        for (const auto& v : locationToActiveVars.at(locationSymbol->name))
         {            
             if (!v->isConstant)
             {
@@ -623,7 +546,7 @@ namespace analysis {
         // add lemma for each intArrayVar
         auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
         auto p = logic::Terms::var(pSymbol);
-        for (const auto& v : locationToActiveVars.at(locationName))
+        for (const auto& v : locationToActiveVars.at(locationSymbol->name))
         {
             if (!v->isConstant)
             {
@@ -698,45 +621,24 @@ namespace analysis {
         auto n = lastIterationTermForLoop(statement, twoTraces);
         auto locationSymbol = locationSymbolForStatement(statement);
         
-        auto locationName = locationSymbol->name;
-        
         auto enclosingIteratorsSymbols = std::vector<std::shared_ptr<const logic::Symbol>>();
-
-        auto enclosingIterators = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndIt = std::vector<std::shared_ptr<const logic::Term>>();        
-        auto enclosingIteratorsAndSuccOfIt = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndSuccOfIt2 = std::vector<std::shared_ptr<const logic::Term>>();        
-        auto enclosingIteratorsAndN = std::vector<std::shared_ptr<const logic::Term>>();
-
         for (const auto& enclosingLoop : *statement->enclosingLoops)
         {
-            auto enclosingIteratorSymbol = iteratorSymbol(enclosingLoop);
-            enclosingIteratorsSymbols.push_back(enclosingIteratorSymbol);
-
-            auto enclosingIterator = iteratorTermForLoop(enclosingLoop);
-            enclosingIterators.push_back(enclosingIterator);
-            enclosingIteratorsAndIt.push_back(enclosingIterator);
-            enclosingIteratorsAndSuccOfIt.push_back(enclosingIterator);            
-            enclosingIteratorsAndSuccOfIt2.push_back(enclosingIterator);
-            enclosingIteratorsAndN.push_back(enclosingIterator);
+            enclosingIteratorsSymbols.push_back(iteratorSymbol(enclosingLoop));
         }
-        enclosingIteratorsAndIt.push_back(it);
-        enclosingIteratorsAndSuccOfIt.push_back(logic::Theory::natSucc(it));        
-        enclosingIteratorsAndSuccOfIt2.push_back(logic::Theory::natSucc(it2));        
-        enclosingIteratorsAndN.push_back(n);
         
-        auto lStartIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndIt);
-        auto lStartSuccOfIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndSuccOfIt);        
-        auto lStartSuccOfIt2 = logic::Terms::func(locationSymbol, enclosingIteratorsAndSuccOfIt2);
-        auto lStartN = logic::Terms::func(locationSymbol, enclosingIteratorsAndN);
-        
+        auto lStartIt = timepointForLoopStatement(statement, it);
+        auto lStartSuccOfIt = timepointForLoopStatement(statement, logic::Theory::natSucc(it));
+        auto lStartSuccOfIt2 = timepointForLoopStatement(statement, logic::Theory::natSucc(it2));
+        auto lStartN = timepointForLoopStatement(statement, n);
+
         // add lemma for each intVar
         //  forall (x:Int)
         //        (exists (it2 : Nat)
         //               (it2 < n & v(l(s(it2))) = x)
         //             & forall (it : Nat) (it2 < it => x(l(s(it))) = x(l(it))
         //        => (v(l(n)) = x)
-        for (const auto& v : locationToActiveVars.at(locationName))
+        for (const auto& v : locationToActiveVars.at(locationSymbol->name))
         {            
             if (!v->isConstant)
             {
@@ -804,7 +706,7 @@ namespace analysis {
         //        => (v(l(n), pos) = x)
         auto posSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
         auto pos = logic::Terms::var(posSymbol);
-        for (const auto& v : locationToActiveVars.at(locationName))
+        for (const auto& v : locationToActiveVars.at(locationSymbol->name))
         {
             if (!v->isConstant)
             {
@@ -870,7 +772,7 @@ namespace analysis {
         }
     }
 
-        #pragma mark - Iteration Injection Lemma
+#pragma mark - Iteration Injection Lemma
 
     void IterationInjectivityLemmas::generateFormulasFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Formula> > &formulas)
     {
@@ -883,44 +785,23 @@ namespace analysis {
         auto n = lastIterationTermForLoop(statement, twoTraces);
         auto locationSymbol = locationSymbolForStatement(statement);
         
-        auto locationName = locationSymbol->name;
-        
         auto enclosingIteratorsSymbols = std::vector<std::shared_ptr<const logic::Symbol>>();
-
-        auto enclosingIterators = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndIt = std::vector<std::shared_ptr<const logic::Term>>();        
-        auto enclosingIteratorsAndIt1 = std::vector<std::shared_ptr<const logic::Term>>();     
-        auto enclosingIteratorsAndIt2 = std::vector<std::shared_ptr<const logic::Term>>();     
-        auto enclosingIteratorsAndSuccOfIt = std::vector<std::shared_ptr<const logic::Term>>();
-        
         for (const auto& enclosingLoop : *statement->enclosingLoops)
         {
-            auto enclosingIteratorSymbol = iteratorSymbol(enclosingLoop);
-            enclosingIteratorsSymbols.push_back(enclosingIteratorSymbol);
-
-            auto enclosingIterator = iteratorTermForLoop(enclosingLoop);
-            enclosingIterators.push_back(enclosingIterator);
-            enclosingIteratorsAndIt.push_back(enclosingIterator);
-            enclosingIteratorsAndIt1.push_back(enclosingIterator);
-            enclosingIteratorsAndIt2.push_back(enclosingIterator);
-            enclosingIteratorsAndSuccOfIt.push_back(enclosingIterator);                        
+            enclosingIteratorsSymbols.push_back(iteratorSymbol(enclosingLoop));
         }
-        enclosingIteratorsAndIt.push_back(it);
-        enclosingIteratorsAndSuccOfIt.push_back(logic::Theory::natSucc(it));        
-        enclosingIteratorsAndIt1.push_back(it1);
-        enclosingIteratorsAndIt2.push_back(it2);
-                
-        auto lStartIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndIt);
-        auto lStartSuccOfIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndSuccOfIt);        
-        auto lStartIt1 = logic::Terms::func(locationSymbol, enclosingIteratorsAndIt1);
-        auto lStartIt2 = logic::Terms::func(locationSymbol, enclosingIteratorsAndIt2);
+        
+        auto lStartIt = timepointForLoopStatement(statement, it);
+        auto lStartSuccOfIt = timepointForLoopStatement(statement, logic::Theory::natSucc(it));
+        auto lStartIt1 = timepointForLoopStatement(statement, it1);
+        auto lStartIt2 = timepointForLoopStatement(statement, it2);
 
         // forall (it : Nat)
         //    (v(l(s(it))) =  v(l(it)) + 1))
         //    => (forall (it1 : Nat) (it2 : Nat)
         //          ((v(l(it1))) = (v(l(it2)))
         //           => (it1 = it2))))      
-        for (const auto& v : locationToActiveVars.at(locationName))
+        for (const auto& v : locationToActiveVars.at(locationSymbol->name))
         {            
             if (!v->isConstant)
             {
@@ -1000,33 +881,15 @@ namespace analysis {
         auto locationName = locationSymbol->name;
 
         auto enclosingIteratorsSymbols = std::vector<std::shared_ptr<const logic::Symbol>>();
-
-        auto enclosingIterators = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndIt = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndSuccOfIt = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndItR = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndZero = std::vector<std::shared_ptr<const logic::Term>>();
-
         for (const auto& enclosingLoop : *whileStatement->enclosingLoops)
         {
-            auto enclosingIteratorSymbol = iteratorSymbol(enclosingLoop);
-            enclosingIteratorsSymbols.push_back(enclosingIteratorSymbol);
-
-            auto enclosingIterator = iteratorTermForLoop(enclosingLoop);
-            enclosingIterators.push_back(enclosingIterator);
-            enclosingIteratorsAndIt.push_back(enclosingIterator);
-            enclosingIteratorsAndSuccOfIt.push_back(enclosingIterator);            enclosingIteratorsAndZero.push_back(enclosingIterator);
-
+            enclosingIteratorsSymbols.push_back(iteratorSymbol(enclosingLoop));
         }
-        enclosingIteratorsAndIt.push_back(it);
-        enclosingIteratorsAndSuccOfIt.push_back(logic::Theory::natSucc(it));
-        enclosingIteratorsAndZero.push_back(logic::Theory::natZero());
-        enclosingIteratorsAndItR.push_back(itR);
 
-        auto lStartIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndIt);
-        auto lStartSuccOfIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndSuccOfIt);
-        auto lStartZero = logic::Terms::func(locationSymbol, enclosingIteratorsAndZero);
-        auto lStartItR = logic::Terms::func(locationSymbol, enclosingIteratorsAndItR);
+        auto lStartIt = timepointForLoopStatement(whileStatement, it);
+        auto lStartSuccOfIt = timepointForLoopStatement(whileStatement, logic::Theory::natSucc(it));
+        auto lStartZero = timepointForLoopStatement(whileStatement, logic::Theory::natZero());
+        auto lStartItR = timepointForLoopStatement(whileStatement, itR);
 
         // add lemma for each intVar
         // Lemma: forall ((itR : Nat))
@@ -1178,54 +1041,24 @@ namespace analysis {
         auto it = iteratorTermForLoop(whileStatement);
         auto itLSymbol = logic::Signature::varSymbol("itL", logic::Sorts::natSort());
         auto itL = logic::Terms::var(itLSymbol);
-        auto n = lastIterationTermForLoop(whileStatement, twoTraces);
         auto nT1 = lastIterationTermForLoop(whileStatement, t1, true);
         auto nT2 = lastIterationTermForLoop(whileStatement, t2, true);
 
         auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
 
         auto locationSymbol = locationSymbolForStatement(whileStatement);
-        auto locationName = locationSymbol->name;
 
         auto enclosingIteratorsSymbols = std::vector<std::shared_ptr<const logic::Symbol>>();
-
-        auto enclosingIterators = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndIt = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndSuccOfIt = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndItL = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndN = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndNT1 = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndNT2 = std::vector<std::shared_ptr<const logic::Term>>();
-
         for (const auto& enclosingLoop : *whileStatement->enclosingLoops)
         {
-            auto enclosingIteratorSymbol = iteratorSymbol(enclosingLoop);
-            enclosingIteratorsSymbols.push_back(enclosingIteratorSymbol);
-
-            auto enclosingIterator = iteratorTermForLoop(enclosingLoop);
-            enclosingIterators.push_back(enclosingIterator);
-            enclosingIteratorsAndIt.push_back(enclosingIterator);
-            enclosingIteratorsAndSuccOfIt.push_back(enclosingIterator);
-            enclosingIteratorsAndItL.push_back(enclosingIterator);
-            enclosingIteratorsAndN.push_back(enclosingIterator);
-            enclosingIteratorsAndNT1.push_back(enclosingIterator);
-            enclosingIteratorsAndNT2.push_back(enclosingIterator);
-
+            enclosingIteratorsSymbols.push_back(iteratorSymbol(enclosingLoop));
         }
-        enclosingIteratorsAndIt.push_back(it);
-        enclosingIteratorsAndSuccOfIt.push_back(logic::Theory::natSucc(it));
-        enclosingIteratorsAndItL.push_back(itL);
-        enclosingIteratorsAndN.push_back(n);
-        enclosingIteratorsAndNT1.push_back(nT1);
-        enclosingIteratorsAndNT2.push_back(nT2);
 
-
-        auto lStartIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndIt);
-        auto lStartSuccOfIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndSuccOfIt);
-        auto lStartItL = logic::Terms::func(locationSymbol, enclosingIteratorsAndItL);
-        auto lStartN = logic::Terms::func(locationSymbol, enclosingIteratorsAndN);
-        auto lStartNT1 = logic::Terms::func(locationSymbol, enclosingIteratorsAndNT1);
-        auto lStartNT2 = logic::Terms::func(locationSymbol, enclosingIteratorsAndNT2);
+        auto lStartIt = timepointForLoopStatement(whileStatement, it);
+        auto lStartSuccOfIt = timepointForLoopStatement(whileStatement, logic::Theory::natSucc(it));
+        auto lStartItL = timepointForLoopStatement(whileStatement, itL);
+        auto lStartNT1 = timepointForLoopStatement(whileStatement, nT1);
+        auto lStartNT2 = timepointForLoopStatement(whileStatement, nT2);
 
         // add lemma for each intVar
         // Lemma: forall ((itL: Nat))
@@ -1233,7 +1066,7 @@ namespace analysis {
         //          & ((n t1) = (n t2))
         //          & forall (it : Nat) ((itL <= it < n & v(l(it),t1) = v(l(it),t2))) => v(l(s(it)),t1) = v(l(s(it)),t2))
         //          => v(l(n t1),t1) =  v(l(n t1),t2)
-        for (const auto& v : locationToActiveVars.at(locationName))
+        for (const auto& v : locationToActiveVars.at(locationSymbol->name))
         {
             if (!v->isConstant)
             {
@@ -1304,7 +1137,7 @@ namespace analysis {
         // add lemma for each intArrayVar
         auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
         auto p = logic::Terms::var(pSymbol);
-        for (const auto& v : locationToActiveVars.at(locationName))
+        for (const auto& v : locationToActiveVars.at(locationSymbol->name))
         {
             if (!v->isConstant)
             {
@@ -1392,46 +1225,24 @@ namespace analysis {
         auto itR = logic::Terms::var(itRSymbol);
 
         auto locationSymbol = locationSymbolForStatement(whileStatement);
-        auto locationName = locationSymbol->name;
 
         auto enclosingIteratorsSymbols = std::vector<std::shared_ptr<const logic::Symbol>>();
-
-        auto enclosingIterators = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndIt = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndSuccOfIt = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndItL = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndItR = std::vector<std::shared_ptr<const logic::Term>>();
-
         for (const auto& enclosingLoop : *whileStatement->enclosingLoops)
         {
-            auto enclosingIteratorSymbol = iteratorSymbol(enclosingLoop);
-            enclosingIteratorsSymbols.push_back(enclosingIteratorSymbol);
-
-            auto enclosingIterator = iteratorTermForLoop(enclosingLoop);
-            enclosingIterators.push_back(enclosingIterator);
-            enclosingIteratorsAndIt.push_back(enclosingIterator);
-            enclosingIteratorsAndSuccOfIt.push_back(enclosingIterator);
-            enclosingIteratorsAndItL.push_back(enclosingIterator);
-            enclosingIteratorsAndItR.push_back(enclosingIterator);
-
+            enclosingIteratorsSymbols.push_back(iteratorSymbol(enclosingLoop));
         }
-        enclosingIteratorsAndIt.push_back(it);
-        enclosingIteratorsAndSuccOfIt.push_back(logic::Theory::natSucc(it));
-        enclosingIteratorsAndItL.push_back(itL);
-        enclosingIteratorsAndItR.push_back(itR);
 
-        auto lStartIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndIt);
-        auto lStartSuccOfIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndSuccOfIt);
-        auto lStartItL = logic::Terms::func(locationSymbol, enclosingIteratorsAndItL);
-        auto lStartItR = logic::Terms::func(locationSymbol, enclosingIteratorsAndItR);
-
+        auto lStartIt = timepointForLoopStatement(whileStatement, it);
+        auto lStartSuccOfIt = timepointForLoopStatement(whileStatement, logic::Theory::natSucc(it));
+        auto lStartItL = timepointForLoopStatement(whileStatement, itL);
+        auto lStartItR = timepointForLoopStatement(whileStatement, itR);
 
         // add lemma for each intVar
         // Lemma: forall ((itL: Nat) (itR : Nat))
         //      (v(l(itL),t1) = v(l(itL),t2) &
         //          forall (it : Nat) ((itL <= it > itR & v(l(it),t1) = v(l(it),t2))) => v(l(s(it)),t1) = v(l(s(it)),t2))
         //          => v(l(itR),t1) =  v(l(itR),t2)
-        for (const auto& v : locationToActiveVars.at(locationName))
+        for (const auto& v : locationToActiveVars.at(locationSymbol->name))
         {
             if (!v->isConstant)
             {
@@ -1498,7 +1309,7 @@ namespace analysis {
         // add lemma for each intArrayVar
         auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
         auto p = logic::Terms::var(pSymbol);
-        for (const auto& v : locationToActiveVars.at(locationName))
+        for (const auto& v : locationToActiveVars.at(locationSymbol->name))
         {
             if (!v->isConstant)
             {
@@ -1581,50 +1392,24 @@ namespace analysis {
         auto it2 = logic::Terms::var(it2Symbol);
      
         auto locationSymbol = locationSymbolForStatement(statement);
-        auto locationName = locationSymbol->name;
         
         auto enclosingIteratorsSymbols = std::vector<std::shared_ptr<const logic::Symbol>>();
-
-        auto enclosingIterators = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndIt = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndZero = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndSuccOfIt = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndIt1 = std::vector<std::shared_ptr<const logic::Term>>();
-        auto enclosingIteratorsAndIt2 = std::vector<std::shared_ptr<const logic::Term>>();
-
         for (const auto& enclosingLoop : *statement->enclosingLoops)
         {
-            auto enclosingIteratorSymbol = iteratorSymbol(enclosingLoop);
-            enclosingIteratorsSymbols.push_back(enclosingIteratorSymbol);
-
-            auto enclosingIterator = iteratorTermForLoop(enclosingLoop);
-            enclosingIterators.push_back(enclosingIterator);
-            enclosingIteratorsAndIt.push_back(enclosingIterator);
-            enclosingIteratorsAndZero.push_back(enclosingIterator);
-            enclosingIteratorsAndSuccOfIt.push_back(enclosingIterator);
-            enclosingIteratorsAndIt1.push_back(enclosingIterator);
-            enclosingIteratorsAndIt2.push_back(enclosingIterator);
-            
+            enclosingIteratorsSymbols.push_back(iteratorSymbol(enclosingLoop));
         }
-        enclosingIteratorsAndIt.push_back(it);
-        enclosingIteratorsAndZero.push_back(logic::Theory::natZero());
-        enclosingIteratorsAndSuccOfIt.push_back(logic::Theory::natSucc(it));
-        enclosingIteratorsAndIt1.push_back(it1);
-        enclosingIteratorsAndIt2.push_back(it2);
         
+        auto lStartIt = timepointForLoopStatement(statement, it);
+        auto lStartZero = timepointForLoopStatement(statement, logic::Theory::natZero());
+        auto lStartSuccOfIt = timepointForLoopStatement(statement, logic::Theory::natSucc(it));
+        auto lStartIt1 = timepointForLoopStatement(statement, it1);
+        auto lStartIt2 = timepointForLoopStatement(statement, it2);
 
-        auto lStartIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndIt);
-        auto lStartZero = logic::Terms::func(locationSymbol, enclosingIteratorsAndZero);
-        auto lStartSuccOfIt = logic::Terms::func(locationSymbol, enclosingIteratorsAndSuccOfIt); 
-        auto lStartIt1 = logic::Terms::func(locationSymbol, enclosingIteratorsAndIt1);
-        auto lStartIt2 = logic::Terms::func(locationSymbol, enclosingIteratorsAndIt2);
-
-        
         // add lemma for each intVar
         // Lemma: forall ((tr : Trace) (it1: Nat) (it2 : Nat))
         //   (it1 < it2 & v(l(zero) t1) = v(l(zero) t2) & forall (it : Nat). v(l(s(it))) = v(l(it)) + 1)
         //      => (i (l(it1)) tr) < (i (l(it2) tr))        
-        for (const auto& v : locationToActiveVars.at(locationName))
+        for (const auto& v : locationToActiveVars.at(locationSymbol->name))
         {            
             if (!v->isConstant)
             {

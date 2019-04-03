@@ -14,6 +14,7 @@ namespace analysis
     typedef std::unordered_map<const program::Statement*, std::shared_ptr<const logic::Term>> StartTimePointMap;
     typedef std::unordered_map<const program::Statement*, std::shared_ptr<const logic::Term>> EndTimePointMap;
     
+    // TODO: refactor startTimePointMap into a function
     class AnalysisPreComputation
     {
     public:

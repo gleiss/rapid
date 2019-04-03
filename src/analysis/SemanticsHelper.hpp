@@ -21,7 +21,7 @@ namespace analysis {
     
     /*
      * convert the expression expr to a logical term refering to the value of the Expression expr at the Timepoint timepoint.
-     * calls toTerm(var,...) internally.
+     * calls toTermFull(var,...) internally.
      */
     std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const program::IntExpression> expr, std::shared_ptr<const logic::Term> timePoint, std::shared_ptr<const logic::Term> trace);
     

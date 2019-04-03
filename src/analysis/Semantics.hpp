@@ -21,8 +21,7 @@ namespace analysis {
                   std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars,
                   bool twoTraces) :
         program(program),
-        startTimePointMap(AnalysisPreComputation::computeStartTimePointMap(program)),
-        endTimePointMap(AnalysisPreComputation::computeEndTimePointMap(program, startTimePointMap)),
+        endTimePointMap(AnalysisPreComputation::computeEndTimePointMap(program)),
         locationToActiveVars(locationToActiveVars),
         twoTraces(twoTraces) {}
         
@@ -30,7 +29,6 @@ namespace analysis {
         
     private:
         const program::Program& program;
-        const StartTimePointMap startTimePointMap;
         const EndTimePointMap endTimePointMap;
         const std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars;
         

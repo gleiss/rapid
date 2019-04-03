@@ -82,6 +82,19 @@ namespace analysis {
         return logic::Terms::func(locationSymbolForStatement(whileStatement), enclosingIteratorTerms);
     }
 
+    std::shared_ptr<const logic::Term> startTimepointForStatement(const program::Statement* statement)
+    {
+        if (statement->type() != program::Statement::Type::WhileStatement)
+        {
+            return timepointForNonLoopStatement(statement);
+        }
+        else
+        {
+            auto whileStatement = static_cast<const program::WhileStatement*>(statement);
+            return timepointForLoopStatement(whileStatement, logic::Theory::natZero());
+        }
+    }
+    
 # pragma mark - Methods for generating most used terms/predicates denoting program-expressions
     std::shared_ptr<const logic::Term> toTermFull(std::shared_ptr<const program::Variable> var, std::shared_ptr<const logic::Term> timePoint, std::shared_ptr<const logic::Term> trace)
     {

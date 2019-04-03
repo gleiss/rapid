@@ -22,6 +22,8 @@ namespace analysis {
     std::shared_ptr<const logic::Term> timepointForNonLoopStatement(const program::Statement* statement);
     std::shared_ptr<const logic::Term> timepointForLoopStatement(const program::WhileStatement* whileStatement, std::shared_ptr<const logic::Term> innerIteration);
 
+    std::shared_ptr<const logic::Term> startTimepointForStatement(const program::Statement* statement);
+
 # pragma mark - Methods for generating most used terms/predicates denoting program-expressions
     /*
      * convert a program variable to a logical term refering to the value of Variable var at the Timepoint timepoint in the Trace trace.

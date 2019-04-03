@@ -85,7 +85,7 @@ namespace analysis {
     {
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts;
         
-        auto l1 = startTimePointMap.at(intAssignment);
+        auto l1 = startTimepointForStatement(intAssignment);
         auto l2 = endTimePointMap.at(intAssignment);
         auto l1Name = l1->symbol->name;
         auto l2Name = l2->symbol->name;
@@ -178,9 +178,9 @@ namespace analysis {
     {
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts;
 
-        auto lStart = startTimePointMap.at(ifElse);
-        auto lLeftStart = startTimePointMap.at(ifElse->ifStatements.front().get());
-        auto lRightStart = startTimePointMap.at(ifElse->elseStatements.front().get());
+        auto lStart = startTimepointForStatement(ifElse);
+        auto lLeftStart = startTimepointForStatement(ifElse->ifStatements.front().get());
+        auto lRightStart = startTimepointForStatement(ifElse->elseStatements.front().get());
 
         auto lEnd = endTimePointMap.at(ifElse);
         auto lLeftEnd = endTimePointMap.at(ifElse->ifStatements.back().get());
@@ -320,7 +320,7 @@ namespace analysis {
         auto lStart0 = timepointForLoopStatement(whileStatement, logic::Theory::natZero());
         auto lStartIt = timepointForLoopStatement(whileStatement, i);
         auto lStartN = timepointForLoopStatement(whileStatement, n);
-        auto lBodyStartIt = startTimePointMap.at(whileStatement->bodyStatements.front().get());
+        auto lBodyStartIt = startTimepointForStatement(whileStatement->bodyStatements.front().get());
         auto lEnd = endTimePointMap.at(whileStatement);
         
         auto lStartName = lStart0->symbol->name;
@@ -399,7 +399,7 @@ namespace analysis {
     
     std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::SkipStatement* skipStatement)
     {        
-        auto l1 = startTimePointMap.at(skipStatement);
+        auto l1 = startTimepointForStatement(skipStatement);
         auto l2 = endTimePointMap.at(skipStatement);
 
         // identify startTimePoint and endTimePoint

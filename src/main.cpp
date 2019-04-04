@@ -36,8 +36,26 @@ int main(int argc, char *argv[])
             {
                 std::string inputFile = argv[argc - 1];
                 
+                // check that inputFile ends in ".spec"
+                std::string extension = ".spec";
+                assert(inputFile.size() > extension.size());
+                assert(inputFile.compare(inputFile.size()-extension.size(), extension.size(),extension) == 0);
+                
+                // setup file for output
+                auto inputFileWithoutExtension = inputFile.substr(0,inputFile.size()-extension.size());
+                std::ofstream outfile (inputFileWithoutExtension + "-conj.smt2");
+                
+                // parse inputFile
                 auto parserResult = parser::parse(inputFile);
                 
+                if(!util::Configuration::instance().generateBenchmark().getValue())
+                {
+                    outfile << util::Output::comment;
+                    outfile << *parserResult.program;
+                    outfile << util::Output::nocomment;
+                }
+                
+                // generate problem
                 logic::Problem problem;
                 analysis::Semantics s(*parserResult.program, parserResult.locationToActiveVars, parserResult.twoTraces);
                 
@@ -55,7 +73,8 @@ int main(int argc, char *argv[])
                 auto theoryAxiomLemmas = theoryAxioms.generate();
                 problem.lemmas.insert(problem.lemmas.end(),theoryAxiomLemmas.begin(),theoryAxiomLemmas.end());
 
-                problem.outputSMTLIB(util::Output::stream());
+                // output problem
+                problem.outputSMTLIB(outfile);
             }
         }
         return 0;

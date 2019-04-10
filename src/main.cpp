@@ -14,7 +14,6 @@
 
 #include "analysis/Semantics.hpp"
 #include "analysis/TraceLemmas.hpp"
-#include "analysis/StaticAnalysis.hpp"
 #include "analysis/TheoryAxioms.hpp"
 
 void outputUsage()
@@ -50,17 +49,12 @@ int main(int argc, char *argv[])
                 
                 analysis::Semantics s(*parserResult.program, parserResult.locationToActiveVars, parserResult.twoTraces);
                 auto semantics = s.generateSemantics();
-                
                 for (const auto& axiom : semantics)
                 {
                     problemItems.push_back(std::make_shared<logic::Axiom>(axiom));
                 }
 
                 auto traceLemmas = analysis::generateTraceLemmas(*parserResult.program, parserResult.locationToActiveVars, parserResult.twoTraces);
-
-                analysis::StaticAnalysisLemmas staticAnalysisLemmas(*parserResult.program, parserResult.locationToActiveVars, parserResult.twoTraces);
-                staticAnalysisLemmas.generateFormulas(traceLemmas);
-
                 for (const auto& lemma : traceLemmas)
                 {
                     problemItems.push_back(std::make_shared<logic::Lemma>(lemma));
@@ -68,7 +62,6 @@ int main(int argc, char *argv[])
                 
                 analysis::TheoryAxioms theoryAxiomsGenerator;
                 auto theoryAxioms = theoryAxiomsGenerator.generate();
-               
                 for (const auto& axiom : theoryAxioms)
                 {
                     problemItems.push_back(std::make_shared<logic::Axiom>(axiom));

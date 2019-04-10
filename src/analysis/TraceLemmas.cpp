@@ -13,6 +13,8 @@
 #include "SymbolDeclarations.hpp"
 #include "SemanticsHelper.hpp"
 
+#include "StaticAnalysis.hpp"
+
 using namespace logic;
 
 namespace analysis {
@@ -56,6 +58,10 @@ namespace analysis {
             OrderingSynchronizationLemmas orderingSynchronizationLemmas(program, locationToActiveVars, twoTraces);
             orderingSynchronizationLemmas.generateFormulas(lemmas);
         }
+        
+        StaticAnalysisLemmas staticAnalysisLemmas(program, locationToActiveVars, twoTraces);
+        staticAnalysisLemmas.generateFormulas(lemmas);
+        
         return lemmas;
     }
 

@@ -9,7 +9,7 @@
 
 namespace logic {
     
-    void Problem::outputSMTLIB(std::ostream& ostr)
+    void ReasoningTask::outputSMTLIB(std::ostream& ostr) const
     {
         auto smtlibLogic = "UFDTLIA"; // uninterpreted functions, datatypes and linear integer arithmetic
         
@@ -58,14 +58,6 @@ namespace logic {
         {
             ostr << "\n(assert\n" << axiom->toSMTLIB(3) + "\n)\n";
         }
-
-        // output each lemma
-        for (const auto& lemma : lemmas)
-        {
-            // TODO: improve handling for lemmas:
-            // custom smtlib-extension
-            ostr << "\n(assert\n" << lemma->toSMTLIB(3) + "\n)\n";
-        }
         
         // output conjecture
         assert(conjecture != nullptr);
@@ -88,4 +80,33 @@ namespace logic {
 
         ostr << "\n(check-sat)\n" << std::endl;
     }
+    
+    std::vector<const ReasoningTask> Problem::generateReasoningTasks() const
+    {
+        std::vector<const ReasoningTask> tasks;
+        std::vector<std::shared_ptr<const Formula>> currentAxioms;
+        for (const auto& item : items)
+        {
+            if (item->type == ProblemItem::Type::Axiom)
+            {
+                currentAxioms.push_back(item->formula);
+            }
+         
+            // if the item is a lemma or conjecture, generate a new reasoning task to prove that lemma/conjecture
+            if (item->type == ProblemItem::Type::Lemma || item->type == ProblemItem::Type::Conjecture)
+            {
+                auto task = ReasoningTask(currentAxioms, item->formula);
+                tasks.push_back(task);
+            }
+            
+            // after generating a task to prove the lemma, the lemma can be used as axiom
+            if (item->type == ProblemItem::Type::Lemma)
+            {
+                currentAxioms.push_back(item->formula);
+            }
+        }
+        
+        return tasks;
+    }
+
 }

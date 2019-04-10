@@ -19,7 +19,7 @@
 #include "Options.hpp"
 
 namespace parser
-{
+{    
     /*
      * Datastructure to hold the result of successfully parsing input.
      */
@@ -28,12 +28,12 @@ namespace parser
     public:
         WhileParserResult(std::unique_ptr<const program::Program> program,
                           std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars,
-                          std::shared_ptr<const logic::Formula> conjecture,
-                          bool twoTraces) : program(std::move(program)), locationToActiveVars(locationToActiveVars), conjecture(conjecture), twoTraces(twoTraces) {}
+                          std::vector<std::shared_ptr<const logic::ProblemItem>> problemItems,
+                          bool twoTraces) : program(std::move(program)), locationToActiveVars(locationToActiveVars), problemItems(std::move(problemItems)), twoTraces(twoTraces) {}
         
         std::unique_ptr<const program::Program> program;
         std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars;
-        std::shared_ptr<const logic::Formula> conjecture;
+        std::vector<std::shared_ptr<const logic::ProblemItem>> problemItems;
         bool twoTraces;
         ;
     };
@@ -78,7 +78,9 @@ namespace parser
         assert(context.program);
         assert(context.conjecture);
 
-        return WhileParserResult(std::move(context.program), std::move(context.locationToActiveVars), std::move(context.conjecture), context.twoTraces);
+        auto conjecture = std::make_shared<logic::Conjecture>(context.conjecture);
+        
+        return WhileParserResult(std::move(context.program), std::move(context.locationToActiveVars), {conjecture}, context.twoTraces);
     }
 }
 

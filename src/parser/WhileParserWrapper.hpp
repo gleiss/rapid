@@ -78,7 +78,7 @@ namespace parser
         assert(context.program);
         assert(context.conjecture);
 
-        auto conjecture = std::make_shared<logic::Conjecture>(context.conjecture);
+        auto conjecture = std::make_shared<logic::Conjecture>(context.conjecture, "conj-main");
         
         return WhileParserResult(std::move(context.program), std::move(context.locationToActiveVars), {conjecture}, context.twoTraces);
     }

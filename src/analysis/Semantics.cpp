@@ -29,10 +29,10 @@ namespace analysis {
         return v3;
     }
 
-    std::vector<std::shared_ptr<const logic::Formula>> Semantics::generateSemantics()
+    std::vector<std::shared_ptr<const logic::Axiom>> Semantics::generateSemantics()
     {
         // generate semantics compositionally
-        std::vector<std::shared_ptr<const logic::Formula>> conjuncts;
+        std::vector<std::shared_ptr<const logic::Axiom>> axioms;
         for(const auto& function : program.functions)
         {
             std::vector<std::shared_ptr<const logic::Formula>> conjunctsFunction;
@@ -50,10 +50,11 @@ namespace analysis {
                     conjunctsFunction.push_back(semantics);
                 }
             }
-            conjuncts.push_back(logic::Formulas::conjunction(conjunctsFunction, "Semantics of function " + function->name));
+            auto axiomFormula = logic::Formulas::conjunction(conjunctsFunction);
+            axioms.push_back(std::make_shared<logic::Axiom>(axiomFormula, "Semantics of function " + function->name));
         }
         
-        return conjuncts;
+        return axioms;
     }
     
     std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::Statement* statement)

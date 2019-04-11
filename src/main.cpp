@@ -49,16 +49,10 @@ int main(int argc, char *argv[])
                 
                 analysis::Semantics s(*parserResult.program, parserResult.locationToActiveVars, parserResult.twoTraces);
                 auto semantics = s.generateSemantics();
-                for (const auto& axiom : semantics)
-                {
-                    problemItems.push_back(std::make_shared<logic::Axiom>(axiom));
-                }
+                problemItems.insert(problemItems.end(), semantics.begin(), semantics.end());
 
                 auto traceLemmas = analysis::generateTraceLemmas(*parserResult.program, parserResult.locationToActiveVars, parserResult.twoTraces);
-                for (const auto& lemma : traceLemmas)
-                {
-                    problemItems.push_back(std::make_shared<logic::Lemma>(lemma));
-                }
+                problemItems.insert(problemItems.end(), traceLemmas.begin(), traceLemmas.end());
                 
                 analysis::TheoryAxioms theoryAxiomsGenerator;
                 auto theoryAxioms = theoryAxiomsGenerator.generate();
@@ -74,17 +68,28 @@ int main(int argc, char *argv[])
                 // generate reasoning tasks, convert each reasoning task to smtlib, and output it to output-file
                 auto tasks = problem.generateReasoningTasks();
                 
-                std::ofstream outfile (inputFileWithoutExtension + "-conj.smt2");
-                
-                if(!util::Configuration::instance().generateBenchmark().getValue())
+                for (const auto& task : tasks)
                 {
-                    outfile << util::Output::comment;
-                    outfile << *parserResult.program;
-                    outfile << util::Output::nocomment;
+                    auto outfileName = inputFileWithoutExtension + "-" + task.conjecture->name + ".smt2";
+                    if(std::ifstream(outfileName))
+                    {
+                        std::cout << "Error: The output-file " << outfileName << " already exists!" << std::endl;
+                        exit(1);
+                    }
+                    
+                    std::cout << "Generating reasoning task in " << outfileName << "\n";
+                    std::ofstream outfile (outfileName);
+                    
+                    if(!util::Configuration::instance().generateBenchmark().getValue())
+                    {
+                        outfile << util::Output::comment;
+                        outfile << *parserResult.program;
+                        outfile << util::Output::nocomment;
+                    }
+                    
+                    // output task
+                    task.outputSMTLIB(outfile);
                 }
-                
-                // only output the final task for now.
-                tasks.back().outputSMTLIB(outfile);
             }
         }
         return 0;

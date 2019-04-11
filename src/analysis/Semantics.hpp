@@ -9,7 +9,7 @@
 #include "Formula.hpp"
 #include "Program.hpp"
 #include "Statements.hpp"
-
+#include "Problem.hpp"
 #include "AnalysisPreComputation.hpp"
 
 namespace analysis {
@@ -25,7 +25,7 @@ namespace analysis {
         locationToActiveVars(locationToActiveVars),
         twoTraces(twoTraces) {}
         
-        std::vector<std::shared_ptr<const logic::Formula>> generateSemantics();
+        std::vector<std::shared_ptr<const logic::Axiom>> generateSemantics();
         
     private:
         const program::Program& program;

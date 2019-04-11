@@ -8,7 +8,7 @@
 
 namespace analysis
 {
-    void StaticAnalysisLemmas::generateFormulasFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Formula> > &formulas)
+    void StaticAnalysisLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Lemma>>& lemmas)
     {
         auto activeVars = locationToActiveVars.at(statement->location);
         auto assignedVars = computeAssignedVars(statement);
@@ -38,18 +38,19 @@ namespace analysis
                     auto vit = toTerm(activeVar,lStartIt);
                     auto vzero = toTerm(activeVar,lStartZero);
                     auto eq = logic::Formulas::equality(vit,vzero);
-                    auto label = "Static analysis lemma for var " + activeVar->name + " at location " + statement->location;
-                    auto bareLemma = logic::Formulas::universal({iSymbol},eq,label);
-                    auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, bareLemma);
+                    auto name = "static-analysis-" + activeVar->name + "-" + statement->location;
+                    auto universal = logic::Formulas::universal({iSymbol},eq);
+                    auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal);
                     
                     if (twoTraces)
                     {
                         auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        formulas.push_back(logic::Formulas::universal({tr}, lemma));
+                        auto quantifiedLemma = logic::Formulas::universal({tr}, bareLemma);
+                        lemmas.push_back(std::make_shared<logic::Lemma>(quantifiedLemma, name));
                     }
                     else
                     {
-                        formulas.push_back(lemma);
+                        lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
                     }
                 }
                 else
@@ -61,18 +62,19 @@ namespace analysis
                     auto vit = toTerm(activeVar,lStartIt,p);
                     auto vzero = toTerm(activeVar,lStartZero,p);
                     auto eq = logic::Formulas::equality(vit,vzero);
-                    auto label = "Static analysis lemma for array var " + activeVar->name + " at location " + statement->location;
-                    auto bareLemma = logic::Formulas::universal({iSymbol,pSymbol},eq,label);
-                    auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, bareLemma);
+                    auto name = "static-analysis-" + activeVar->name + "-" + statement->location;
+                    auto universal = logic::Formulas::universal({iSymbol,pSymbol},eq);
+                    auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal);
                     
                     if (twoTraces)
                     {
                         auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        formulas.push_back(logic::Formulas::universal({tr}, lemma));
+                        auto quantifiedLemma = logic::Formulas::universal({tr}, bareLemma);
+                        lemmas.push_back(std::make_shared<logic::Lemma>(quantifiedLemma, name));
                     }
                     else
                     {
-                        formulas.push_back(lemma);
+                        lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
                     }
                 }
             }    

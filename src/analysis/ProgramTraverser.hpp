@@ -14,11 +14,12 @@
 
 namespace analysis
 {
-    // abstract traversal of programs for generating formulas
-    // the main method generateFormulas() traverses the program and calls the
-    // corresponding version of generateFormulasFor() for each statement of the program
+    // abstract traversal of programs for generating output, e.g. for generating formulas.
+    // the main method generate() traverses the program and calls the
+    // corresponding version of generateOutputFor() for each statement of the program
     // the intended usage is to subclass this class and override
-    // those generateFormulasFor() methods for the relevant statements.
+    // those generateOutputFor() methods for the relevant statements.
+    template <class OutputType>
     class ProgramTraverser
     {
     public:
@@ -29,7 +30,7 @@ namespace analysis
         locationToActiveVars(locationToActiveVars),
         twoTraces(twoTraces) {}
         
-        void generateFormulas(std::vector<std::shared_ptr<const logic::Formula>>& formulas);
+        void generate(OutputType& output);
         
     protected:
         const program::Program& program;
@@ -37,12 +38,97 @@ namespace analysis
         const bool twoTraces;
         
     private:
-        void visitStatement(const program::Statement* statement, std::vector<std::shared_ptr<const logic::Formula>>& formulas);
+        void visitStatement(const program::Statement* statement, OutputType& output);
         
-        virtual void generateFormulasFor(const program::IntAssignment* statement,  std::vector<std::shared_ptr<const logic::Formula>>& formulas);
-        virtual void generateFormulasFor(const program::IfElse* statement,         std::vector<std::shared_ptr<const logic::Formula>>& formulas);
-        virtual void generateFormulasFor(const program::WhileStatement* statement, std::vector<std::shared_ptr<const logic::Formula>>& formulas);
-        virtual void generateFormulasFor(const program::SkipStatement* statement,  std::vector<std::shared_ptr<const logic::Formula>>& formulas);
+        virtual void generateOutputFor(const program::IntAssignment* statement,  OutputType& output);
+        virtual void generateOutputFor(const program::IfElse* statement,         OutputType& output);
+        virtual void generateOutputFor(const program::WhileStatement* statement, OutputType& output);
+        virtual void generateOutputFor(const program::SkipStatement* statement,  OutputType& output);
     };
+    
+    
+    template <class OutputType>
+    void ProgramTraverser<OutputType>::generate(OutputType& output)
+    {
+        for(const auto& function : program.functions)
+        {
+            for (const auto& statement : function->statements)
+            {
+                visitStatement(statement.get(), output);
+            }
+        }
+    }
+    
+    template <class OutputType>
+    void ProgramTraverser<OutputType>::visitStatement(const program::Statement* statement, OutputType& output)
+    {
+        switch (statement->type())
+        {
+            case program::Statement::Type::IntAssignment:
+            {
+                auto castedAssignment = static_cast<const program::IntAssignment*>(statement);
+                // generate output
+                generateOutputFor(castedAssignment, output);
+                break;
+            }
+                
+            case program::Statement::Type::IfElse:
+            {
+                auto castedIfElse = static_cast<const program::IfElse*>(statement);
+                
+                // generate output
+                generateOutputFor(castedIfElse, output);
+                
+                // recurse on both branches
+                for (const auto& statement : castedIfElse->ifStatements)
+                {
+                    visitStatement(statement.get(), output);
+                }
+                for (const auto& statement : castedIfElse->elseStatements)
+                {
+                    visitStatement(statement.get(), output);
+                }
+                break;
+            }
+                
+            case program::Statement::Type::WhileStatement:
+            {
+                auto castedWhile = static_cast<const program::WhileStatement*>(statement);
+                
+                // generate output
+                generateOutputFor(castedWhile, output);
+                
+                // recurse on body
+                for (const auto& statement : castedWhile->bodyStatements)
+                {
+                    visitStatement(statement.get(), output);
+                }
+                break;
+            }
+                
+            case program::Statement::Type::SkipStatement:
+            {
+                auto castedSkip = static_cast<const program::SkipStatement*>(statement);
+                // generate output
+                generateOutputFor(castedSkip, output);
+                break;
+            }
+                
+            default:
+            {
+                assert(false);
+                break;
+            }
+        }
+    }
+    
+    template <class OutputType>
+    void ProgramTraverser<OutputType>::generateOutputFor(const program::IntAssignment* statement, OutputType& output){}
+    template <class OutputType>
+    void ProgramTraverser<OutputType>::generateOutputFor(const program::IfElse* statement, OutputType& output){}
+    template <class OutputType>
+    void ProgramTraverser<OutputType>::generateOutputFor(const program::WhileStatement* statement, OutputType& output){}
+    template <class OutputType>
+    void ProgramTraverser<OutputType>::generateOutputFor(const program::SkipStatement* statement, OutputType& output){}
 }
 #endif

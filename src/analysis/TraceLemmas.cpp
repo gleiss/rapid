@@ -21,83 +21,83 @@ namespace analysis {
 
 #pragma mark - High level methods
     
-    std::vector<std::shared_ptr<const logic::Formula>> generateTraceLemmas(const program::Program& program,
+    std::vector<std::shared_ptr<const logic::Lemma>> generateTraceLemmas(const program::Program& program,
                                                                            std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars,
                                                                            bool twoTraces)
     {
-        std::vector<std::shared_ptr<const logic::Formula>> lemmas;
+        std::vector<std::shared_ptr<const logic::Lemma>> lemmas;
         
         // generate standard induction lemmas for all loops, all variables and the predicate =,<,>,<=,>=.
         StandardInductionLemmas standardInductionLemmas(program, locationToActiveVars, twoTraces);
-        standardInductionLemmas.generateFormulas(lemmas);
+        standardInductionLemmas.generate(lemmas);
         
         AtLeastOneIterationLemmas atLeastOneIterationLemmas(program, locationToActiveVars, twoTraces);
-        atLeastOneIterationLemmas.generateFormulas(lemmas);
+        atLeastOneIterationLemmas.generate(lemmas);
         
         IntermediateValueLemmas intermediateValueLemmas(program, locationToActiveVars, twoTraces);
-        intermediateValueLemmas.generateFormulas(lemmas);
+        intermediateValueLemmas.generate(lemmas);
         
 //        ValuePreservationLemmas valuePreservationLemmas(program, locationToActiveVars, twoTraces);
-//        valuePreservationLemmas.generateFormulas(lemmas);
+//        valuePreservationLemmas.generate(lemmas);
 
         IterationInjectivityLemmas iterationInjectivityLemmas(program, locationToActiveVars, twoTraces);
-        iterationInjectivityLemmas.generateFormulas(lemmas);
+        iterationInjectivityLemmas.generate(lemmas);
 
         if (twoTraces)
         {
             // generate for each active variable at each loop an induction lemma for equality of the variable on both traces
             TwoTracesLemmas twoTracesLemmas(program, locationToActiveVars, twoTraces);
-            twoTracesLemmas.generateFormulas(lemmas);
+            twoTracesLemmas.generate(lemmas);
             
             NEqualLemmas nEqualLemmas(program, locationToActiveVars, twoTraces);
-            nEqualLemmas.generateFormulas(lemmas);
+            nEqualLemmas.generate(lemmas);
             
             EqualityPreservationLemmas equalityPreservationLemmas(program, locationToActiveVars, twoTraces);
-            equalityPreservationLemmas.generateFormulas(lemmas);
+            equalityPreservationLemmas.generate(lemmas);
             
             OrderingSynchronizationLemmas orderingSynchronizationLemmas(program, locationToActiveVars, twoTraces);
-            orderingSynchronizationLemmas.generateFormulas(lemmas);
+            orderingSynchronizationLemmas.generate(lemmas);
         }
         
         StaticAnalysisLemmas staticAnalysisLemmas(program, locationToActiveVars, twoTraces);
-        staticAnalysisLemmas.generateFormulas(lemmas);
+        staticAnalysisLemmas.generate(lemmas);
         
         return lemmas;
     }
 
 #pragma mark - Standard Induction Lemmas
     
-    void StandardInductionLemmas::generateFormulasFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Formula> > &formulas)
+    void StandardInductionLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Lemma> > &lemmas)
     {
         // generate lemmas
-        generateStandardInductionLemmas(statement, formulas, InductionKind::Equal);
-//        generateStandardInductionLemmas(statement, formulas, InductionKind::Less);
-//        generateStandardInductionLemmas(statement, formulas, InductionKind::Greater);
-//        generateStandardInductionLemmas(statement, formulas, InductionKind::LessEqual);
-//        generateStandardInductionLemmas(statement, formulas, InductionKind::GreaterEqual);
+        generateStandardInductionLemmas(statement, lemmas, InductionKind::Equal);
+//        generateStandardInductionLemmas(statement, lemmas, InductionKind::Less);
+//        generateStandardInductionLemmas(statement, lemmas, InductionKind::Greater);
+//        generateStandardInductionLemmas(statement, lemmas, InductionKind::LessEqual);
+//        generateStandardInductionLemmas(statement, lemmas, InductionKind::GreaterEqual);
     }
     
     void StandardInductionLemmas::generateStandardInductionLemmas(const program::WhileStatement* whileStatement,
-                                                      std::vector<std::shared_ptr<const logic::Formula>>& lemmas,
+                                                      std::vector<std::shared_ptr<const logic::Lemma>>& lemmas,
                                                       const InductionKind kind)
     {
         std::string connective;
         switch (kind)
         {
             case InductionKind::Equal:
-                connective = "=";
+                connective = "eq";
                 break;
             case InductionKind::Less:
-                connective = "<";
+                connective = "le";
                 break;
             case InductionKind::Greater:
-                connective = ">";
+                connective = "gr";
                 break;
             case InductionKind::LessEqual:
-                connective = "<=";
+                connective = "leq";
                 break;
             case InductionKind::GreaterEqual:
-                connective = ">=";
+                connective = "geq";
                 break;
         }
         
@@ -173,19 +173,20 @@ namespace analysis {
                             break;
                     }
                     // forall enclosingIterators: (Part1 => Part2)                    
-                    auto label = "Lemma: Induction on " + connective + " for var " + v->name + " and location " + whileStatement->location;
-                    auto outermostImp = logic::Formulas::implication(part1, part2,label);
+                    auto outermostImp = logic::Formulas::implication(part1, part2);
+                    auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, outermostImp);
+
+                    auto name = "induction-" + connective + "-" + v->name + "-" + whileStatement->location;
 
                     if (twoTraces)
                     {
-                        auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, outermostImp);
                         auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        lemmas.push_back(logic::Formulas::universal({tr}, lemma));
+                        auto quantifiedBareLemma = logic::Formulas::universal({tr}, bareLemma);
+                        lemmas.push_back(std::make_shared<logic::Lemma>(quantifiedBareLemma, name));
                     }
                     else
                     {
-                        auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, outermostImp);
-                        lemmas.push_back(lemma);
+                        lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
                     }
                 }
             }
@@ -251,18 +252,19 @@ namespace analysis {
                     }
                     // forall p. (Part1 => Part2)
                     auto outerImp = logic::Formulas::implication(part1, part2);
-                    auto label = "Lemma: Induction on " + connective + " for array var " + v->name + " and location " + whileStatement->location;
-                    auto universal = logic::Formulas::universal({pSymbol}, outerImp, label);
-                    auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal);
+                    auto name = "induction-" + connective + "-" + v->name + "-" + whileStatement->location;
+                    auto universal = logic::Formulas::universal({pSymbol}, outerImp);
+                    auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal);
 
                     if (twoTraces)
                     {
                         auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        lemmas.push_back(logic::Formulas::universal({tr}, lemma));
+                        auto quantifiedBareLemma = logic::Formulas::universal({tr}, bareLemma);
+                        lemmas.push_back(std::make_shared<logic::Lemma>(quantifiedBareLemma, name));
                     }
                     else
                     {
-                        lemmas.push_back(lemma);
+                        lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
                     }
                 }
             }
@@ -271,7 +273,7 @@ namespace analysis {
     
 #pragma mark - Lemmas for two traces
     
-    void TwoTracesLemmas::generateFormulasFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Formula> > &formulas)
+    void TwoTracesLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Lemma>> &lemmas)
     {
         auto t1 = trace1Term();
         auto t2 = trace2Term();
@@ -324,10 +326,10 @@ namespace analysis {
                     // (Part1a and Part1b) => Part2
                     auto premise = logic::Formulas::conjunction({baseCase, inductiveCase});
                     
-                    auto label = "Lemma: Var " + v->name + " at loop " + statement->location + " has same values on both traces";
-                    auto outerImplication = logic::Formulas::implication(premise, conclusion, label);
-                    auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, outerImplication);
-                    formulas.push_back(lemma);
+                    auto name = "two-traces- " + v->name + "-" + statement->location;
+                    auto outerImplication = logic::Formulas::implication(premise, conclusion);
+                    auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, outerImplication);
+                    lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
                 }
             }
         }
@@ -369,10 +371,10 @@ namespace analysis {
                     auto premise = logic::Formulas::conjunction({baseCase, inductiveCase});
 
                     auto outerImp = logic::Formulas::implication(premise, conclusion);
-                    auto label = "Lemma: Array var " + v->name + " at loop " + statement->location + " has same values on both traces";
-                    auto universal = logic::Formulas::universal({pSymbol}, outerImp, label);
-                    auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal);
-                    formulas.push_back(lemma);
+                    auto name = "two-traces- " + v->name + "-" + statement->location;
+                    auto universal = logic::Formulas::universal({pSymbol}, outerImp);
+                    auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal);
+                    lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
                 }
             }
         }
@@ -380,7 +382,7 @@ namespace analysis {
     
 #pragma mark - Lemmas for same iteration numbers
  
-    void NEqualLemmas::generateFormulasFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Formula> > &formulas)
+    void NEqualLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Lemma>> &lemmas)
     {
         assert(twoTraces);
 
@@ -414,15 +416,15 @@ namespace analysis {
         auto premise = logic::Formulas::conjunction({part1, part2});
         auto conclusion = logic::Formulas::equality(nT2, nT1);
         auto nName = nT1->symbol->name;
-        auto label = "Lemma: If " + nName + "(t2) has same properties as " + nName + "(t1), then " + nName + "(t2)=" + nName + "(t1) (for loop at " + statement->location + ")";
-        auto lemma = logic::Formulas::implication(premise, conclusion, label);
+        auto name = "nEqual-" + nName + "-" + statement->location;
+        auto lemma = logic::Formulas::implication(premise, conclusion);
         auto lemmaEnclosed = logic::Formulas::universal(enclosingIteratorsSymbols, lemma);
-        formulas.push_back(lemmaEnclosed);
+        lemmas.push_back(std::make_shared<logic::Lemma>(lemmaEnclosed, name));
     }
 
     #pragma mark - Loop Lemma
 
-    void AtLeastOneIterationLemmas::generateFormulasFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Formula> > &formulas)
+    void AtLeastOneIterationLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Lemma>> &lemmas)
     {
         auto itSymbol = iteratorSymbol(statement);
         auto it = iteratorTermForLoop(statement);
@@ -444,24 +446,25 @@ namespace analysis {
 
         // Construct rhs: exists it (s(it) = n)
         auto lhs = logic::Formulas::existential({itSymbol},logic::Formulas::equality(logic::Theory::natSucc(it),n));
-        auto label = "Lemma: if the condition of the loop at " + statement->location + " holds initially, there is at least one loop iteration";
-        auto loopLemma = logic::Formulas::implication(c,lhs,label);        
-        auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, loopLemma);
+        auto name = "atLeastOneIteration-" + statement->location;
+        auto loopLemma = logic::Formulas::implication(c,lhs);
+        auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, loopLemma);
                 
         if (twoTraces)
         {
             auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-            formulas.push_back(logic::Formulas::universal({tr}, lemma));
+            auto quantifiedLemma = logic::Formulas::universal({tr}, bareLemma);
+            lemmas.push_back(std::make_shared<logic::Lemma>(quantifiedLemma, name));
         }
         else
         {
-            formulas.push_back(lemma);
+            lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
         }
     }
 
     #pragma mark - Intermediate Value Lemma
     
-    void IntermediateValueLemmas::generateFormulasFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Formula> > &formulas)
+    void IntermediateValueLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Lemma>> &lemmas)
     {                 
         auto iSymbol = iteratorSymbol(statement);
         auto it = iteratorTermForLoop(statement);
@@ -531,19 +534,20 @@ namespace analysis {
 
                     // Combine lhs and rhs, then quantify
                     auto combined = logic::Formulas::implication(lhs,qrhs);
-                    auto label = "Lemma: Intermediate value for var " + v->name + " at location " + statement->location;
-                    auto bareLemma = logic::Formulas::universal({xSym,iSymbol},combined,label);
+                    auto name = "intermediate-value-" + v->name + "-" + statement->location;
+                    auto universal = logic::Formulas::universal({xSym,iSymbol},combined);
 
-                    auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, bareLemma);
+                    auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal);
 
                     if (twoTraces)
                     {
                         auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        formulas.push_back(logic::Formulas::universal({tr}, lemma));
+                        auto quantifiedLemma = logic::Formulas::universal({tr}, bareLemma);
+                        lemmas.push_back(std::make_shared<logic::Lemma>(quantifiedLemma, name));
                     }
                     else
                     {
-                        formulas.push_back(lemma);
+                        lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
                     }
                 }
             }
@@ -597,19 +601,20 @@ namespace analysis {
 
                     // Combine lhs and rhs, then quantify
                     auto combined = logic::Formulas::implication(lhs,qrhs);
-                    auto label = "Lemma: Intermediate value for array var " + v->name + " at location " + statement->location;
-                    auto bareArrayLemma = logic::Formulas::universal({xSym,iSymbol,pSymbol},combined,label);
+                    auto name = "intermediate-value-" + v->name + "-" + statement->location;
+                    auto universal = logic::Formulas::universal({xSym,iSymbol,pSymbol},combined);
 
-                    auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, bareArrayLemma);
+                    auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal);
 
                     if (twoTraces)
                     {
                         auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        formulas.push_back(logic::Formulas::universal({tr}, lemma));
+                        auto quantifiedLemma = logic::Formulas::universal({tr}, bareLemma);
+                        lemmas.push_back(std::make_shared<logic::Lemma>(quantifiedLemma, name));
                     }
                     else
                     {
-                        formulas.push_back(lemma);
+                        lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
                     }
                 }
             }
@@ -618,7 +623,7 @@ namespace analysis {
 
     #pragma mark - Value Preservation Lemma
    
-    void ValuePreservationLemmas::generateFormulasFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Formula> > &formulas)
+    void ValuePreservationLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Lemma>> &lemmas)
     {                 
         auto iSymbol = iteratorSymbol(statement);
         auto it = iteratorTermForLoop(statement);
@@ -687,18 +692,19 @@ namespace analysis {
                     auto rhs = logic::Formulas::equality(vn,x);
 
                     // Combine parts 1 and 2, quantify over all x.
-                    auto label = "Lemma: Value preservation for var " + v->name + " at location " + statement->location;
-                    auto bareLemma = logic::Formulas::universal({xSym},logic::Formulas::implication(lhs,rhs),label);                  
-                    auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, bareLemma);
+                    auto name = "value-preservation-" + v->name + "-" + statement->location;
+                    auto universal = logic::Formulas::universal({xSym},logic::Formulas::implication(lhs,rhs));
+                    auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal);
 
                     if (twoTraces)
                     {
                         auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        formulas.push_back(logic::Formulas::universal({tr}, lemma));
+                        auto quantifiedLemma = logic::Formulas::universal({tr}, bareLemma);
+                        lemmas.push_back(std::make_shared<logic::Lemma>(quantifiedLemma, name));
                     }
                     else
                     {
-                        formulas.push_back(lemma);
+                        lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
                     }
                 }
             }
@@ -756,22 +762,23 @@ namespace analysis {
                     auto rhs = logic::Formulas::equality(vn,x);
 
                     // Combine parts 1 and 2, quantify over all x.
-                    auto label = "Lemma: Value preservation for array var " + v->name + " at location " +statement->location;
-                    auto bareLemma = logic::Formulas::universal({xSym},logic::Formulas::implication(lhs,rhs));          
+                    auto name = "value-preservation-" + v->name + "-" + statement->location;
+                    auto universal1 = logic::Formulas::universal({xSym},logic::Formulas::implication(lhs,rhs));
                     
                     // Quanitify over all array positions
-                    auto bareArrayLemma = logic::Formulas::universal({posSymbol},bareLemma,label);
+                    auto universal2 = logic::Formulas::universal({posSymbol},universal1);
                     
-                    auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, bareArrayLemma);
+                    auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal2);
 
                     if (twoTraces)
                     {
                         auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        formulas.push_back(logic::Formulas::universal({tr}, lemma));
+                        auto quantifiedLemma = logic::Formulas::universal({tr}, bareLemma);
+                        lemmas.push_back(std::make_shared<logic::Lemma>(quantifiedLemma, name));
                     }
                     else
                     {
-                        formulas.push_back(lemma);
+                        lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
                     }
                 }
             }
@@ -780,7 +787,7 @@ namespace analysis {
 
 #pragma mark - Iteration Injection Lemma
 
-    void IterationInjectivityLemmas::generateFormulasFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Formula> > &formulas)
+    void IterationInjectivityLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Lemma>> &lemmas)
     {
         auto iSymbol = iteratorSymbol(statement);
         auto it = iteratorTermForLoop(statement);
@@ -839,19 +846,19 @@ namespace analysis {
 
                     // Combine 1 and 2, quantify over it
                     auto combined = logic::Formulas::implication(p1,qp2);
-                    auto label = "Injectivitiy of Iterators Lemma";
-                    auto bareLemma = logic::Formulas::universal({iSymbol},combined,label);
-                    auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols,bareLemma);
+                    auto name = "iterator-injectivity-" + v->name + "-" + statement->location;
+                    auto universal1 = logic::Formulas::universal({iSymbol},combined);
+                    auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols,universal1);
 
-                   
                     if (twoTraces)
                     {
                         auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        formulas.push_back(logic::Formulas::universal({tr}, lemma));
+                        auto quantifiedLemma = logic::Formulas::universal({tr}, bareLemma);
+                        lemmas.push_back(std::make_shared<logic::Lemma>(quantifiedLemma, name));
                     }
                     else
                     {
-                        formulas.push_back(lemma);
+                        lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
                     }
                 }                
             }    
@@ -860,18 +867,18 @@ namespace analysis {
 
 
     #pragma mark - Equality preservation over traces Lemma
-    void EqualityPreservationLemmas::generateFormulasFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Formula> > &formulas)
+    void EqualityPreservationLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Lemma>> &lemmas)
     {
         // from zero to right bound
-        generateEqualityPreservationLemmasZeroToRight(statement, formulas);
+        generateEqualityPreservationLemmasZeroToRight(statement, lemmas);
         // from left bound to n
-        generateEqualityPreservationLemmasLeftToEnd(statement, formulas);
+        generateEqualityPreservationLemmasLeftToEnd(statement, lemmas);
         // from left bound to right bound - skipped for now
         //generateEqualityPreservationLemmasLeftToRight(statement, formulas);
     }
 
     void EqualityPreservationLemmas::generateEqualityPreservationLemmasZeroToRight(const program::WhileStatement* whileStatement,
-                                                      std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
+                                                      std::vector<std::shared_ptr<const logic::Lemma>>& lemmas)
     {
         assert(twoTraces);
 
@@ -957,11 +964,11 @@ namespace analysis {
                     auto rhs = logic::Formulas::equality(vitrt1,vitrt2);
 
                     // Combine 1 and 2, quantify over all itR
-                    auto label = "Lemma: Equality preservation over traces for var " + v->name + " at location " + whileStatement->location;
+                    auto name = "equality-preservation-traces-0R-" + v->name + "-" + whileStatement->location;
                     auto imp = logic::Formulas::implication(lhs,rhs);
-                    auto bareLemma = logic::Formulas::universal({itRSymbol},imp, label);
-                    auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, bareLemma);
-                    lemmas.push_back(lemma);
+                    auto universal = logic::Formulas::universal({itRSymbol},imp);
+                    auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal);
+                    lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
                 }
             }
         }
@@ -1024,19 +1031,19 @@ namespace analysis {
                     auto rhs = logic::Formulas::equality(vitrt1,vitrt2);
 
                     // Combine 1 and 2, quantify over all itR
-                    auto label = "Lemma: Equality preservation over traces for array var " + v->name + " at location " + whileStatement->location;
+                    auto name = "equality-preservation-traces-0R-" + v->name + "-" + whileStatement->location;
                     auto imp = logic::Formulas::implication(lhs,rhs);
-                    auto bareLemma = logic::Formulas::universal({itRSymbol},imp, label);
-                    auto bareArrayLemma = logic::Formulas::universal({pSymbol},bareLemma,label);
-                    auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, bareArrayLemma);
-                    lemmas.push_back(lemma);
+                    auto universal1 = logic::Formulas::universal({itRSymbol},imp);
+                    auto universal2 = logic::Formulas::universal({pSymbol},universal1);
+                    auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal2);
+                    lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
                 }
             }
         }
     }
 
     void EqualityPreservationLemmas::generateEqualityPreservationLemmasLeftToEnd(const program::WhileStatement* whileStatement,
-                                                      std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
+                                                      std::vector<std::shared_ptr<const logic::Lemma>>& lemmas)
     {
         assert(twoTraces);
 
@@ -1131,11 +1138,11 @@ namespace analysis {
                     auto rhs = logic::Formulas::equality(vnt1,vnt2);
 
                     // Combine 1 and 2, quantify over all itL
-                    auto label = "Lemma: Equality preservation over traces for var " + v->name + " at location " + whileStatement->location;
+                    auto name = "equality-preservation-traces-LN-" + v->name + "-" + whileStatement->location;
                     auto imp = logic::Formulas::implication(lhs,rhs);
-                    auto bareLemma = logic::Formulas::universal({itLSymbol},imp, label);
-                    auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, bareLemma);
-                    lemmas.push_back(lemma);
+                    auto universal = logic::Formulas::universal({itLSymbol},imp);
+                    auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal);
+                    lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
                 }
             }
         }
@@ -1204,19 +1211,19 @@ namespace analysis {
                     auto rhs = logic::Formulas::equality(vnt1,vnt2);
 
                     // Combine 1 and 2, quantify over all itL
-                    auto label = "Lemma: Equality preservation over traces for array var " + v->name + " at location " + whileStatement->location;
+                    auto name = "equality-preservation-traces-LN-" + v->name + "-" + whileStatement->location;
                     auto imp = logic::Formulas::implication(lhs,rhs);
-                    auto bareLemma = logic::Formulas::universal({itLSymbol},imp, label);
-                    auto bareArrayLemma = logic::Formulas::universal({pSymbol},bareLemma,label);
-                    auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, bareArrayLemma);
-                    lemmas.push_back(lemma);
+                    auto universal1 = logic::Formulas::universal({itLSymbol},imp);
+                    auto universal2 = logic::Formulas::universal({pSymbol},universal1);
+                    auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal2);
+                    lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
                 }
             }
         }
     }
 
     void EqualityPreservationLemmas::generateEqualityPreservationLemmasLeftToRight(const program::WhileStatement* whileStatement,
-                                                      std::vector<std::shared_ptr<const logic::Formula>>& lemmas)
+                                                      std::vector<std::shared_ptr<const logic::Lemma>>& lemmas)
     {
         assert(twoTraces);
 
@@ -1303,11 +1310,11 @@ namespace analysis {
                     auto rhs = logic::Formulas::equality(vitrt1,vitrt2);
 
                     // Combine 1 and 2, quantify over all itL and itR
-                    auto label = "Lemma: Equality preservation over traces for var " + v->name + " at location " + whileStatement->location;
+                    auto name = "equality-preservation-traces-LR-" + v->name + "-" + whileStatement->location;
                     auto imp = logic::Formulas::implication(lhs,rhs);
-                    auto bareLemma = logic::Formulas::universal({itLSymbol,itRSymbol},imp, label);
-                    auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, bareLemma);
-                    lemmas.push_back(lemma);
+                    auto universal = logic::Formulas::universal({itLSymbol,itRSymbol},imp);
+                    auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal);
+                    lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
                 }
             }
         }
@@ -1370,12 +1377,12 @@ namespace analysis {
                     auto rhs = logic::Formulas::equality(vitrt1,vitrt2);
 
                     // Combine 1 and 2, quantify over all itL and itR
-                    auto label = "Lemma: Equality preservation over traces for array var " + v->name + " at location " + whileStatement->location;
+                    auto name = "equality-preservation-traces-LR-" + v->name + "-" + whileStatement->location;
                     auto imp = logic::Formulas::implication(lhs,rhs);
-                    auto bareLemma = logic::Formulas::universal({itLSymbol,itRSymbol},imp, label);
-                    auto bareArrayLemma = logic::Formulas::universal({pSymbol},bareLemma,label);
-                    auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, bareArrayLemma);
-                    lemmas.push_back(lemma);
+                    auto universal1 = logic::Formulas::universal({itLSymbol,itRSymbol},imp);
+                    auto universal2 = logic::Formulas::universal({pSymbol},universal1);
+                    auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal2);
+                    lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
                 }
             }
         }
@@ -1383,7 +1390,7 @@ namespace analysis {
 
     #pragma mark - Synchronization of orderings Lemma
     
-    void OrderingSynchronizationLemmas::generateFormulasFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Formula> > &formulas)
+    void OrderingSynchronizationLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Lemma>> &lemmas)
     {     
         assert(twoTraces);
 
@@ -1451,10 +1458,10 @@ namespace analysis {
                     auto rhs = logic::Theory::intLess(toTermFull(v,lStartIt1,tr),toTermFull(v,lStartIt2,tr));
 
                     auto impl = logic::Formulas::implication(lhs,rhs);
-                    auto label = "Lemma: Synchronization of orderings for var " + v->name + " at location " + statement->location;
-                    auto bareLemma = logic::Formulas::universal({trSymbol,it1Symbol,it2Symbol},impl,label);
-                    auto lemma = logic::Formulas::universal(enclosingIteratorsSymbols, bareLemma);
-                    formulas.push_back(lemma);
+                    auto name = "synchronization-orderings-" + v->name + "-" + statement->location;
+                    auto universal = logic::Formulas::universal({trSymbol,it1Symbol,it2Symbol},impl);
+                    auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal);
+                    lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
                 }
             }
         }            

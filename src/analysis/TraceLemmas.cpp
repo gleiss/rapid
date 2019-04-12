@@ -372,6 +372,11 @@ namespace analysis {
         auto lStartZero = timepointForLoopStatement(statement, logic::Theory::natZero());
         auto lStartN = timepointForLoopStatement(statement, n);
         
+        auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
+        auto p = logic::Terms::var(pSymbol);
+        auto xSymbol = logic::Signature::varSymbol("xInt", logic::Sorts::intSort());
+        auto x = logic::Terms::var(xSymbol);
+        
         // add lemma for each intVar
         // Lemma: forall ((x : Int) (it : Nat)). (v l(zero) <= x & x < v l(n) & v l(s(it)) = (v l(it) +1) 
         //                                        =>  exists (it2 : Nat) v l(it2) = x & it2 < n)
@@ -379,129 +384,53 @@ namespace analysis {
         {            
             if (!v->isConstant)
             {
-                if (!v->isArray)
-                {              
-                    // Part 1: (v l(zero) <= x & x < v l(n) & v l(s(it)) = (v l(it) +1) 
-                    std::vector<std::shared_ptr<const logic::Formula>> conjunctsLHS;      
-
-                    // Part 1.1: v l(zero) <= auto
-                    auto xSym = logic::Signature::varSymbol("xInt", logic::Sorts::intSort());
-                    auto x = logic::Terms::var(xSym);
-        
-                    auto  vzero = toTerm(v,lStartZero);
-                    conjunctsLHS.push_back(logic::Theory::intLessEqual(vzero,x));
-
-                    // Part 1.2: x < v l(n)
-                    auto  vn = toTerm(v,lStartN);
-                    conjunctsLHS.push_back(logic::Theory::intLess(x,vn));
-
-                    // Part 1.3: v l(s(it)) = (v l(it) +1) 
-                    auto vsit = toTerm(v,lStartSuccOfIt);
-                    auto vit = toTerm(v,lStartIt);                    
-                    auto vitpp = logic::Theory::intAddition(vit,logic::Theory::intConstant(1));
-                    conjunctsLHS.push_back(logic::Formulas::equality(vsit,vitpp));
-
-                    // Combine 1.1 - 1.3
-                    auto lhs = logic::Formulas::conjunction(conjunctsLHS);
-
-                    //Part 2: exists (it2 : Nat) v l(it2) = x & it2 < n
-                    std::vector<std::shared_ptr<const logic::Formula>> conjunctsRHS;
-              
-                    //Part 2.1: v l(it2) = x 
-                    auto vit2 = toTerm(v,lStartIt2);
-                    conjunctsRHS.push_back(logic::Formulas::equality(vit2,x));
-
-                    //Part 2.2.: it2 < n
-                    conjunctsRHS.push_back(logic::Theory::natSub(it2,n));
-
-                    // Combine part 2 and quantify
-                    auto rhs = logic::Formulas::conjunction(conjunctsRHS);
-                    auto qrhs = logic::Formulas::existential({it2Symbol},rhs);
-
-                    // Combine lhs and rhs, then quantify
-                    auto combined = logic::Formulas::implication(lhs,qrhs);
-                    auto name = "intermediate-value-" + v->name + "-" + statement->location;
-                    auto universal = logic::Formulas::universal({xSym,iSymbol},combined);
-
-                    auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal);
-
-                    if (twoTraces)
-                    {
-                        auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        auto quantifiedLemma = logic::Formulas::universal({tr}, bareLemma);
-                        lemmas.push_back(std::make_shared<logic::Lemma>(quantifiedLemma, name));
-                    }
-                    else
-                    {
-                        lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
-                    }
-                }
-            }
-        }
-               
-        // add lemma for each intArrayVar
-        auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
-        auto p = logic::Terms::var(pSymbol);
-        for (const auto& v : locationToActiveVars.at(locationSymbol->name))
-        {
-            if (!v->isConstant)
-            {
-                if (v->isArray)
+                // PremiseConjunct1: v(l(zero)  ) <= x or
+                //                   v(l(zero),p) <= x
+                auto vzero = v->isArray ? toTerm(v,lStartZero,p) : toTerm(v,lStartZero);
+                auto premiseConjunct1 = logic::Theory::intLessEqual(vzero,x);
+                
+                // PremiseConjunct2: x < v(l(n)  ) or
+                //                   x < v(l(n),p)
+                auto vn = v->isArray ? toTerm(v,lStartN,p) : toTerm(v,lStartN);
+                auto premiseConjunct2 = logic::Theory::intLess(x,vn);
+                
+                // PremiseConjunct3: v(l(s(it))  )=v(l(it)  )+1 or
+                //                   v(l(s(it)),p)=v(l(it),p)+1
+                auto vsit = v->isArray ? toTerm(v,lStartSuccOfIt,p) : toTerm(v,lStartSuccOfIt);
+                auto vit = v->isArray ?  toTerm(v,lStartIt,p) : toTerm(v,lStartIt);
+                auto vitPlusOne = logic::Theory::intAddition(vit,logic::Theory::intConstant(1));
+                auto premiseConjunct3 = logic::Formulas::equality(vsit,vitPlusOne);
+                
+                // Premise
+                auto premise = logic::Formulas::conjunction({premiseConjunct1, premiseConjunct2, premiseConjunct3});
+                
+                // ConclusionConjunct1: v(l(it2)  )=x or
+                //                      v(l(it2),p)=x
+                auto vit2 = v->isArray ? toTerm(v,lStartIt2,p) : toTerm(v,lStartIt2);
+                auto conclusionConjunct1 = logic::Formulas::equality(vit2,x);
+                
+                // ConclusionConjunct2: it2 < n
+                auto conclusionConjunct2 = logic::Theory::natSub(it2,n);
+                
+                // Conclusion
+                auto conclusion = logic::Formulas::existential({it2Symbol}, logic::Formulas::conjunction({conclusionConjunct1, conclusionConjunct2}));
+                
+                // forall enclosingIterators. forall x,i. (premise => conclusion)
+                auto implication = logic::Formulas::implication(premise,conclusion);
+                auto universal = v->isArray ? logic::Formulas::universal({xSymbol,iSymbol,pSymbol},implication) : logic::Formulas::universal({xSymbol,iSymbol},implication);
+                
+                auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal);
+                
+                auto name = "intermediate-value-" + v->name + "-" + statement->location;
+                if (twoTraces)
                 {
-                    // Part 1: (v l(zero) <= x & x < v l(n) & v l(s(it)) = (v l(it) +1) 
-                    std::vector<std::shared_ptr<const logic::Formula>> conjunctsLHS;      
-
-                    // Part 1.1: v l(zero) <= x
-                    auto xSym = logic::Signature::varSymbol("xInt", logic::Sorts::intSort());
-                    auto x = logic::Terms::var(xSym);
-        
-                    auto  vzero = toTerm(v,lStartZero,p);
-                    conjunctsLHS.push_back(logic::Theory::intLessEqual(vzero,x));
-
-                    // Part 1.2: x < v l(n)
-                    auto  vn = toTerm(v,lStartN,p);
-                    conjunctsLHS.push_back(logic::Theory::intLess(x,vn));
-
-                    // Part 1.3: v l(s(it)) = (v l(it) +1) 
-                    auto vsit = toTerm(v,lStartSuccOfIt,p);
-                    auto vit = toTerm(v,lStartIt,p);                    
-                    auto vitpp = logic::Theory::intAddition(vit,logic::Theory::intConstant(1));
-                    conjunctsLHS.push_back(logic::Formulas::equality(vsit,vitpp));
-
-                    // Combine 1.1 - 1.3
-                    auto lhs = logic::Formulas::conjunction(conjunctsLHS);
-
-                    //Part 2: exists (it2 : Nat) v l(it2) = x & it2 < n
-                    std::vector<std::shared_ptr<const logic::Formula>> conjunctsRHS;
-                    
-                    //Part 2.1: v l(it2) = x 
-                    auto vit2 = toTerm(v,lStartIt2,p);
-                    conjunctsRHS.push_back(logic::Formulas::equality(vit2,x));
-
-                    //Part 2.2.: it2 < n
-                    conjunctsRHS.push_back(logic::Theory::natSub(it2,n));
-
-                    // Combine part 2 and quantify
-                    auto rhs = logic::Formulas::conjunction(conjunctsRHS);
-                    auto qrhs = logic::Formulas::existential({it2Symbol},rhs);
-
-                    // Combine lhs and rhs, then quantify
-                    auto combined = logic::Formulas::implication(lhs,qrhs);
-                    auto name = "intermediate-value-" + v->name + "-" + statement->location;
-                    auto universal = logic::Formulas::universal({xSym,iSymbol,pSymbol},combined);
-
-                    auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal);
-
-                    if (twoTraces)
-                    {
-                        auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        auto quantifiedLemma = logic::Formulas::universal({tr}, bareLemma);
-                        lemmas.push_back(std::make_shared<logic::Lemma>(quantifiedLemma, name));
-                    }
-                    else
-                    {
-                        lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
-                    }
+                    auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
+                    auto quantifiedLemma = logic::Formulas::universal({tr}, bareLemma);
+                    lemmas.push_back(std::make_shared<logic::Lemma>(quantifiedLemma, name));
+                }
+                else
+                {
+                    lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
                 }
             }
         }

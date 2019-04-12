@@ -16,6 +16,8 @@
 #include "Term.hpp"
 #include "Formula.hpp"
 #include "Theory.hpp"
+#include "Problem.hpp"
+
 
 #include "Expression.hpp"
 #include "Variable.hpp"
@@ -102,7 +104,9 @@ YY_DECL;
 %token <std::string> TYPE "type identifier"
 %token <int> INTEGER "number"
 
-%type < std::shared_ptr<const logic::Formula> > smtlib_conjecture
+%type < std::vector<std::shared_ptr<const logic::ProblemItem> > > smtlib_problemitem_list
+%type < std::shared_ptr<const logic::ProblemItem> > smtlib_problemitem
+
 %type < std::vector<std::shared_ptr<const logic::Formula>> > smtlib_formula_list
 %type < std::shared_ptr<const logic::Formula> > smtlib_formula
 %type < std::vector<std::shared_ptr<const logic::Symbol>> > smtlib_quantvar_list
@@ -148,9 +152,9 @@ problem:
   {
     logic::Theory::declareTheories();
   }
-  program smtlib_conjecture 
+  program smtlib_problemitem_list 
   {
-
+    context.problemItems = $3;
   }
 |
   TWOTRACES
@@ -159,7 +163,10 @@ problem:
     logic::Theory::declareTheories();
     declareSymbolsForTraces();
   }
-  program smtlib_conjecture {}
+  program smtlib_problemitem_list 
+  {
+        context.problemItems = $4;
+  }
 ;
 
 program:
@@ -169,9 +176,17 @@ program:
   }
 ;
 
-smtlib_conjecture:
-  LPAR ASSERTNOT smtlib_formula RPAR {context.conjecture = std::move($3);}
+smtlib_problemitem_list:
+  %empty {$$ = std::vector<std::shared_ptr<const logic::ProblemItem>>();}
+| smtlib_problemitem_list smtlib_problemitem {$1.push_back(std::move($2)); $$ = std::move($1);}
 ;
+
+smtlib_problemitem:
+  LPAR ASSERTNOT smtlib_formula RPAR 
+  {
+    $$ = std::shared_ptr<const logic::Conjecture>(new logic::Conjecture($3, "conjecture" + std::to_string(context.numberOfConjectures)));
+    context.numberOfConjectures++;
+  }
 
 smtlib_formula_list:
   %empty {$$ = std::vector<std::shared_ptr<const logic::Formula>>();}

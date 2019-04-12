@@ -9,6 +9,8 @@
 
 namespace logic {
     
+    std::ostream& operator<<(std::ostream& ostr, const std::vector<std::shared_ptr<const ProblemItem>>& f){ostr << "not implemented"; return ostr;}
+
     void ReasoningTask::outputSMTLIB(std::ostream& ostr) const
     {
         auto smtlibLogic = "UFDTLIA"; // uninterpreted functions, datatypes and linear integer arithmetic

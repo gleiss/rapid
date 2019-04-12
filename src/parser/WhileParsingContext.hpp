@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "Formula.hpp"
+#include "Problem.hpp"
 #include "Program.hpp"
 #include "Signature.hpp"
 #include "Variable.hpp"
@@ -21,7 +22,7 @@ namespace parser
     class WhileParsingContext
     {
     public:
-        WhileParsingContext() : inputFile(""), errorFlag(false), program(nullptr), conjecture(nullptr), locationToActiveVars(), twoTraces(false){}
+        WhileParsingContext() : inputFile(""), errorFlag(false), program(nullptr), problemItems(), locationToActiveVars(), twoTraces(false), numberOfConjectures(0), quantifiedVarsDeclarations(), quantifiedVarsStack(), programVarsDeclarations(), programVarsStack() {}
         
         // input
         std::string inputFile;
@@ -29,10 +30,11 @@ namespace parser
         
         // output
         std::unique_ptr<const program::Program> program;
-        std::shared_ptr<const logic::Formula> conjecture;
+        std::vector<std::shared_ptr<const logic::ProblemItem>> problemItems;
         std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars;
         bool twoTraces;
-        
+        int numberOfConjectures;
+
     private:
         // context-information
         std::unordered_map<std::string, std::shared_ptr<const logic::Symbol>> quantifiedVarsDeclarations;
@@ -40,7 +42,7 @@ namespace parser
         
         std::unordered_map<std::string, std::shared_ptr<const program::Variable>> programVarsDeclarations;
         std::vector<std::vector<std::string>> programVarsStack;
-                
+        
     public:
         // methods which are called by bison to interact with the context
         bool pushQuantifiedVars(std::vector<std::shared_ptr<const logic::Symbol>> quantifiedVars);

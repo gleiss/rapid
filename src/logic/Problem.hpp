@@ -26,6 +26,9 @@ namespace logic {
         const std::string name;
     };
     
+    // hack needed for bison: std::vector has no overload for ostream, but these overloads are needed for bison
+    std::ostream& operator<<(std::ostream& ostr, const std::vector<std::shared_ptr<const ProblemItem>>& f);
+    
     class Axiom : public ProblemItem
     {
     public:

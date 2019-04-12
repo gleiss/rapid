@@ -217,90 +217,51 @@ namespace analysis {
         auto lStartSuccOfIt = timepointForLoopStatement(statement, logic::Theory::natSucc(it));
         auto lStartZero = timepointForLoopStatement(statement, logic::Theory::natZero());
 
-        // add lemma for each intVar
-        for (const auto& v : locationToActiveVars.at(locationSymbol->name))
-        {
-            if (!v->isConstant)
-            {
-                if (!v->isArray)
-                {
-                    // Part1a: v(l(0),t1) = v(l(0),t2)
-                    auto lhs1 = toTermFull(v, lStartZero, t1);
-                    auto rhs1 = toTermFull(v, lStartZero, t2);
-                    auto baseCase = logic::Formulas::equality(lhs1, rhs1);
-                    
-                    // Part1b: v(l(it),t1) = v(l(it), t2) => v(l(s(it)),t1) = v(l(s(it)),t2)
-                    auto lhs2 = toTermFull(v, lStartIt, t1);
-                    auto rhs2 = toTermFull(v, lStartIt, t2);
-                    auto eq2 = logic::Formulas::equality(lhs2, rhs2);
-                    
-                    auto lhs3 = toTermFull(v, lStartSuccOfIt, t1);
-                    auto rhs3 = toTermFull(v, lStartSuccOfIt, t2);
-                    auto eq3 = logic::Formulas::equality(lhs3, rhs3);
-                    
-                    auto implication = logic::Formulas::implication(eq2, eq3);
-                    auto inductiveCase = logic::Formulas::universal({itSymbol}, implication);
-                    
-                    // Part2: forall it. v(l(it),t1) = v(l(it), t2)
-                    auto lhs4 = toTermFull(v, lStartIt, t1);
-                    auto rhs4 = toTermFull(v, lStartIt, t2);
-                    auto eq4 = logic::Formulas::equality(lhs4, rhs4);
-                    
-                    auto conclusion = logic::Formulas::universal({itSymbol}, eq4);
-                    
-                    // (Part1a and Part1b) => Part2
-                    auto premise = logic::Formulas::conjunction({baseCase, inductiveCase});
-                    
-                    auto name = "two-traces- " + v->name + "-" + statement->location;
-                    auto outerImplication = logic::Formulas::implication(premise, conclusion);
-                    auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, outerImplication);
-                    lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
-                }
-            }
-        }
-
-        // add lemma for each arrayVar
         auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
         auto p = logic::Terms::var(pSymbol);
+        
+        // add lemma for each intVar and each intArrayVar
         for (const auto& v : locationToActiveVars.at(locationSymbol->name))
         {
             if (!v->isConstant)
             {
-                if (v->isArray)
-                {
-                    // Part1a: v(l(0),p,t1) = v(l(0),p,t2)
-                    auto lhs1 = toTermFull(v, lStartZero, p, t1);
-                    auto rhs1 = toTermFull(v, lStartZero, p, t2);
-                    auto baseCase = logic::Formulas::equality(lhs1, rhs1);
-                    
-                    // Part1b: v(l(it),p,t1) = v(l(it),p,t2) => v(l(s(it)),p,t1) = v(l(s(it)),p,t2)
-                    auto lhs2 = toTermFull(v, lStartIt, p, t1);
-                    auto rhs2 = toTermFull(v, lStartIt, p, t2);
-                    auto eq2 = logic::Formulas::equality(lhs2, rhs2);
-                    
-                    auto lhs3 = toTermFull(v, lStartSuccOfIt, p, t1);
-                    auto rhs3 = toTermFull(v, lStartSuccOfIt, p, t2);
-                    auto eq3 = logic::Formulas::equality(lhs3, rhs3);
-                    
-                    auto implication = logic::Formulas::implication(eq2, eq3);
-                    auto inductiveCase = logic::Formulas::universal({itSymbol}, implication);
-                    
-                    // Part2: forall it. v(l(it),p,t1) = v(l(it),p,t2)
-                    auto lhs4 = toTermFull(v, lStartIt, p, t1);
-                    auto rhs4 = toTermFull(v, lStartIt, p, t2);
-                    auto eq4 = logic::Formulas::equality(lhs4, rhs4);
-                    
-                    auto conclusion = logic::Formulas::universal({itSymbol}, eq4);
-                    
-                    // forall p. ((Part1a and Part1b) => Part2)
-                    auto premise = logic::Formulas::conjunction({baseCase, inductiveCase});
+                // baseCase: v(l(0),  t1) = v(l(0),  t2) or
+                //           v(l(0),p,t1) = v(l(0),p,t2)
+                auto lhs1 = v->isArray ? toTermFull(v, lStartZero, p, t1) : toTermFull(v, lStartZero, t1);
+                auto rhs1 = v->isArray ? toTermFull(v, lStartZero, p, t2) : toTermFull(v, lStartZero, t2);
+                auto baseCase = logic::Formulas::equality(lhs1, rhs1);
+                
+                // inductiveCase: v(l(it),  t1) = v(l(it),  t2) => v(l(s(it)),  t1) = v(l(s(it)),  t2) or
+                //                v(l(it),p,t1) = v(l(it),p,t2) => v(l(s(it)),p,t1) = v(l(s(it)),p,t2)
+                auto lhs2 = v->isArray ? toTermFull(v, lStartIt, p, t1) : toTermFull(v, lStartIt, t1);
+                auto rhs2 = v->isArray ? toTermFull(v, lStartIt, p, t2) : toTermFull(v, lStartIt, t2);
+                auto eq2 = logic::Formulas::equality(lhs2, rhs2);
+                
+                auto lhs3 = v->isArray ? toTermFull(v, lStartSuccOfIt, p, t1) : toTermFull(v, lStartSuccOfIt, t1);
+                auto rhs3 = v->isArray ? toTermFull(v, lStartSuccOfIt, p, t2) : toTermFull(v, lStartSuccOfIt, t2);
+                auto eq3 = logic::Formulas::equality(lhs3, rhs3);
+                
+                auto implication = logic::Formulas::implication(eq2, eq3);
+                auto inductiveCase = logic::Formulas::universal({itSymbol}, implication);
+                
+                // premise
+                auto premise = logic::Formulas::conjunction({baseCase, inductiveCase});
+                
+                // conclusion: forall it. v(l(it),  t1) = v(l(it),  t2) or
+                //             forall it. v(l(it),p,t1) = v(l(it),p,t2)
+                auto lhs4 = v->isArray ? toTermFull(v, lStartIt, p, t1) : toTermFull(v, lStartIt, t1);
+                auto rhs4 = v->isArray ? toTermFull(v, lStartIt, p, t2) : toTermFull(v, lStartIt, t2);
+                auto eq4 = logic::Formulas::equality(lhs4, rhs4);
+                
+                auto conclusion = logic::Formulas::universal({itSymbol}, eq4);
+                
+                // forall enclosingIterators. forall pos. (premise -> conclusion)
+                auto outerImplication = logic::Formulas::implication(premise, conclusion);
+                auto universal = v->isArray ? logic::Formulas::universal({pSymbol}, outerImplication) : outerImplication;
+                auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal);
 
-                    auto outerImp = logic::Formulas::implication(premise, conclusion);
-                    auto name = "two-traces- " + v->name + "-" + statement->location;
-                    auto universal = logic::Formulas::universal({pSymbol}, outerImp);
-                    auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal);
-                    lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
-                }
+                auto name = "two-traces- " + v->name + "-" + statement->location;
+                lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
             }
         }
     }

@@ -95,7 +95,7 @@ YY_DECL;
   IMPSMTLIB     "=>"
   FORALLSMTLIB  "forall"
   EXISTSSMTLIB  "exists"
-  ASSERTNOT     "assert-not"
+  CONJECTURE     "conjecture"
   CONST         "const"
   TWOTRACES     "(two-traces)"
 ;
@@ -182,7 +182,7 @@ smtlib_problemitem_list:
 ;
 
 smtlib_problemitem:
-  LPAR ASSERTNOT smtlib_formula RPAR 
+  LPAR CONJECTURE smtlib_formula RPAR 
   {
     $$ = std::shared_ptr<const logic::Conjecture>(new logic::Conjecture($3, "conjecture" + std::to_string(context.numberOfConjectures)));
     context.numberOfConjectures++;

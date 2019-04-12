@@ -73,7 +73,7 @@ not         	{ return parser::WhileParser::make_NOTSMTLIB(loc); }
 "=>"         	{ return parser::WhileParser::make_IMPSMTLIB(loc); }
 forall      	{ return parser::WhileParser::make_FORALLSMTLIB(loc); }
 exists      	{ return parser::WhileParser::make_EXISTSSMTLIB(loc); }
-"assert-not"  { BEGIN(smtlibstate); return parser::WhileParser::make_ASSERTNOT(loc);}
+"conjecture"  { BEGIN(smtlibstate); return parser::WhileParser::make_CONJECTURE(loc);}
 
 
 "("          { return parser::WhileParser::make_LPAR(loc); }

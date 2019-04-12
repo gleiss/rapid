@@ -95,7 +95,9 @@ YY_DECL;
   IMPSMTLIB     "=>"
   FORALLSMTLIB  "forall"
   EXISTSSMTLIB  "exists"
-  CONJECTURE     "conjecture"
+  AXIOM         "axiom"
+  LEMMA         "lemma"
+  CONJECTURE    "conjecture"
   CONST         "const"
   TWOTRACES     "(two-traces)"
 ;
@@ -182,9 +184,21 @@ smtlib_problemitem_list:
 ;
 
 smtlib_problemitem:
+  LPAR AXIOM smtlib_formula RPAR 
+  {
+    $$ = std::shared_ptr<const logic::Axiom>(new logic::Axiom($3, "user-axiom-" + std::to_string(context.numberOfAxioms)));
+    context.numberOfAxioms++;
+  }
+|
+  LPAR LEMMA smtlib_formula RPAR 
+  {
+    $$ = std::shared_ptr<const logic::Lemma>(new logic::Lemma($3, "user-lemma-" + std::to_string(context.numberOfLemmas)));
+    context.numberOfLemmas++;
+  }
+|
   LPAR CONJECTURE smtlib_formula RPAR 
   {
-    $$ = std::shared_ptr<const logic::Conjecture>(new logic::Conjecture($3, "conjecture" + std::to_string(context.numberOfConjectures)));
+    $$ = std::shared_ptr<const logic::Conjecture>(new logic::Conjecture($3, "user-conjecture-" + std::to_string(context.numberOfConjectures)));
     context.numberOfConjectures++;
   }
 

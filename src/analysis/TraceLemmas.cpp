@@ -377,9 +377,7 @@ namespace analysis {
         auto xSymbol = logic::Signature::varSymbol("xInt", logic::Sorts::intSort());
         auto x = logic::Terms::var(xSymbol);
         
-        // add lemma for each intVar
-        // Lemma: forall ((x : Int) (it : Nat)). (v l(zero) <= x & x < v l(n) & v l(s(it)) = (v l(it) +1) 
-        //                                        =>  exists (it2 : Nat) v l(it2) = x & it2 < n)
+        // add lemma for each intVar and each intArrayVar
         for (const auto& v : locationToActiveVars.at(locationSymbol->name))
         {            
             if (!v->isConstant)
@@ -440,7 +438,7 @@ namespace analysis {
    
     void ValuePreservationLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Lemma>> &lemmas)
     {                 
-        auto iSymbol = iteratorSymbol(statement);
+        auto itSymbol = iteratorSymbol(statement);
         auto it = iteratorTermForLoop(statement);
         auto it2Symbol = logic::Signature::varSymbol("it", logic::Sorts::natSort());
         auto it2 = logic::Terms::var(it2Symbol);
@@ -457,144 +455,54 @@ namespace analysis {
         auto lStartSuccOfIt = timepointForLoopStatement(statement, logic::Theory::natSucc(it));
         auto lStartSuccOfIt2 = timepointForLoopStatement(statement, logic::Theory::natSucc(it2));
         auto lStartN = timepointForLoopStatement(statement, n);
-
+        
+        auto posSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
+        auto pos = logic::Terms::var(posSymbol);
+        
         // add lemma for each intVar
-        //  forall (x:Int)
-        //        (exists (it2 : Nat)
-        //               (it2 < n & v(l(s(it2))) = x)
-        //             & forall (it : Nat) (it2 < it => x(l(s(it))) = x(l(it))
-        //        => (v(l(n)) = x)
+        //  forall (it2 : Nat)
+        //     =>
+        //        and
+        //           it2 < n
+        //           forall (it : Nat)
+        //              =>
+        //                 it2 < it
+        //                 v(l(s(it))) = v(l(it))
+        //        v(l(n)) = v(l(s(it2))
         for (const auto& v : locationToActiveVars.at(locationSymbol->name))
         {            
             if (!v->isConstant)
             {
-                if (!v->isArray)
-                {        
-                    // Part 1:      
-                    // (exists (it2 : Nat)
-                    //    (it2 < n & v(l(s(it2))) = x)
-                    //    & forall (it : Nat) (it2 < it => x(l(s(it))) = x(l(it))
-                    std::vector<std::shared_ptr<const logic::Formula>> conjunctsLHS;                              
-
-                    // Part 1.1: it2 < n
-                    auto p11 = logic::Theory::natSub(it2,n);
-                    conjunctsLHS.push_back(p11);
-
-                    // Part 1.2: v(l(s(it2))) = x)
-                    auto xSym = logic::Signature::varSymbol("xInt", logic::Sorts::intSort());
-                    auto x = logic::Terms::var(xSym);
-                    auto vsit2 = toTerm(v,lStartSuccOfIt2);
-                    auto p12 = logic::Formulas::equality(vsit2,x);
-                    conjunctsLHS.push_back(p12);
+                // Premise: it2 < n and forall it. (it2<it => v(l(s(it))) = v(l(it)))
+                auto premiseConjunct1 = logic::Theory::natSub(it2,n);
                 
-                    // Part 1.3.1: forall (it : Nat) v(l(s(it))) = v(l(it))
-                    auto vit = toTerm(v,lStartIt);                    
-                    auto p131 = logic::Formulas::equality(vit,x); 
-                   
-                    // Part 1.3.2: x(l(s(it))) = x)
-                    auto vsit = toTerm(v,lStartSuccOfIt); 
-                    auto p132 = logic::Formulas::equality(vsit,x);               
-
-                    // Combine with implication and add universal quantification over all iterators
-                    auto p13 = logic::Formulas::universal({iSymbol},logic::Formulas::implication(p131,p132));
-                    conjunctsLHS.push_back(p13);
-
-                    // Combine 1.1 - 1.3 and add existential quantifier for it2
-                    auto lhs = logic::Formulas::existential({it2Symbol},logic::Formulas::conjunction(conjunctsLHS));
-
-                    // Part 2: (v(l(n)) = x)
-                    auto vn = toTerm(v,lStartN);
-                    auto rhs = logic::Formulas::equality(vn,x);
-
-                    // Combine parts 1 and 2, quantify over all x.
-                    auto name = "value-preservation-" + v->name + "-" + statement->location;
-                    auto universal = logic::Formulas::universal({xSym},logic::Formulas::implication(lhs,rhs));
-                    auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal);
-
-                    if (twoTraces)
-                    {
-                        auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        auto quantifiedLemma = logic::Formulas::universal({tr}, bareLemma);
-                        lemmas.push_back(std::make_shared<logic::Lemma>(quantifiedLemma, name));
-                    }
-                    else
-                    {
-                        lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
-                    }
-                }
-            }
-        }
-
-        // add lemma for each intArrayVar v
-        //  forall (x : Int, pos : Var)
-        //        (exists (it2 : Nat)
-        //             (it2 < n & v(l(s(it2)), pos) = x)
-        //             & forall (it : Nat) (it2 < it => v(l(s(it)), pos) = v(l(it), pos)
-        //        => (v(l(n), pos) = x)
-        auto posSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
-        auto pos = logic::Terms::var(posSymbol);
-        for (const auto& v : locationToActiveVars.at(locationSymbol->name))
-        {
-            if (!v->isConstant)
-            {
-                if (v->isArray)
+                auto ineq = logic::Theory::natSub(it2,it);
+                auto vit = v->isArray ? toTerm(v,lStartIt,pos) : toTerm(v,lStartIt);
+                auto vsit = v->isArray ? toTerm(v,lStartSuccOfIt,pos) : toTerm(v,lStartSuccOfIt);
+                auto eq = logic::Formulas::equality(vsit,vit);
+                auto premiseConjunct2 = logic::Formulas::universal({itSymbol},logic::Formulas::implication(ineq,eq));
+                
+                auto premise = logic::Formulas::conjunction({premiseConjunct1, premiseConjunct2});
+                
+                // Conclusion: (v(l(n)) = v(l(s(it2)))
+                auto vn = v->isArray ? toTerm(v,lStartN,pos) : toTerm(v,lStartN);
+                auto vsit2 = v->isArray ? toTerm(v,lStartSuccOfIt2,pos) : toTerm(v,lStartSuccOfIt2);
+                auto conclusion = logic::Formulas::equality(vn,vsit2);
+                
+                // forall enclosingIterators. forall it2. (premise => conclusion)
+                auto universal = logic::Formulas::universal({it2Symbol, posSymbol},logic::Formulas::implication(premise,conclusion));
+                auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal);
+                auto name = "value-preservation-" + v->name + "-" + statement->location;
+                
+                if (twoTraces)
                 {
-                    // Part 1:      
-                    // (exists (it2 : Nat)
-                    //    (it2 < n & v(l(s(it2)), pos) = x)
-                    //    & forall (it : Nat) (it2 < it => v(l(s(it)), pos) = v(l(it), pos)
-                    std::vector<std::shared_ptr<const logic::Formula>> conjunctsLHS;                              
-
-                    // Part 1.1: it2 < n
-                    auto p11 = logic::Theory::natSub(it2,n);
-                    conjunctsLHS.push_back(p11);
-
-                    // Part 1.2: v(l(s(it2)), pos) = x)
-                    auto xSym = logic::Signature::varSymbol("xInt", logic::Sorts::intSort());
-                    auto x = logic::Terms::var(xSym);                   
-                    auto vsit2 = toTerm(v,lStartSuccOfIt2,pos);
-                    auto p12 = logic::Formulas::equality(vsit2,x);
-                    conjunctsLHS.push_back(p12);
-                
-                    // Part 1.3: forall (it : Nat)  => v(l(s(it))) = v(l(it))
-                    // Part 1.3.1: x(l(it)) = x
-                    auto vit = toTerm(v,lStartIt,pos);                    
-                    auto p131 = logic::Formulas::equality(vit,x); 
-
-                    // Part 1.3.2: x(l(s(it))) = x)
-                    auto vsit = toTerm(v,lStartSuccOfIt,pos); 
-                    auto p132 = logic::Formulas::equality(vsit,x);               
-
-                    // Combine with implication and add universal quantification over all iterators
-                    auto p13 = logic::Formulas::universal({iSymbol},logic::Formulas::implication(p131,p132));
-                    conjunctsLHS.push_back(p13);
-
-                    // Combine 1.1 - 1.3 and add existential quantifier for it
-                    auto lhs = logic::Formulas::existential({it2Symbol},logic::Formulas::conjunction(conjunctsLHS));
-
-                    // Part 2: (v(l(n)) = x)
-                    auto vn = toTerm(v,lStartN,pos);
-                    auto rhs = logic::Formulas::equality(vn,x);
-
-                    // Combine parts 1 and 2, quantify over all x.
-                    auto name = "value-preservation-" + v->name + "-" + statement->location;
-                    auto universal1 = logic::Formulas::universal({xSym},logic::Formulas::implication(lhs,rhs));
-                    
-                    // Quanitify over all array positions
-                    auto universal2 = logic::Formulas::universal({posSymbol},universal1);
-                    
-                    auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal2);
-
-                    if (twoTraces)
-                    {
-                        auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        auto quantifiedLemma = logic::Formulas::universal({tr}, bareLemma);
-                        lemmas.push_back(std::make_shared<logic::Lemma>(quantifiedLemma, name));
-                    }
-                    else
-                    {
-                        lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
-                    }
+                    auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
+                    auto quantifiedLemma = logic::Formulas::universal({tr}, bareLemma);
+                    lemmas.push_back(std::make_shared<logic::Lemma>(quantifiedLemma, name));
+                }
+                else
+                {
+                    lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
                 }
             }
         }

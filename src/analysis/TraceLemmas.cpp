@@ -116,156 +116,81 @@ namespace analysis {
         auto lStartZero = timepointForLoopStatement(whileStatement, logic::Theory::natZero());
         auto lStartN = timepointForLoopStatement(whileStatement, n);
         
-        // add lemma for each intVar
-        for (const auto& v : locationToActiveVars.at(locationSymbol->name))
-        {
-            if (!v->isConstant)
-            {
-                if (!v->isArray)
-                {
-                    // Part1: forall it (it<=n => v(l(it1,...,itk,it)) C v(l(it1,...,itk,s(it)))), where C in {=,<,>,<=,>=}
-                    auto ineq = logic::Theory::natSub(it, n);
-                    
-                    auto lhs1 = toTerm(v,lStartIt);
-                    auto rhs1 = toTerm(v,lStartSuccOfIt);
-                    std::shared_ptr<const Formula> formula1;
-                    switch (kind)
-                    {
-                        case InductionKind::Equal:
-                            formula1 = logic::Formulas::equality(lhs1, rhs1);
-                            break;
-                        case InductionKind::Less:
-                            formula1 = logic::Theory::intLess(lhs1, rhs1);
-                            break;
-                        case InductionKind::Greater:
-                            formula1 = logic::Theory::intGreater(lhs1, rhs1);
-                            break;
-                        case InductionKind::LessEqual:
-                            formula1 = logic::Theory::intLessEqual(lhs1, rhs1);
-                            break;
-                        case InductionKind::GreaterEqual:
-                            formula1 = logic::Theory::intGreaterEqual(lhs1, rhs1);
-                            break;
-                    }
-                    auto imp = logic::Formulas::implication(ineq, formula1);
-                    auto part1 = logic::Formulas::universal({it->symbol}, imp);
-                    
-                    // Part2: v(l(it1,...,itk,0)) C v(l(it1,...,itk,n)), where C in {=,<,>,<=,>=}
-                    auto lhs2 = toTerm(v,lStartZero);
-                    auto rhs2 = toTerm(v,lStartN);
-                    std::shared_ptr<const Formula> part2;
-                    switch (kind)
-                    {
-                        case InductionKind::Equal:
-                            part2 = logic::Formulas::equality(lhs2, rhs2);
-                            break;
-                        case InductionKind::Less:
-                            part2 = logic::Theory::intLess(lhs2, rhs2);
-                            break;
-                        case InductionKind::Greater:
-                            part2 = logic::Theory::intGreater(lhs2, rhs2);
-                            break;
-                        case InductionKind::LessEqual:
-                            part2 = logic::Theory::intLessEqual(lhs2, rhs2);
-                            break;
-                        case InductionKind::GreaterEqual:
-                            part2 = logic::Theory::intGreaterEqual(lhs2, rhs2);
-                            break;
-                    }
-                    // forall enclosingIterators: (Part1 => Part2)                    
-                    auto outermostImp = logic::Formulas::implication(part1, part2);
-                    auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, outermostImp);
-
-                    auto name = "induction-" + connective + "-" + v->name + "-" + whileStatement->location;
-
-                    if (twoTraces)
-                    {
-                        auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        auto quantifiedBareLemma = logic::Formulas::universal({tr}, bareLemma);
-                        lemmas.push_back(std::make_shared<logic::Lemma>(quantifiedBareLemma, name));
-                    }
-                    else
-                    {
-                        lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
-                    }
-                }
-            }
-        }
-        
-        // add lemma for each intArrayVar
         auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
         auto p = logic::Terms::var(pSymbol);
+        
+        // add lemma for each intVar and each intArrayVar
         for (const auto& v : locationToActiveVars.at(locationSymbol->name))
         {
             if (!v->isConstant)
             {
-                if (v->isArray)
-                {
-                    // Part1: it<=n => v(l(it1,...,itk,it),p) C v(l(it1,...,itk,s(it)),p), where C in {=,<,>,<=,>=}
-                    auto ineq = logic::Theory::natSub(it, n);
-                    
-                    auto lhs1 = toTerm(v,lStartIt, p);
-                    auto rhs1 = toTerm(v,lStartSuccOfIt, p);
-                    std::shared_ptr<const Formula> formula1;
-                    switch (kind)
-                    {
-                        case InductionKind::Equal:
-                            formula1 = logic::Formulas::equality(lhs1, rhs1);
-                            break;
-                        case InductionKind::Less:
-                            formula1 = logic::Theory::intLess(lhs1, rhs1);
-                            break;
-                        case InductionKind::Greater:
-                            formula1 = logic::Theory::intGreater(lhs1, rhs1);
-                            break;
-                        case InductionKind::LessEqual:
-                            formula1 = logic::Theory::intLessEqual(lhs1, rhs1);
-                            break;
-                        case InductionKind::GreaterEqual:
-                            formula1 = logic::Theory::intGreaterEqual(lhs1, rhs1);
-                            break;
-                    }
-                    auto imp = logic::Formulas::implication(ineq, formula1);
-                    auto part1 = logic::Formulas::universal({it->symbol}, imp);
-                    
-                    // Part2: v(l(it1,...,itk,0), p) C v(l(it1,...,itk,n), p), where C in {=,<,>,<=,>=}
-                    auto lhs2 = toTerm(v, lStartZero, p);
-                    auto rhs2 = toTerm(v, lStartN, p);
-                    std::shared_ptr<const Formula> part2;
-                    switch (kind)
-                    {
-                        case InductionKind::Equal:
-                            part2 = logic::Formulas::equality(lhs2, rhs2);
-                            break;
-                        case InductionKind::Less:
-                            part2 = logic::Theory::intLess(lhs2, rhs2);
-                            break;
-                        case InductionKind::Greater:
-                            part2 = logic::Theory::intGreater(lhs2, rhs2);
-                            break;
-                        case InductionKind::LessEqual:
-                            part2 = logic::Theory::intLessEqual(lhs2, rhs2);
-                            break;
-                        case InductionKind::GreaterEqual:
-                            part2 = logic::Theory::intGreaterEqual(lhs2, rhs2);
-                            break;
-                    }
-                    // forall p. (Part1 => Part2)
-                    auto outerImp = logic::Formulas::implication(part1, part2);
-                    auto name = "induction-" + connective + "-" + v->name + "-" + whileStatement->location;
-                    auto universal = logic::Formulas::universal({pSymbol}, outerImp);
-                    auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal);
+                // Part1: forall it (it<=n => v(l(it1,...,itk,it)  ) C v(l(it1,...,itk,s(it))  )), where C in {=,<,>,<=,>=} or
+                //        forall it (it<=n => v(l(it1,...,itk,it),p) C v(l(it1,...,itk,s(it)),p)), where C in {=,<,>,<=,>=}
+                auto ineq = logic::Theory::natSub(it, n);
 
-                    if (twoTraces)
-                    {
-                        auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        auto quantifiedBareLemma = logic::Formulas::universal({tr}, bareLemma);
-                        lemmas.push_back(std::make_shared<logic::Lemma>(quantifiedBareLemma, name));
-                    }
-                    else
-                    {
-                        lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
-                    }
+                auto lhs1 = v->isArray ? toTerm(v,lStartIt, p) : toTerm(v,lStartIt);
+                auto rhs1 = v->isArray ? toTerm(v,lStartSuccOfIt, p) : toTerm(v,lStartSuccOfIt);
+                std::shared_ptr<const Formula> formula1;
+                switch (kind)
+                {
+                    case InductionKind::Equal:
+                        formula1 = logic::Formulas::equality(lhs1, rhs1);
+                        break;
+                    case InductionKind::Less:
+                        formula1 = logic::Theory::intLess(lhs1, rhs1);
+                        break;
+                    case InductionKind::Greater:
+                        formula1 = logic::Theory::intGreater(lhs1, rhs1);
+                        break;
+                    case InductionKind::LessEqual:
+                        formula1 = logic::Theory::intLessEqual(lhs1, rhs1);
+                        break;
+                    case InductionKind::GreaterEqual:
+                        formula1 = logic::Theory::intGreaterEqual(lhs1, rhs1);
+                        break;
+                }
+                auto imp = logic::Formulas::implication(ineq, formula1);
+                auto part1 = logic::Formulas::universal({it->symbol}, imp);
+                
+                // Part2: v(l(it1,...,itk,0)  ) C v(l(it1,...,itk,n)  ), where C in {=,<,>,<=,>=} or
+                //        v(l(it1,...,itk,0),p) C v(l(it1,...,itk,n),p), where C in {=,<,>,<=,>=}
+                auto lhs2 = v->isArray ? toTerm(v, lStartZero, p) : toTerm(v,lStartZero);
+                auto rhs2 = v->isArray ? toTerm(v, lStartN, p) : toTerm(v,lStartN);
+
+                std::shared_ptr<const Formula> part2;
+                switch (kind)
+                {
+                    case InductionKind::Equal:
+                        part2 = logic::Formulas::equality(lhs2, rhs2);
+                        break;
+                    case InductionKind::Less:
+                        part2 = logic::Theory::intLess(lhs2, rhs2);
+                        break;
+                    case InductionKind::Greater:
+                        part2 = logic::Theory::intGreater(lhs2, rhs2);
+                        break;
+                    case InductionKind::LessEqual:
+                        part2 = logic::Theory::intLessEqual(lhs2, rhs2);
+                        break;
+                    case InductionKind::GreaterEqual:
+                        part2 = logic::Theory::intGreaterEqual(lhs2, rhs2);
+                        break;
+                }
+                // forall enclosingIterators: (Part1 => Part2)
+                auto outerImp = logic::Formulas::implication(part1, part2);
+                auto universal = v->isArray ? logic::Formulas::universal({pSymbol}, outerImp) : outerImp;
+                auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols, universal);
+                
+                auto name = "induction-" + connective + "-" + v->name + "-" + whileStatement->location;
+                if (twoTraces)
+                {
+                    auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
+                    auto quantifiedBareLemma = logic::Formulas::universal({tr}, bareLemma);
+                    lemmas.push_back(std::make_shared<logic::Lemma>(quantifiedBareLemma, name));
+                }
+                else
+                {
+                    lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
                 }
             }
         }

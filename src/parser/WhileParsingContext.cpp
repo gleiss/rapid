@@ -100,11 +100,22 @@ namespace parser
     
     std::vector<std::shared_ptr<const program::Variable>> WhileParsingContext::getActiveProgramVars()
     {
+        // sort active vars so that nonArrayVars occur before arrayVars
         std::vector<std::shared_ptr<const program::Variable>> activeVars;
+        std::vector<std::shared_ptr<const program::Variable>> activeArrayVars;
         for (const auto& pairNameVar : programVarsDeclarations)
         {
-            activeVars.push_back(pairNameVar.second);
+            auto var = pairNameVar.second;
+            if (!var->isArray)
+            {
+                activeVars.push_back(var);
+            } else
+            {
+                activeArrayVars.push_back(var);
+            }
         }
+        activeVars.insert(activeVars.end(), activeArrayVars.begin(), activeArrayVars.end());
+        
         return activeVars;
     }
     

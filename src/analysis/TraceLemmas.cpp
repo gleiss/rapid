@@ -508,7 +508,7 @@ namespace analysis {
         }
     }
 
-#pragma mark - Iteration Injection Lemma
+#pragma mark - Iteration Injectivity Lemma
 
     void IterationInjectivityLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Lemma>> &lemmas)
     {
@@ -1142,9 +1142,15 @@ namespace analysis {
         auto lStartIt2 = timepointForLoopStatement(statement, it2);
 
         // add lemma for each intVar
-        // Lemma: forall ((tr : Trace) (it1: Nat) (it2 : Nat))
-        //   (it1 < it2 & v(l(zero) t1) = v(l(zero) t2) & forall (it : Nat). v(l(s(it))) = v(l(it)) + 1)
-        //      => (i (l(it1)) tr) < (i (l(it2) tr))        
+        // Lemma:
+        // forall ((tr : Trace) (it1 : Nat) (it2 : Nat))
+        //    =>
+        //       and
+        //          it1 < it2
+        //          v(l(zero),t1) = v(l(zero),t2)
+        //          forall ((it : Nat))
+        //             v(l(s(it))) = v(l(it)) + 1
+        //       i(l(it1),tr) < i(l(it2),tr)
         for (const auto& v : locationToActiveVars.at(locationSymbol->name))
         {            
             if (!v->isConstant)

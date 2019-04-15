@@ -27,40 +27,41 @@ namespace analysis {
     {
         std::vector<std::shared_ptr<const logic::Lemma>> lemmas;
         
-        // generate standard induction lemmas for all loops, all variables and the predicate =,<,>,<=,>=.
+        // Lemmas to keep track of the values of variables at given timepoints
         StandardInductionLemmas standardInductionLemmas(program, locationToActiveVars, twoTraces);
         standardInductionLemmas.generate(lemmas);
         
-        AtLeastOneIterationLemmas atLeastOneIterationLemmas(program, locationToActiveVars, twoTraces);
-        atLeastOneIterationLemmas.generate(lemmas);
+        //        ValuePreservationLemmas valuePreservationLemmas(program, locationToActiveVars, twoTraces);
+        //        valuePreservationLemmas.generate(lemmas);
         
+        StaticAnalysisLemmas staticAnalysisLemmas(program, locationToActiveVars, twoTraces);
+        staticAnalysisLemmas.generate(lemmas);
+        
+        // Lemmas for iterators
         IntermediateValueLemmas intermediateValueLemmas(program, locationToActiveVars, twoTraces);
         intermediateValueLemmas.generate(lemmas);
         
-//        ValuePreservationLemmas valuePreservationLemmas(program, locationToActiveVars, twoTraces);
-//        valuePreservationLemmas.generate(lemmas);
-
         IterationInjectivityLemmas iterationInjectivityLemmas(program, locationToActiveVars, twoTraces);
         iterationInjectivityLemmas.generate(lemmas);
+        
+        // Other lemmas
+        AtLeastOneIterationLemmas atLeastOneIterationLemmas(program, locationToActiveVars, twoTraces);
+        atLeastOneIterationLemmas.generate(lemmas);
+        
+        //            OrderingSynchronizationLemmas orderingSynchronizationLemmas(program, locationToActiveVars, twoTraces);
+        //            orderingSynchronizationLemmas.generate(lemmas);
 
         if (twoTraces)
         {
-            // generate for each active variable at each loop an induction lemma for equality of the variable on both traces
             TwoTracesLemmas twoTracesLemmas(program, locationToActiveVars, twoTraces);
             twoTracesLemmas.generate(lemmas);
-            
-            NEqualLemmas nEqualLemmas(program, locationToActiveVars, twoTraces);
-            nEqualLemmas.generate(lemmas);
             
             EqualityPreservationLemmas equalityPreservationLemmas(program, locationToActiveVars, twoTraces);
             equalityPreservationLemmas.generate(lemmas);
             
-            OrderingSynchronizationLemmas orderingSynchronizationLemmas(program, locationToActiveVars, twoTraces);
-            orderingSynchronizationLemmas.generate(lemmas);
+            NEqualLemmas nEqualLemmas(program, locationToActiveVars, twoTraces);
+            nEqualLemmas.generate(lemmas);
         }
-        
-        StaticAnalysisLemmas staticAnalysisLemmas(program, locationToActiveVars, twoTraces);
-        staticAnalysisLemmas.generate(lemmas);
         
         return lemmas;
     }

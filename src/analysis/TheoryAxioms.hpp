@@ -1,3 +1,6 @@
+#ifndef __TheoryAxioms__
+#define __TheoryAxioms__
+
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -24,3 +27,4 @@ namespace analysis {
         void generateTheoryAxiom2(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);    
     };
 }
+#endif

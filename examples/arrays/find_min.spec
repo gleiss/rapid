@@ -19,7 +19,7 @@ func main()
 	}
 }
 
-(assert-not
+(conjecture
 	(forall ((k Int))
 		(=>
 			(and

@@ -16,7 +16,7 @@ func main()
 	}
 }
 
-(assert-not
+(conjecture
 	(=>
 		(<= 0 blength)
 		(= (alength main_end) blength)

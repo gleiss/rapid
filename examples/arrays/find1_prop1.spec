@@ -24,7 +24,7 @@ func main()
 	}
 }
 
-(assert-not
+(conjecture
 	(=>
 		(<= 0 alength)
 		(or

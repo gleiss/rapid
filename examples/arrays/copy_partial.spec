@@ -13,7 +13,7 @@ func main()
 	}
 }
 
-(assert-not
+(conjecture
 	(=>
 		(<= k blength)
 		(forall ((j Int))

@@ -12,6 +12,6 @@ func main()
 	}
 }
 
-(assert-not
+(conjecture
 	(= (i main_end) alength)
 )

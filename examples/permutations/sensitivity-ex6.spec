@@ -21,7 +21,7 @@ func main()
 
 //TODO: wrong property, this property does not properly express the notion of a permutation
 // counterexample: array1 = aab, array2 = abb.
-(assert-not
+(conjecture
   (=>
     (and
       (forall ((p1 Int))

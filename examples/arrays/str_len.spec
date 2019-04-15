@@ -8,7 +8,7 @@ func main()
 	}
 }
 
-(assert-not
+(conjecture
 	(=>
 		(exists ((pos Int))
 			(and

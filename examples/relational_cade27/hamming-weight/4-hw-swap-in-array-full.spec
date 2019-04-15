@@ -17,7 +17,7 @@ func main()
 }
 
 
-(assert-not
+(conjecture
    (forall ((k1 Int)(itK1 Nat)(itK1Plus2 Nat))
       (=>
          (and

@@ -25,7 +25,7 @@ func main()
   counter = counter + 1;
 }
 
-(assert-not
+(conjecture
   (= (counter main_end t1) (counter main_end t2))
 )
 

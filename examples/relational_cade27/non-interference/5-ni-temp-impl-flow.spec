@@ -21,7 +21,7 @@ func main()
   counter = counter + 1;
 }
 
-(assert-not
+(conjecture
   (and
     (= (counter main_end t1) (counter main_end t2))
     (forall ((i Int) (tr Trace))

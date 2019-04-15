@@ -27,7 +27,7 @@ func main()
 		}
 	}
 }
-(assert-not
+(conjecture
 	(<= (x main_end) 0)
 )
 

@@ -20,7 +20,7 @@ func main()
   x = x + z;
 }
 
-(assert-not
+(conjecture
    (forall ((k Int))
       (=>
          (and

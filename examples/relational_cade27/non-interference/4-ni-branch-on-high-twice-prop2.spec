@@ -25,7 +25,7 @@ func main()
   counter = counter + 1;
 }
 
-(assert-not
+(conjecture
   (=>
     (and
       (forall ((pos Int))

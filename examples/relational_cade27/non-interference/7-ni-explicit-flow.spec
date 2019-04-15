@@ -18,7 +18,7 @@ func main()
 
 }
 
-(assert-not
+(conjecture
   (=>
     (and
       (= (low1 l10 t1) (low1 l10 t2))

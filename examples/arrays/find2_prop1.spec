@@ -15,7 +15,7 @@ func main()
 	}
 }
 
-(assert-not
+(conjecture
 	(=>
 		(<= 0 alength)
 		(exists ((pos Int))

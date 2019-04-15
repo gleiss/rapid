@@ -23,7 +23,7 @@ func main()
 	}
 }
 
-(assert-not
+(conjecture
    (forall ((pos Int))
       (=>
          (and

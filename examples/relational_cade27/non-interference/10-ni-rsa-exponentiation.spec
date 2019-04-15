@@ -27,7 +27,7 @@ func main()
 	}
 }
 
-(assert-not
+(conjecture
 	(=>
 		(and
 			(= (i l11 t1) (i l11 t2))

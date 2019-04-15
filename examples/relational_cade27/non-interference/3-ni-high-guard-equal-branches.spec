@@ -15,7 +15,7 @@ func main()
   }
 }
 
-(assert-not
+(conjecture
   (=>
     (= (lo l8 t1) (lo l8 t2))
     (= (lo main_end t1) (lo main_end t2))

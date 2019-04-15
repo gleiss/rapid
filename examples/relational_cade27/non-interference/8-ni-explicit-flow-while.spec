@@ -16,7 +16,7 @@ func main()
 }
 
 // Prove: if lo was the same at the beginning it is the same at the end (independently from the value of hi)
-(assert-not
+(conjecture
     (=>
         (and
             (forall ((tr Trace))

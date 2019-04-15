@@ -21,7 +21,7 @@ func main()
 }
 
 // TODO: fix notion of difference up to 1 element
-(assert-not
+(conjecture
     (=>
         (exists ((o Int)(o2 Int))
           (forall ((p1_1 Int) (p1_2 Int))

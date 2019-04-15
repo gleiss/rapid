@@ -30,7 +30,7 @@ func main()
   x = x + y;
 }
 
-(assert-not
+(conjecture
   (=>
     (and
       (forall ((j Int))

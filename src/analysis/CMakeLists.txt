@@ -3,18 +3,24 @@ set(SPECTRE_ANALYSIS_SOURCES
     SemanticsHelper.cpp
     AnalysisPreComputation.cpp
     TraceLemmas.cpp
-    StaticAnalysis.cpp
     TheoryAxioms.cpp
     ProgramTraverser.cpp
+    LemmasVariableValues.cpp
+    LemmasIterators.cpp
+    LemmasOther.cpp
+    LemmasTwoTraces.cpp
 )
 set(SPECTRE_ANALYSIS_HEADERS
     Semantics.hpp
     SemanticsHelper.hpp
     AnalysisPreComputation.hpp
     TraceLemmas.hpp
-    StaticAnalysis.hpp
     TheoryAxioms.hpp
     ProgramTraverser.hpp
+    LemmasVariableValues.hpp
+    LemmasIterators.hpp
+    LemmasOther.hpp
+    LemmasTwoTraces.hpp
 )
 
 add_library(analysis ${SPECTRE_ANALYSIS_SOURCES} ${SPECTRE_ANALYSIS_HEADERS})

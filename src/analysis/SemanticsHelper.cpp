@@ -23,7 +23,7 @@ namespace analysis {
         return logic::Terms::func(trace2Symbol(), {});
     }
 
-# pragma mark - Methods for generating most used timepoint terms
+# pragma mark - Methods for generating most used timepoint terms and symbols
     
     std::shared_ptr<const logic::LVariable> iteratorTermForLoop(const program::WhileStatement* whileStatement)
     {
@@ -94,6 +94,17 @@ namespace analysis {
             return timepointForLoopStatement(whileStatement, logic::Theory::natZero());
         }
     }
+    
+    std::vector<std::shared_ptr<const logic::Symbol>> enclosingIteratorsSymbols(const program::Statement* statement)
+    {
+        auto enclosingIteratorsSymbols = std::vector<std::shared_ptr<const logic::Symbol>>();
+        for (const auto& enclosingLoop : *statement->enclosingLoops)
+        {
+            enclosingIteratorsSymbols.push_back(iteratorSymbol(enclosingLoop));
+        }
+        return enclosingIteratorsSymbols;
+    }
+
     
 # pragma mark - Methods for generating most used terms/predicates denoting program-expressions
     std::shared_ptr<const logic::Term> toTermFull(std::shared_ptr<const program::Variable> var, std::shared_ptr<const logic::Term> timePoint, std::shared_ptr<const logic::Term> trace)

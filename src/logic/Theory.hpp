@@ -32,6 +32,7 @@ namespace logic {
         static std::shared_ptr<const FuncTerm> natSucc(std::shared_ptr<const Term> term);
         static std::shared_ptr<const FuncTerm> natPre(std::shared_ptr<const Term> term);
         static std::shared_ptr<const Formula> natSub(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2, std::string label="");
+        static std::shared_ptr<const Formula> natSubEq(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2, std::string label="");
     };
     
 }

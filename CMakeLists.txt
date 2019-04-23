@@ -4,9 +4,8 @@ cmake_minimum_required (VERSION 3.6.3)
 project (Rapid)
 ################################################################
 
-# require the compiler to use C++14
-# can't use C++17 since Bison requires the register storage, which is not compatible with C++17
-set(CMAKE_CXX_STANDARD 14)
+# require the compiler to use C++17
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # add directoy, where we store all custom files for finding libraries which are not build using cmake (i.e. currently nothing), to the search path of cmake

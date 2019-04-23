@@ -251,37 +251,37 @@ namespace logic {
             subtermSorts.push_back(subterm->symbol->rngSort);
         }
         auto symbol = Signature::fetchOrAdd(name, subtermSorts, Sorts::boolSort(), noDeclaration);
-        return std::shared_ptr<const PredicateFormula>(new PredicateFormula(symbol, subterms, label));
+        return std::make_shared<const PredicateFormula>(symbol, subterms, label);
     }
 
     std::shared_ptr<const EqualityFormula> Formulas::equality(std::shared_ptr<const Term> left, std::shared_ptr<const Term> right, std::string label)
     {
-        return std::shared_ptr<const EqualityFormula>(new EqualityFormula(true, left, right, label));
+        return std::make_shared<const EqualityFormula>(true, left, right, label);
     }
     
     std::shared_ptr<const NegationFormula> Formulas::disequality(std::shared_ptr<const Term> left, std::shared_ptr<const Term> right, std::string label)
     {
-        auto eq = std::shared_ptr<const EqualityFormula>(new EqualityFormula(true, left, right));
-        return std::shared_ptr<const NegationFormula>(new NegationFormula(eq, label));
+        auto eq = std::make_shared<const EqualityFormula>(true, left, right);
+        return std::make_shared<const NegationFormula>(eq, label);
     }
     
     std::shared_ptr<const NegationFormula>  Formulas::negation(std::shared_ptr<const Formula> f, std::string label)
     {
-        return std::shared_ptr<const NegationFormula>(new NegationFormula(f, label));
+        return std::make_shared<const NegationFormula>(f, label);
     }
     
     std::shared_ptr<const ConjunctionFormula> Formulas::conjunction(std::vector<std::shared_ptr<const Formula>> conj, std::string label)
     {
-        return std::shared_ptr<const ConjunctionFormula>(new ConjunctionFormula(conj, label));
+        return std::make_shared<const ConjunctionFormula>(conj, label);
     }
     std::shared_ptr<const DisjunctionFormula> Formulas::disjunction(std::vector<std::shared_ptr<const Formula>> disj, std::string label)
     {
-        return std::shared_ptr<const DisjunctionFormula>(new DisjunctionFormula(disj, label));
+        return std::make_shared<const DisjunctionFormula>(disj, label);
     }
     
     std::shared_ptr<const ImplicationFormula> Formulas::implication(std::shared_ptr<const Formula> f1, std::shared_ptr<const Formula> f2, std::string label)
     {
-        return std::shared_ptr<const ImplicationFormula>(new ImplicationFormula(f1, f2, label));
+        return std::make_shared<const ImplicationFormula>(f1, f2, label);
     }
     
     std::shared_ptr<const Formula> Formulas::existential(std::vector<std::shared_ptr<const Symbol>> vars, std::shared_ptr<const Formula> f, std::string label)
@@ -292,7 +292,7 @@ namespace logic {
         }
         else
         {
-            return std::shared_ptr<const ExistentialFormula>(new ExistentialFormula(std::move(vars), f, label));
+            return std::make_shared<const ExistentialFormula>(std::move(vars), f, label);
         }
     }
     std::shared_ptr<const Formula> Formulas::universal(std::vector<std::shared_ptr<const Symbol>> vars, std::shared_ptr<const Formula> f, std::string label)
@@ -303,7 +303,7 @@ namespace logic {
         }
         else
         {
-            return std::shared_ptr<const UniversalFormula>(new UniversalFormula(std::move(vars), f, label));
+            return std::make_shared<const UniversalFormula>(std::move(vars), f, label);
         }
     }
 }

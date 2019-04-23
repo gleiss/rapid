@@ -18,7 +18,7 @@
 
 void outputUsage()
 {
-    std::cout << "Usage: spectre <filename>" << std::endl;
+    std::cout << "Usage: rapid -dir <outputDir> <filename>" << std::endl;
 }
 
 int main(int argc, char *argv[])
@@ -43,6 +43,14 @@ int main(int argc, char *argv[])
 
                 // parse inputFile
                 auto parserResult = parser::parse(inputFile);
+                
+                // setup outputDir
+                auto outputDir = util::Configuration::instance().outputDir().getValue();
+                if (outputDir == "")
+                {
+                    std::cout << "Error: dir parameter required" << std::endl;
+                    exit(1);
+                }
                 
                 // generate problem
                 std::vector<std::shared_ptr<const logic::ProblemItem>> problemItems;
@@ -70,7 +78,7 @@ int main(int argc, char *argv[])
                 
                 for (const auto& task : tasks)
                 {
-                    auto outfileName = inputFileWithoutExtension + "-" + task.conjecture->name + ".smt2";
+                    auto outfileName = outputDir + "/" + task.conjecture->name + ".smt2";
                     if(std::ifstream(outfileName))
                     {
                         std::cout << "Error: The output-file " << outfileName << " already exists!" << std::endl;

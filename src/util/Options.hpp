@@ -73,11 +73,11 @@ namespace util {
     class Configuration {
     public:
         Configuration() :
-        _outputFile("output", ""),
+        _outputDir("-dir", ""),
         _generateBenchmark("generateBenchmark", false),
         _allOptions()
         {
-            registerOption(&_outputFile);
+            registerOption(&_outputDir);
             registerOption(&_generateBenchmark);
         }
         
@@ -85,13 +85,13 @@ namespace util {
         
         Option* getOption(std::string name);
         
-        StringOption outputFile() { return _outputFile; }
+        StringOption outputDir() { return _outputDir; }
         BooleanOption generateBenchmark() { return _generateBenchmark; }
 
         static Configuration instance() { return _instance; }
         
     protected:
-        StringOption _outputFile;
+        StringOption _outputDir;
         BooleanOption _generateBenchmark;
 
         std::map<std::string, Option*> _allOptions;

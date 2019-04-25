@@ -11,8 +11,6 @@ namespace analysis {
     {
         // generate lemmas
         generateLemmas(statement, lemmas, InductionKind::Equal);
-        //        generateValueEvolutionLemma(statement, lemmas, InductionKind::Less);
-        //        generateValueEvolutionLemma(statement, lemmas, InductionKind::Greater);
         //        generateValueEvolutionLemma(statement, lemmas, InductionKind::LessEqual);
         //        generateValueEvolutionLemma(statement, lemmas, InductionKind::GreaterEqual);
         
@@ -39,8 +37,8 @@ namespace analysis {
         {
             if (!v->isConstant)
             {
-                // Premise: forall it (it<=n => v(l(it1,...,itk,it)    ) C v(l(it1,...,itk,s(it))    )), where C in {=,<,>,<=,>=} or
-                //          forall it (it<=n => v(l(it1,...,itk,it),pos) C v(l(it1,...,itk,s(it)),pos)), where C in {=,<,>,<=,>=}
+                // Premise: forall it (it<=n => v(l(it1,...,itk,it)    ) C v(l(it1,...,itk,s(it))    )), where C in {=,<=,>=} or
+                //          forall it (it<=n => v(l(it1,...,itk,it),pos) C v(l(it1,...,itk,s(it)),pos)), where C in {=,<=,>=}
                 auto lhs1 = v->isArray ? toTerm(v,lStartIt, pos) : toTerm(v,lStartIt);
                 auto rhs1 = v->isArray ? toTerm(v,lStartSuccOfIt, pos) : toTerm(v,lStartSuccOfIt);
                 std::shared_ptr<const logic::Formula> formula1;
@@ -48,12 +46,6 @@ namespace analysis {
                 {
                     case InductionKind::Equal:
                         formula1 = logic::Formulas::equality(lhs1, rhs1);
-                        break;
-                    case InductionKind::Less:
-                        formula1 = logic::Theory::intLess(lhs1, rhs1);
-                        break;
-                    case InductionKind::Greater:
-                        formula1 = logic::Theory::intGreater(lhs1, rhs1);
                         break;
                     case InductionKind::LessEqual:
                         formula1 = logic::Theory::intLessEqual(lhs1, rhs1);
@@ -71,8 +63,8 @@ namespace analysis {
                         )
                     );
                 
-                // Conclusion: v(l(it1,...,itk,0)    ) C v(l(it1,...,itk,n)    ), where C in {=,<,>,<=,>=} or
-                //             v(l(it1,...,itk,0),pos) C v(l(it1,...,itk,n),pos), where C in {=,<,>,<=,>=}
+                // Conclusion: v(l(it1,...,itk,0)    ) C v(l(it1,...,itk,n)    ), where C in {=,<=,>=} or
+                //             v(l(it1,...,itk,0),pos) C v(l(it1,...,itk,n),pos), where C in {=,<=,>=}
                 auto lhs2 = v->isArray ? toTerm(v, lStartZero, pos) : toTerm(v,lStartZero);
                 auto rhs2 = v->isArray ? toTerm(v, lStartN, pos) : toTerm(v,lStartN);
                 std::shared_ptr<const logic::Formula> conclusion;
@@ -80,12 +72,6 @@ namespace analysis {
                 {
                     case InductionKind::Equal:
                         conclusion = logic::Formulas::equality(lhs2, rhs2);
-                        break;
-                    case InductionKind::Less:
-                        conclusion = logic::Theory::intLess(lhs2, rhs2);
-                        break;
-                    case InductionKind::Greater:
-                        conclusion = logic::Theory::intGreater(lhs2, rhs2);
                         break;
                     case InductionKind::LessEqual:
                         conclusion = logic::Theory::intLessEqual(lhs2, rhs2);
@@ -112,12 +98,6 @@ namespace analysis {
                     case InductionKind::Equal:
                         connective = "eq";
                         break;
-                    case InductionKind::Less:
-                        connective = "le";
-                        break;
-                    case InductionKind::Greater:
-                        connective = "gr";
-                        break;
                     case InductionKind::LessEqual:
                         connective = "leq";
                         break;
@@ -125,7 +105,7 @@ namespace analysis {
                         connective = "geq";
                         break;
                 }
-                auto name = "induction-" + connective + "-" + v->name + "-" + whileStatement->location;
+                auto name = "value-evolution-" + connective + "-" + v->name + "-" + whileStatement->location;
                 lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
             }
         }
@@ -196,7 +176,7 @@ namespace analysis {
                     bareLemma = logic::Formulas::universal({tr}, bareLemma);
                 }
                 
-                auto name = "value-preservation-" + v->name + "-" + statement->location;
+                auto name = "value-evolution-bounded-" + v->name + "-" + statement->location;
                 lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
             }
         }
@@ -243,7 +223,7 @@ namespace analysis {
                     bareLemma = logic::Formulas::universal({tr}, bareLemma);
                 }
                 
-                auto name = "static-analysis-" + activeVar->name + "-" + statement->location;
+                auto name = "values-static-" + activeVar->name + "-" + statement->location;
                 lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
             }
         }

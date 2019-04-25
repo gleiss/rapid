@@ -17,10 +17,53 @@ namespace analysis {
     
     /*
      * LEMMA 1
-     * Induction lemma to reason about how a single value of a variable (-position) evolves over an interval.
+     * Induction lemma to reason about how a single value of a variable (-position) evolves over an interval, for reflexive transitive connectives =,<=,>=.
+     * (added for both non-array- and array variables. we ignore array positions and nested iterators in this description)
+     * forall boundL,boundR.
+     *    =>
+     *       forall it.
+     *          =>
+     *             boundL<=it<boundR
+     *             v(l(it)) C v(l(s(it)))
+     *       forall it.
+     *          =>
+     *             boundL<=it<=boundR
+     *             v(l(boundL)) C v(l(it))
+     * where C is either =, <= or >=.
      *
-     * For any predicate symbols C in =,<,>,<=,>=, this lemma is equivalent to bounded induction with induction hypothesis v(l(it)) C v(l(boundL)).
-     * Instead of encoding the inductive step as v(l(it)) C v(l(boundL)) => v(l(s(it))) C v(l(boundL)) we use the equivalent v(l(s(it))) C v(l(it)).
+     * Soundness: This lemma is equivalent to the following lemma 1A (the first precondition always holds for reflexive C and
+     * the second precondition can be simplified for transitive C):
+     * forall boundL,boundR.
+     *    =>
+     *       and
+     *          v(l(boundL)) C (l(boundL))
+     *          forall it.
+     *             =>
+     *                and
+     *                   boundL<=it<boundR
+     *                   v(l(boundL)) C (l(it))
+     *                v(l(boundL)) C (l(s(it)))
+     *       forall it.
+     *          =>
+     *             boundL<=it<=boundR
+     *             v(l(boundL)) C v(l(it))
+     *
+     * Lemma 1A is an instance of the general induction scheme
+     * forall boundL,boundR.
+     *    =>
+     *       and
+     *          P(boundL)
+     *          forall it.
+     *             =>
+     *                and
+     *                   boundL<=it<boundR
+     *                   P(it)
+     *                P(s(it))
+     *       forall it.
+     *          =>
+     *             boundL<=it<=boundR
+     *             P(it)
+     *
      *
      * Discussion on possible variations:
      * The following variations apply to induction in general and are not specific to the used induction hypothesis.
@@ -30,15 +73,16 @@ namespace analysis {
      *      if the truth of predicate P is preserved in the interval [0,boundR], then P(0) implies P(it) for all it in [0,boundR].
      *      if the truth of predicate P is preserved in the interval [boundL,n], then P(boundL) implies P(it) for all it in [boundL,n].
      *      if the truth of predicate P is preserved in the interval [0,n], then P(0) implies P(it) for all it in [0,n].
-     *
      * TODO:
-     *  the most elegant set of lemmas would be to only use the most general version of these lemmas, and include one such lemma for each predicate symbol =,<,>,<=,>=.
+     *  the most elegant set of lemmas would be to only use the most general version of these lemmas, and include one such lemma for each predicate symbol =,<=,>=.
      *  Can we use this set of lemmas?
      *
      * Why are these lemmas useful:
      *  The most useful instance of these lemmas is the one with equality as connective.
      *  It is used to conclude that a variable value doesn't change in an interval.
-     *  All other connectives are not very important.
+     *  The other connectives are not very important. One use case of <= and >= is a loop which computes the maximal element of an array.
+     *
+     * TODO: we probably want lemmas which cover similar inductive reasoning for the (non-reflexive!) predicates < and >.
      */
     class ValueEvolutionLemmas : public ProgramTraverser<std::vector<std::shared_ptr<const logic::Lemma>>>
     {
@@ -48,7 +92,7 @@ namespace analysis {
         virtual void generateOutputFor(const program::WhileStatement* statement, std::vector<std::shared_ptr<const logic::Lemma>>& lemmas) override;
         
     private:
-        enum class InductionKind { Equal, Less, Greater, LessEqual, GreaterEqual};
+        enum class InductionKind { Equal, LessEqual, GreaterEqual};
         
         void generateLemmas(const program::WhileStatement* whileStatement,
                                              std::vector<std::shared_ptr<const logic::Lemma>>& lemmas,
@@ -59,7 +103,43 @@ namespace analysis {
     
     /* LEMMA 2
      * check whether we can syntactically conclude (from looking at the program code) that a variable v is not changed in a loop l. In such a case, we add the lemma
-     * forall it, pos. v(l(it),pos) = v(l(zero), pos).
+     * forall it.( it<n => v(l(it)) = v(l(zero)) ).
+     * (added for both non-array- and array variables. we ignore array positions and enclosing iterators in this description)
+     *
+     * Soundness: We first statically check that forall it.( it<n => v(l(s(it)))=v(l(it)) ) holds.
+     * The added lemma is then the conclusion of the following lemma 2A:
+     *    =>
+     *       and
+     *          v(l(zero)) = v(l(zero))
+     *          forall it.
+     *             =>
+     *                and
+     *                   it<n
+     *                   v(l(s(it)))=v(l(it))
+     *       forall it.
+     *          =>
+     *             it<=n
+     *             P(it)
+     *
+     * Lemma 2A is an instance of the general induction scheme
+     * forall boundL,boundR.
+     *    =>
+     *       and
+     *          P(boundL)
+     *          forall it.
+     *             =>
+     *                and
+     *                   boundL<=it<boundR
+     *                   P(it)
+     *                P(s(it))
+     *       forall it.
+     *          =>
+     *             boundL<=it<=boundR
+     *             P(it)
+     * by
+     * - substituting boundL->zero, boundR->n
+     * - defining P(it) := v(l(it)) = v(l(zero))
+     * - applying simplifications which use the reflexivity and transitivity of equality and the fact that 0 is the smallest natural number.
      *
      * Discussion on possible Variations:
      *  No other ideas for now.

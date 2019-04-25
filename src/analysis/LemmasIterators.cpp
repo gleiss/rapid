@@ -82,7 +82,7 @@ namespace analysis {
                     bareLemma = logic::Formulas::universal({tr}, bareLemma);
                 }
                 
-                auto name = "intermediate-value-" + v->name + "-" + statement->location;
+                auto name = "iterator-intermediateValue-" + v->name + "-" + statement->location;
                 lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
             }
         }

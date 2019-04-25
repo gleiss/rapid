@@ -24,9 +24,23 @@ namespace analysis {
     
     /*
      * LEMMA 1:
-     * An iterator iterates through the whole array. In particular, for each position of the array, there is a timepoint,
-     * where the iterator is at that position.
+     * If the (iterator-) variable v is dense, and the value x is between the value of v at the beginning and at the end of the loop, then there is a timepoint in the loop,
+     * where v has value x. The value x usually denotes some position in an array.
      * One can see this lemma as a discrete version of the Intermediate Value Theorem for continuous functions.
+     * (added for both non-array- and array variables. we ignore array positions and enclosing iterators in this description) // TODO: only add it for iterator variables.
+     *
+     * forall x.
+     *    =>
+     *       and
+     *          v(l(zero))<=x
+     *          x<v(l(n))
+     *          forall it.
+     *             v(l(s(it)))=v(l(it))+1
+     *    exists it2.
+     *       and
+     *          it2<n
+     *          v(l(it2))=x
+     *
      *
      * Why is this lemma useful:
      *  This lemma synthesizes interesting timepoints, which can be used to split a loop into intervals.

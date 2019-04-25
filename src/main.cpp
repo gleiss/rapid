@@ -1,6 +1,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <sstream>
 
 #include "logic/Theory.hpp"
 #include "logic/Problem.hpp"
@@ -75,28 +76,11 @@ int main(int argc, char *argv[])
                 
                 // generate reasoning tasks, convert each reasoning task to smtlib, and output it to output-file
                 auto tasks = problem.generateReasoningTasks();
-                
                 for (const auto& task : tasks)
                 {
-                    auto outfileName = outputDir + "/" + task.conjecture->name + ".smt2";
-                    if(std::ifstream(outfileName))
-                    {
-                        std::cout << "Error: The output-file " << outfileName << " already exists!" << std::endl;
-                        exit(1);
-                    }
-                    
-                    std::cout << "Generating reasoning task in " << outfileName << "\n";
-                    std::ofstream outfile (outfileName);
-                    
-                    if(!util::Configuration::instance().generateBenchmark().getValue())
-                    {
-                        outfile << util::Output::comment;
-                        outfile << *parserResult.program;
-                        outfile << util::Output::nocomment;
-                    }
-                    
-                    // output task
-                    task.outputSMTLIB(outfile);
+                    std::stringstream preamble;
+                    preamble << util::Output::comment << *parserResult.program << util::Output::nocomment;
+                    task.outputSMTLIBToDir(outputDir, preamble.str());
                 }
             }
         }

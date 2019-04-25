@@ -56,7 +56,14 @@ namespace logic {
         
         const std::vector<std::shared_ptr<const Axiom>> axioms;
         const std::shared_ptr<const Conjecture> conjecture;
+
+        /*
+         * generate a new file in the directory 'dirPath' and output the reasoning task in SMTLIB syntax.
+         * the preamble string is added at the beginning of the file.
+         */
+        void outputSMTLIBToDir(std::string dirPath, std::string preamble) const;
         
+    private:
         void outputSMTLIB(std::ostream& ostr) const;
     };
     

@@ -1,6 +1,8 @@
 #include "Problem.hpp"
 
 #include <iostream>
+#include <fstream>
+
 #include <cassert>
 #include <ctime>
 
@@ -10,6 +12,27 @@
 namespace logic {
     
     std::ostream& operator<<(std::ostream& ostr, const std::vector<std::shared_ptr<const ProblemItem>>& f){ostr << "not implemented"; return ostr;}
+
+    void ReasoningTask::outputSMTLIBToDir(std::string dirPath, std::string preamble) const
+    {
+        auto outfileName = dirPath + "/" + conjecture->name + ".smt2";
+        if(std::ifstream(outfileName))
+        {
+            std::cout << "Error: The output-file " << outfileName << " already exists!" << std::endl;
+            exit(1);
+        }
+        
+        std::cout << "Generating reasoning task in " << outfileName << "\n";
+        std::ofstream outfile (outfileName);
+        
+        if(!util::Configuration::instance().generateBenchmark().getValue())
+        {
+            outfile << preamble;
+        }
+        
+        // output task
+        outputSMTLIB(outfile);
+    }
 
     void ReasoningTask::outputSMTLIB(std::ostream& ostr) const
     {

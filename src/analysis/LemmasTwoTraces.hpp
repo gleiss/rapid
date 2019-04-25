@@ -20,6 +20,22 @@ namespace analysis {
      * If a variable has the same value (or if an array has at one position the same value) in both traces at some iteration,
      * and if that equality is preserved in an interval, then it also holds at the end of the interval.
      *
+     * Soundness: This lemma is exactly the instantiation of the following induction axiom scheme with P(it) := v(l(it),t1)=v(l(it),t2)
+     * forall boundL,boundR.
+     *    =>
+     *       and
+     *          P(boundL)
+     *          forall it.
+     *             =>
+     *                and
+     *                   boundL<=it<boundR
+     *                   P(it)
+     *                P(s(it))
+     *       forall it.
+     *          =>
+     *             boundL<=it<=boundR
+     *             P(it)
+     *
      * Variations:
      *  The most general version of this lemma allows arbitrary intervals.
      *  More specific versions fix the left bound to 0 and/or the right bound to the last iteration of one trace (wlog. trace 1).

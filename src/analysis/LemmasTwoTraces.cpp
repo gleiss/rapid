@@ -125,7 +125,7 @@ namespace analysis {
                 auto universal = logic::Formulas::universal(quantifierSymbols, outerImplication);
                 auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols(statement), universal);
                 
-                auto name = "eq-preservation-traces-" + std::string(itLeftZero ? "0" : "l") + std::string(itRightN ? "n" : "r") + "-" + v->name + "-" + statement->location;
+                auto name = "traces-eq-preservation-" + std::string(itLeftZero ? "0" : "l") + std::string(itRightN ? "n" : "r") + "-" + v->name + "-" + statement->location;
                 lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
             }
         }
@@ -168,7 +168,7 @@ namespace analysis {
                 logic::Formulas::implication(premise, conclusion)
             );
 
-        auto name = "nEqual-" + nT1->symbol->name + "-" + statement->location;
+        auto name = "traces-nEqual-" + nT1->symbol->name + "-" + statement->location;
         lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
     }
 }

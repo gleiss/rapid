@@ -32,6 +32,16 @@ namespace analysis {
         auto posSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
         auto pos = logic::Terms::var(posSymbol);
         
+        auto predicateFunctor =
+        (kind == InductionKind::Equal) ? logic::Formulas::equality :
+        (kind == InductionKind::LessEqual) ? logic::Theory::intLessEqual :
+        logic::Theory::intGreaterEqual;
+        
+        std::map<InductionKind,std::string> connectiveToString = {
+            {InductionKind::Equal, "eq"},
+            {InductionKind::LessEqual, "leq"},
+            {InductionKind::GreaterEqual, "geq"}};
+        
         // add lemma for each intVar and each intArrayVar
         for (const auto& v : locationToActiveVars.at(locationSymbolForStatement(whileStatement)->name))
         {
@@ -39,47 +49,27 @@ namespace analysis {
             {
                 // Premise: forall it (it<=n => v(l(it1,...,itk,it)    ) C v(l(it1,...,itk,s(it))    )), where C in {=,<=,>=} or
                 //          forall it (it<=n => v(l(it1,...,itk,it),pos) C v(l(it1,...,itk,s(it)),pos)), where C in {=,<=,>=}
-                auto lhs1 = v->isArray ? toTerm(v,lStartIt, pos) : toTerm(v,lStartIt);
-                auto rhs1 = v->isArray ? toTerm(v,lStartSuccOfIt, pos) : toTerm(v,lStartSuccOfIt);
-                std::shared_ptr<const logic::Formula> formula1;
-                switch (kind)
-                {
-                    case InductionKind::Equal:
-                        formula1 = logic::Formulas::equality(lhs1, rhs1);
-                        break;
-                    case InductionKind::LessEqual:
-                        formula1 = logic::Theory::intLessEqual(lhs1, rhs1);
-                        break;
-                    case InductionKind::GreaterEqual:
-                        formula1 = logic::Theory::intGreaterEqual(lhs1, rhs1);
-                        break;
-                }
-
                 auto premise =
                     logic::Formulas::universal({it->symbol},
                         logic::Formulas::implication(
                             logic::Theory::natSub(it, n),
-                            formula1
+                            predicateFunctor(
+                                v->isArray ? toTerm(v,lStartIt, pos) : toTerm(v,lStartIt),
+                                v->isArray ? toTerm(v,lStartSuccOfIt, pos) : toTerm(v,lStartSuccOfIt),
+                                ""
+                            )
                         )
                     );
                 
                 // Conclusion: v(l(it1,...,itk,0)    ) C v(l(it1,...,itk,n)    ), where C in {=,<=,>=} or
                 //             v(l(it1,...,itk,0),pos) C v(l(it1,...,itk,n),pos), where C in {=,<=,>=}
-                auto lhs2 = v->isArray ? toTerm(v, lStartZero, pos) : toTerm(v,lStartZero);
-                auto rhs2 = v->isArray ? toTerm(v, lStartN, pos) : toTerm(v,lStartN);
-                std::shared_ptr<const logic::Formula> conclusion;
-                switch (kind)
-                {
-                    case InductionKind::Equal:
-                        conclusion = logic::Formulas::equality(lhs2, rhs2);
-                        break;
-                    case InductionKind::LessEqual:
-                        conclusion = logic::Theory::intLessEqual(lhs2, rhs2);
-                        break;
-                    case InductionKind::GreaterEqual:
-                        conclusion = logic::Theory::intGreaterEqual(lhs2, rhs2);
-                        break;
-                }
+                auto conclusion =
+                    predicateFunctor(
+                        v->isArray ? toTerm(v, lStartZero, pos) : toTerm(v,lStartZero),
+                        v->isArray ? toTerm(v, lStartN, pos) : toTerm(v,lStartN),
+                        ""
+                    );
+                
                 // forall enclosingIterators: (Premise => Conclusion) or
                 // forall enclosingIterators: forall pos. (Premise => Conclusion)
                 auto outerImp = logic::Formulas::implication(premise, conclusion);
@@ -92,20 +82,7 @@ namespace analysis {
                     bareLemma = logic::Formulas::universal({tr}, bareLemma);
                 }
                 
-                std::string connective;
-                switch (kind)
-                {
-                    case InductionKind::Equal:
-                        connective = "eq";
-                        break;
-                    case InductionKind::LessEqual:
-                        connective = "leq";
-                        break;
-                    case InductionKind::GreaterEqual:
-                        connective = "geq";
-                        break;
-                }
-                auto name = "value-evolution-" + connective + "-" + v->name + "-" + whileStatement->location;
+                auto name = "value-evolution-" + connectiveToString[kind] + "-" + v->name + "-" + whileStatement->location;
                 items.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
             }
         }

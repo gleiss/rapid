@@ -254,7 +254,7 @@ namespace logic {
         return std::make_shared<const PredicateFormula>(symbol, subterms, label);
     }
 
-    std::shared_ptr<const EqualityFormula> Formulas::equality(std::shared_ptr<const Term> left, std::shared_ptr<const Term> right, std::string label)
+    std::shared_ptr<const Formula> Formulas::equality(std::shared_ptr<const Term> left, std::shared_ptr<const Term> right, std::string label)
     {
         return std::make_shared<const EqualityFormula>(true, left, right, label);
     }

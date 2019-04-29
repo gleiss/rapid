@@ -47,13 +47,13 @@ namespace analysis {
      *  Often the timepoints in such an interval behave in some uniform way, and if this is the case then
      *  we often can apply other induction lemmas to the interval.
      */
-    class IntermediateValueLemmas : public ProgramTraverser<std::vector<std::shared_ptr<const logic::Lemma>>>
+    class IntermediateValueLemmas : public ProgramTraverser<std::vector<std::shared_ptr<const logic::ProblemItem>>>
     {
     public:
         using ProgramTraverser::ProgramTraverser; // inherit initializer, note: doesn't allow additional members in subclass!
         
     private:
-        virtual void generateOutputFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::Lemma>>& lemmas) override;
+        virtual void generateOutputFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::ProblemItem>>& items) override;
     };
     
     /*
@@ -65,13 +65,13 @@ namespace analysis {
      *  If each array-position is visited only once, we know that its value is not changed after the first visit,
      *  and in particular the value at the end is the value after the first visit.
      */
-    class IterationInjectivityLemmas : public ProgramTraverser<std::vector<std::shared_ptr<const logic::Lemma>>>
+    class IterationInjectivityLemmas : public ProgramTraverser<std::vector<std::shared_ptr<const logic::ProblemItem>>>
     {
     public:
         using ProgramTraverser::ProgramTraverser; // inherit initializer, note: doesn't allow additional members in subclass!
         
     private:
-        virtual void generateOutputFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::Lemma>>& lemmas) override;
+        virtual void generateOutputFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::ProblemItem>>& items) override;
     };
 }
 

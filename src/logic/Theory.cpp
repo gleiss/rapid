@@ -115,5 +115,75 @@ namespace logic {
         auto succOfT2 = natSucc(t2);
         return Formulas::predicate("Sub", {t1,succOfT2}, label, false); // Sub needs a declaration, since it is not added by Vampire yet
     }
+    
+    
+    /*
+     * Generates an induction axiom from an induction hypothesis 'inductionHypothesis' (modelled as function which maps each timepoint to a formula)
+     * The induction axiom has the following form:
+     * forall boundL,boundR.
+     *    =>
+     *       and
+     *          P(boundL)
+     *          forall it.
+     *             =>
+     *                and
+     *                   boundL<=it<boundR
+     *                   P(it)
+     *                P(s(it))
+     *       forall it.
+     *          =>
+     *             boundL<=it<=boundR
+     *             P(it)
+     *
+     */
+    std::shared_ptr<const Formula> inductionAxiom1(std::function<std::shared_ptr<const Formula> (std::shared_ptr<const Term>)> inductionHypothesis)
+    {
+        auto boundLSymbol = logic::Signature::varSymbol("boundL", logic::Sorts::natSort());
+        auto boundRSymbol = logic::Signature::varSymbol("boundR", logic::Sorts::natSort());
+        auto itIndSymbol = logic::Signature::varSymbol("itInd", logic::Sorts::natSort());
+        
+        auto boundL = Terms::var(boundLSymbol);
+        auto boundR = Terms::var(boundRSymbol);
+        auto itInd = Terms::var(itIndSymbol);
+        
+        auto baseCase = inductionHypothesis(boundL);
+        
+        auto inductiveCase =
+            Formulas::universal({itIndSymbol},
+                Formulas::implication(
+                    Formulas::conjunction({
+                        Theory::natSubEq(boundL, itInd),
+                        Theory::natSub(itInd, boundR),
+                        inductionHypothesis(itInd)
+                    }),
+                    inductionHypothesis(Theory::natSucc(itInd))
+                )
+            );
+        
+        auto conclusion =
+            Formulas::universal({itIndSymbol},
+                Formulas::implication(
+                    Formulas::conjunction({
+                        Theory::natSubEq(boundL, itInd),
+                        Theory::natSubEq(itInd, boundR)
+                    }),
+                    inductionHypothesis(itInd)
+                )
+            );
+        
+        auto inductionAxiom =
+            Formulas::universal({boundLSymbol,boundRSymbol},
+                Formulas::implication(
+                    Formulas::conjunction({
+                        baseCase,
+                        inductiveCase
+                    }),
+                    conclusion
+                )
+            );
+        
+        return inductionAxiom;
+    }
+
 }
 

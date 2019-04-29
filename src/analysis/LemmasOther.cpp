@@ -7,7 +7,7 @@
 
 namespace analysis {
     
-    void AtLeastOneIterationLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Lemma>> &lemmas)
+    void AtLeastOneIterationLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::ProblemItem>>& items)
     {
         auto itSymbol = iteratorSymbol(statement);
         auto it = iteratorTermForLoop(statement);
@@ -33,10 +33,10 @@ namespace analysis {
         }
 
         auto name = "atLeastOneIteration-" + statement->location;
-        lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
+        items.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
     }
     
-    void OrderingSynchronizationLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Lemma>> &lemmas)
+    void OrderingSynchronizationLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::ProblemItem>>& items)
     {
         assert(twoTraces);
         
@@ -112,7 +112,7 @@ namespace analysis {
                         );
                     
                     auto name = "synchronization-orderings-" + v->name + "-" + statement->location;
-                    lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
+                    items.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
                 }
             }
         }

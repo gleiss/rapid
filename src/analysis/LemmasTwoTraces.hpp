@@ -47,24 +47,24 @@ namespace analysis {
      * Why is this lemma useful
      *  This lemma is central for reasoning about relational properties.
      */
-    class EqualityPreservationTracesLemmas : public ProgramTraverser<std::vector<std::shared_ptr<const logic::Lemma>>>
+    class EqualityPreservationTracesLemmas : public ProgramTraverser<std::vector<std::shared_ptr<const logic::ProblemItem>>>
     {
     public:
         using ProgramTraverser::ProgramTraverser; // inherit initializer, note: doesn't allow additional members in subclass!
         
     private:
-        virtual void generateOutputFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::Lemma>>& lemmas) override;
+        virtual void generateOutputFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::ProblemItem>>& items) override;
         
         void generateLemmas(const program::WhileStatement* whileStatement,
                                      bool itLeftZero,
                                      bool itRightN,
-                                     std::vector<std::shared_ptr<const logic::Lemma>>& lemmas);
+                                     std::vector<std::shared_ptr<const logic::ProblemItem>>& items);
         void generateLemmasZeroToRight(const program::WhileStatement* whileStatement,
-                                                                 std::vector<std::shared_ptr<const logic::Lemma>>& lemmas);
+                                                                 std::vector<std::shared_ptr<const logic::ProblemItem>>& items);
         void generateLemmasLeftToEnd(const program::WhileStatement* whileStatement,
-                                                               std::vector<std::shared_ptr<const logic::Lemma>>& lemmas);
+                                                               std::vector<std::shared_ptr<const logic::ProblemItem>>& items);
         void generateLemmasLeftToRight(const program::WhileStatement* whileStatement,
-                                                                 std::vector<std::shared_ptr<const logic::Lemma>>& lemmas);
+                                                                 std::vector<std::shared_ptr<const logic::ProblemItem>>& items);
     };
     
     /*
@@ -81,13 +81,13 @@ namespace analysis {
      * Why is this lemma useful?
      * Most relational properties only hold, if the number of iterations of the involved loops is the same in both traces.
      */
-    class NEqualLemmas : public ProgramTraverser<std::vector<std::shared_ptr<const logic::Lemma>>>
+    class NEqualLemmas : public ProgramTraverser<std::vector<std::shared_ptr<const logic::ProblemItem>>>
     {
     public:
         using ProgramTraverser::ProgramTraverser; // inherit initializer, note: doesn't allow additional members in subclass!
         
     private:
-        virtual void generateOutputFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::Lemma>>& lemmas) override;
+        virtual void generateOutputFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::ProblemItem>>& items) override;
     };
     
 

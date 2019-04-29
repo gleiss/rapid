@@ -24,44 +24,44 @@ namespace analysis {
 
 #pragma mark - High level methods
     
-    std::vector<std::shared_ptr<const logic::Lemma>> generateTraceLemmas(const program::Program& program,
+    std::vector<std::shared_ptr<const logic::ProblemItem>> generateTraceLemmas(const program::Program& program,
                                                                            std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars,
                                                                            bool twoTraces)
     {
-        std::vector<std::shared_ptr<const logic::Lemma>> lemmas;
+        std::vector<std::shared_ptr<const logic::ProblemItem>> items;
         
         // Lemmas to keep track of the values of variables at given timepoints
         ValueEvolutionLemmas valueEvolutionLemmas(program, locationToActiveVars, twoTraces);
-        valueEvolutionLemmas.generate(lemmas);
+        valueEvolutionLemmas.generate(items);
         
         StaticAnalysisLemmas staticAnalysisLemmas(program, locationToActiveVars, twoTraces);
-        staticAnalysisLemmas.generate(lemmas);
+        staticAnalysisLemmas.generate(items);
         
         // Lemmas for iterators
         IntermediateValueLemmas intermediateValueLemmas(program, locationToActiveVars, twoTraces);
-        intermediateValueLemmas.generate(lemmas);
+        intermediateValueLemmas.generate(items);
         
         IterationInjectivityLemmas iterationInjectivityLemmas(program, locationToActiveVars, twoTraces);
-        iterationInjectivityLemmas.generate(lemmas);
+        iterationInjectivityLemmas.generate(items);
         
         // Other lemmas
         AtLeastOneIterationLemmas atLeastOneIterationLemmas(program, locationToActiveVars, twoTraces);
-        atLeastOneIterationLemmas.generate(lemmas);
+        atLeastOneIterationLemmas.generate(items);
         
         //            OrderingSynchronizationLemmas orderingSynchronizationLemmas(program, locationToActiveVars, twoTraces);
-        //            orderingSynchronizationLemmas.generate(lemmas);
+        //            orderingSynchronizationLemmas.generate(items);
 
         // Trace lemmas
         if (twoTraces)
         {            
             EqualityPreservationTracesLemmas equalityPreservationTracesLemmas(program, locationToActiveVars, twoTraces);
-            equalityPreservationTracesLemmas.generate(lemmas);
+            equalityPreservationTracesLemmas.generate(items);
             
             NEqualLemmas nEqualLemmas(program, locationToActiveVars, twoTraces);
-            nEqualLemmas.generate(lemmas);
+            nEqualLemmas.generate(items);
         }
         
-        return lemmas;
+        return items;
     }
     
     

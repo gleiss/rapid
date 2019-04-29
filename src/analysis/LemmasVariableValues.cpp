@@ -7,18 +7,18 @@
 
 namespace analysis {
     
-    void ValueEvolutionLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Lemma> > &lemmas)
+    void ValueEvolutionLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::ProblemItem>>& items)
     {
         // generate lemmas
-        generateLemmas(statement, lemmas, InductionKind::Equal);
-        //        generateValueEvolutionLemma(statement, lemmas, InductionKind::LessEqual);
-        //        generateValueEvolutionLemma(statement, lemmas, InductionKind::GreaterEqual);
+        generateLemmas(statement, items, InductionKind::Equal);
+        //        generateValueEvolutionLemma(statement, items, InductionKind::LessEqual);
+        //        generateValueEvolutionLemma(statement, items, InductionKind::GreaterEqual);
         
-        generateLemmasBoundedEq(statement, lemmas);
+        generateLemmasBoundedEq(statement, items);
     }
     
     void ValueEvolutionLemmas::generateLemmas(const program::WhileStatement* whileStatement,
-                                                                  std::vector<std::shared_ptr<const logic::Lemma>>& lemmas,
+                                                                  std::vector<std::shared_ptr<const logic::ProblemItem>>& items,
                                                                   const InductionKind kind)
     {
         auto it = iteratorTermForLoop(whileStatement);
@@ -106,12 +106,12 @@ namespace analysis {
                         break;
                 }
                 auto name = "value-evolution-" + connective + "-" + v->name + "-" + whileStatement->location;
-                lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
+                items.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
             }
         }
     }
     
-    void ValueEvolutionLemmas::generateLemmasBoundedEq(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Lemma>> &lemmas)
+    void ValueEvolutionLemmas::generateLemmasBoundedEq(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::ProblemItem>>& items)
     {
         auto itSymbol = iteratorSymbol(statement);
         auto it = iteratorTermForLoop(statement);
@@ -177,12 +177,12 @@ namespace analysis {
                 }
                 
                 auto name = "value-evolution-bounded-" + v->name + "-" + statement->location;
-                lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
+                items.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
             }
         }
     }
     
-    void StaticAnalysisLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Lemma>>& lemmas)
+    void StaticAnalysisLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::ProblemItem>>& items)
     {
         auto itSymbol = iteratorSymbol(statement);
         auto it = iteratorTermForLoop(statement);
@@ -224,7 +224,7 @@ namespace analysis {
                 }
                 
                 auto name = "values-static-" + activeVar->name + "-" + statement->location;
-                lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
+                items.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
             }
         }
     }

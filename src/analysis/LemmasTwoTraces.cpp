@@ -7,18 +7,18 @@
 
 namespace analysis {
     
-    void EqualityPreservationTracesLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Lemma>> &lemmas)
+    void EqualityPreservationTracesLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::ProblemItem>>& items)
     {
-        generateLemmas(statement, true, true, lemmas);
-        generateLemmas(statement, true, false, lemmas);
-        generateLemmas(statement, false, true, lemmas);
-        generateLemmas(statement, false, false, lemmas);
+        generateLemmas(statement, true, true, items);
+        generateLemmas(statement, true, false, items);
+        generateLemmas(statement, false, true, items);
+        generateLemmas(statement, false, false, items);
     }
 
     void EqualityPreservationTracesLemmas::generateLemmas(const program::WhileStatement *statement,
                                                                    bool itLeftZero,
                                                                    bool itRightN,
-                                                                   std::vector<std::shared_ptr<const logic::Lemma>> &lemmas)
+                                                                   std::vector<std::shared_ptr<const logic::ProblemItem>>& items)
     {
         auto t1 = trace1Term();
         auto t2 = trace2Term();
@@ -126,12 +126,12 @@ namespace analysis {
                 auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols(statement), universal);
                 
                 auto name = "traces-eq-preservation-" + std::string(itLeftZero ? "0" : "l") + std::string(itRightN ? "n" : "r") + "-" + v->name + "-" + statement->location;
-                lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
+                items.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
             }
         }
     }
     
-    void NEqualLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Lemma>> &lemmas)
+    void NEqualLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::ProblemItem>>& items)
     {
         assert(twoTraces);
         
@@ -169,7 +169,7 @@ namespace analysis {
             );
 
         auto name = "traces-nEqual-" + nT1->symbol->name + "-" + statement->location;
-        lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
+        items.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
     }
 }
 

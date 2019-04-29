@@ -17,18 +17,20 @@ namespace analysis {
     /*
      * LEMMA 1
      * if the loop condition holds at the first iteration, then there exists an iteration whose successor is the last iteration.
-     *
-     * TODO:    It is unclear why this lemma is useful at all. It doesn't cover any inductive reasoning we couldn't conclude from other axioms,
-     *          and the covered reasoning steps should be straightforward to conclude.
      * TODO:    It would probably improve the lemma if we replace the conclusion with "then n is different from 0" (from which we can also conclude the current conclusion)
+     *
+     * TODO:    It is unclear why this lemma is useful at all. It doesn't cover any inductive reasoning we couldn't conclude from other axioms.
+     *          It could be the case that it is useful, since superposition doesn't propergate disequality eagerly, that is, from P(0) and not P(n)
+     *          we can't conclude 0!=n. Instead we use the negated disequality 0=n in a clause n=0 \/ C to rewrite not P(n) to not P(0) and combine
+     *          the resulting clause with P(0) to derive C.
      */
-    class AtLeastOneIterationLemmas : public ProgramTraverser<std::vector<std::shared_ptr<const logic::Lemma>>>
+    class AtLeastOneIterationLemmas : public ProgramTraverser<std::vector<std::shared_ptr<const logic::ProblemItem>>>
     {
     public:
         using ProgramTraverser::ProgramTraverser; // inherit initializer, note: doesn't allow additional members in subclass!
         
     private:
-        virtual void generateOutputFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::Lemma>>& lemmas) override;
+        virtual void generateOutputFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::ProblemItem>>& items) override;
     };
     
     /*
@@ -36,13 +38,13 @@ namespace analysis {
      * TODO: not used currently, since implementation unsound
      * TODO: check, generalize, extend, recategorize, test.
      */
-    class OrderingSynchronizationLemmas : public ProgramTraverser<std::vector<std::shared_ptr<const logic::Lemma>>>
+    class OrderingSynchronizationLemmas : public ProgramTraverser<std::vector<std::shared_ptr<const logic::ProblemItem>>>
     {
     public:
         using ProgramTraverser::ProgramTraverser; // inherit initializer, note: doesn't allow additional members in subclass!
         
     private:
-        virtual void generateOutputFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::Lemma>>& lemmas) override;
+        virtual void generateOutputFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::ProblemItem>>& items) override;
     };
 }
 

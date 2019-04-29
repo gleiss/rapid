@@ -84,21 +84,21 @@ namespace analysis {
      *
      * TODO: we probably want lemmas which cover similar inductive reasoning for the (non-reflexive!) predicates < and >.
      */
-    class ValueEvolutionLemmas : public ProgramTraverser<std::vector<std::shared_ptr<const logic::Lemma>>>
+    class ValueEvolutionLemmas : public ProgramTraverser<std::vector<std::shared_ptr<const logic::ProblemItem>>>
     {
     public:
         using ProgramTraverser::ProgramTraverser; // inherit initializer, note: doesn't allow additional members in subclass!
         
-        virtual void generateOutputFor(const program::WhileStatement* statement, std::vector<std::shared_ptr<const logic::Lemma>>& lemmas) override;
+        virtual void generateOutputFor(const program::WhileStatement* statement, std::vector<std::shared_ptr<const logic::ProblemItem>>& items) override;
         
     private:
         enum class InductionKind { Equal, LessEqual, GreaterEqual};
         
         void generateLemmas(const program::WhileStatement* whileStatement,
-                                             std::vector<std::shared_ptr<const logic::Lemma>>& lemmas,
+                                             std::vector<std::shared_ptr<const logic::ProblemItem>>& items,
                                              const InductionKind kind);
         void generateLemmasBoundedEq(const program::WhileStatement* whileStatement,
-                                         std::vector<std::shared_ptr<const logic::Lemma>>& lemmas);
+                                         std::vector<std::shared_ptr<const logic::ProblemItem>>& items);
     };
     
     /* LEMMA 2
@@ -148,13 +148,13 @@ namespace analysis {
      *  Vampire could discover this consequence semantically, but it takes much longer to do so.
      *  TODO: get a better understanding why this lemma helps.
      */
-    class StaticAnalysisLemmas : public ProgramTraverser<std::vector<std::shared_ptr<const logic::Lemma>>>
+    class StaticAnalysisLemmas : public ProgramTraverser<std::vector<std::shared_ptr<const logic::ProblemItem>>>
     {
     public:
         using ProgramTraverser::ProgramTraverser; // inherit initializer, note: doesn't allow additional members in subclass!
         
     private:
-        virtual void generateOutputFor(const program::WhileStatement* statement, std::vector<std::shared_ptr<const logic::Lemma>>& lemmas) override;
+        virtual void generateOutputFor(const program::WhileStatement* statement, std::vector<std::shared_ptr<const logic::ProblemItem>>& items) override;
         
         std::unordered_set<std::shared_ptr<const program::Variable>> computeAssignedVars(const program::Statement* statement);
     };

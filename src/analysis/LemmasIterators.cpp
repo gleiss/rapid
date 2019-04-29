@@ -7,7 +7,7 @@
 
 namespace analysis {
     
-    void IntermediateValueLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Lemma>> &lemmas)
+    void IntermediateValueLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::ProblemItem>>& items)
     {
         auto itSymbol = iteratorSymbol(statement);
         auto it = iteratorTermForLoop(statement);
@@ -83,12 +83,12 @@ namespace analysis {
                 }
                 
                 auto name = "iterator-intermediateValue-" + v->name + "-" + statement->location;
-                lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
+                items.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
             }
         }
     }
     
-    void IterationInjectivityLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::Lemma>> &lemmas)
+    void IterationInjectivityLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::ProblemItem>> &items)
     {
         auto itSymbol = iteratorSymbol(statement);
         auto it = iteratorTermForLoop(statement);
@@ -146,7 +146,7 @@ namespace analysis {
                     }
                     
                     auto name = "iterator-injectivity-" + v->name + "-" + statement->location;
-                    lemmas.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
+                    items.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
                 }
             }
         }

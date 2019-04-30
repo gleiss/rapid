@@ -31,6 +31,36 @@ namespace analysis {
         {
             if (!v->isConstant)
             {
+                                    
+                // IH(it): v(l(it1,...,itk,it)    ) <= x or
+                //         v(l(it1,...,itk,it),pos) <= x
+                auto inductionHypothesis = [&](std::shared_ptr<const logic::Term> arg)
+                {
+                    auto lStartArg = timepointForLoopStatement(statement, arg);
+                    return logic::Theory::intLessEqual(
+                        v->isArray ? toTerm(v, lStartArg, pos) : toTerm(v,lStartArg),
+                        x
+                    );
+                };
+
+                // PART 1: Add induction-axiom
+                auto inductionAxiom = 
+                    logic::Formulas::universal({xSymbol},
+                        logic::inductionAxiom1(inductionHypothesis)
+                    );
+                if (v->isArray)
+                {
+                    inductionAxiom = logic::Formulas::universal({posSymbol}, inductionAxiom);
+                }
+                if (twoTraces)
+                {
+                    auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
+                    inductionAxiom = logic::Formulas::universal({tr}, inductionAxiom);
+                }
+                auto axiomName = "iterator-intermediateValue-axiom-" + v->name + "-" + statement->location;
+                items.push_back(std::make_shared<logic::Axiom>(inductionAxiom, axiomName));
+
+                // PART 2: Add trace lemma
                 // Premise: v(l(zero))<=x     & x<v(l(n))     & forall it. v(l(s(it)))=v(l(it))+1         or
                 //          v(l(zero),pos)<=x & x<v(l(n),pos) & forall it. v(l(s(it)),pos)=v(l(it),pos)+1
                 auto premise =

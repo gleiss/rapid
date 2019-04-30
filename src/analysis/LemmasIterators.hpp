@@ -19,7 +19,7 @@ namespace analysis {
      * We assume that any non-array variable potentially is an iterator variable.
      * In the future, one could also add an explicit iterator-type (as in C++) to the input-language,
      * and add iterator lemmas only for those variables.
-     * This would introduce less useless lemmas, but would burden the programmer with making the iterator-variables explicit.
+     * This would introduce less useless lemmas, but would burden the programmer with explicitly marking the iterator-variables.
      */
     
     /*
@@ -27,7 +27,7 @@ namespace analysis {
      * If the (iterator-) variable v is dense, and the value x is between the value of v at the beginning and at the end of the loop, then there is a timepoint in the loop,
      * where v has value x. The value x usually denotes some position in an array.
      * One can see this lemma as a discrete version of the Intermediate Value Theorem for continuous functions.
-     * (added for both non-array- and array variables. we ignore array positions and enclosing iterators in this description) // TODO: only add it for iterator variables.
+     * (added for both non-array- and array variables. we ignore array positions and enclosing iterators in this description)
      *
      * forall x.
      *    =>
@@ -35,13 +35,53 @@ namespace analysis {
      *          v(l(zero))<=x
      *          x<v(l(n))
      *          forall it.
-     *             v(l(s(it)))=v(l(it))+1
+     *             =>
+     *                it<n
+     *                v(l(s(it)))=v(l(it))+1
      *    exists it2.
      *       and
      *          it2<n
      *          v(l(it2))=x
      *
+     * Soundness: The lemma is equivalent (by using modus tollens) to the following lemma 1A:
+     * forall x.
+     *    =>
+     *       and
+     *          v(l(zero))<=x
+     *          forall it.
+     *             =>
+     *                it<n
+     *                v(l(s(it)))=v(l(it))+1
+     *          forall it2.
+     *             =>
+     *                it2<n
+     *                v(l(it2))!=x
+     *       v(l(n))<=x
+     * 
+     * Lemma 1A follows from the following lemma 1B:
+     * forall x.
+     *    =>
+     *       and
+     *          v(l(zero))<=x
+     *          forall it.
+     *             =>
+     *                it<n
+     *                v(l(it))<=x
+     *             v(l(s(it)))<=x
+     *       forall it.
+     *          =>
+     *             it<n
+     *             v(l(s(it)))<=x
+     * 
+     * Lemma 1B follows from the standard induction axiom by
+     * - substituting boundL->zero, boundR->n
+     * - defining P(it) := v(l(it))<=x
+     * - applying simplifications which use the fact that 0 is the smallest natural number.
      *
+     * Discussion on possible Variations:
+     *  TODO: one could make the lemma more general by generalizing zero and n to boundL and boundR. Would this result in a better 
+     *        or simpler encoding of the synchronization of the two orderings?
+     * 
      * Why is this lemma useful:
      *  This lemma synthesizes interesting timepoints, which can be used to split a loop into intervals.
      *  Often the timepoints in such an interval behave in some uniform way, and if this is the case then

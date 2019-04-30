@@ -123,10 +123,12 @@ namespace analysis {
     {
         auto itSymbol = iteratorSymbol(statement);
         auto it = iteratorTermForLoop(statement);
-        
+        auto n = lastIterationTermForLoop(statement, twoTraces);
+
         auto lStartIt = timepointForLoopStatement(statement, it);
         auto lStartZero = timepointForLoopStatement(statement, logic::Theory::natZero());
-        
+        auto lStartN = timepointForLoopStatement(statement, n);
+
         auto posSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
         auto pos = logic::Terms::var(posSymbol);
         
@@ -135,24 +137,40 @@ namespace analysis {
         
         // for each active var, which is not constant but not assigned to in any statement of the loop,
         // add a lemma asserting that var is the same in each iteration as in the first iteration.
-        for (const auto& activeVar : activeVars)
+        for (const auto& v : activeVars)
         {
-            if (!activeVar->isConstant && assignedVars.count(activeVar) == 0)
+            if (!v->isConstant && assignedVars.count(v) == 0)
             {
-                // forall enclosing iterators. forall it.     v(l(it)    ) = v(l(zero)    ) or
-                // forall enclosing iterators. forall it,pos. v(l(it),pos) = v(l(zero),pos) or
-                auto eq =
+                // IH(it): v(l(it1,...,itk,zero)    ) = v(l(it1,...,itk,it)    ) or
+                //         v(l(it1,...,itk,zero),pos) = v(l(it1,...,itk,it),pos)
+                auto inductionHypothesis = [&](std::shared_ptr<const logic::Term> arg)
+                {
+                    auto lStartArg = timepointForLoopStatement(statement, arg);
+                    return
                     logic::Formulas::equality(
-                        activeVar->isArray ? toTerm(activeVar,lStartIt,pos) : toTerm(activeVar,lStartIt),
-                        activeVar->isArray ? toTerm(activeVar,lStartZero,pos) : toTerm(activeVar,lStartZero)
-                    );
-            
-                auto universal =
-                    activeVar->isArray ?
-                        logic::Formulas::universal({itSymbol, posSymbol}, eq) :
-                        logic::Formulas::universal({itSymbol}, eq);
+                                              v->isArray ? toTerm(v, lStartZero, pos) : toTerm(v,lStartZero),
+                                              v->isArray ? toTerm(v, lStartArg, pos) : toTerm(v,lStartArg)
+                                              );
+                };
+
+                // PART 1: Add induction-axiom
+                auto inductionAxiom = logic::inductionAxiom1(inductionHypothesis);
+                auto axiomName = "value-static-axiom-" + v->name + "-" + statement->location;
+                items.push_back(std::make_shared<logic::Axiom>(inductionAxiom, axiomName));
                 
-                auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols(statement),universal);
+                // PART 2: Add trace lemma
+                // forall enclosing iterators. forall it. {forall pos.} (it<=n => IH(it))
+                auto implication =
+                    logic::Formulas::implication(
+                        logic::Theory::natSubEq(it, n),
+                        inductionHypothesis(it)
+                    );
+                auto bareLemma =
+                    logic::Formulas::universal(enclosingIteratorsSymbols(statement),
+                        v->isArray ?
+                            logic::Formulas::universal({itSymbol, posSymbol}, implication) :
+                            logic::Formulas::universal({itSymbol}, implication)
+                    );
 
                 if (twoTraces)
                 {
@@ -160,7 +178,7 @@ namespace analysis {
                     bareLemma = logic::Formulas::universal({tr}, bareLemma);
                 }
                 
-                auto name = "values-static-" + activeVar->name + "-" + statement->location;
+                auto name = "value-static-" + v->name + "-" + statement->location;
                 items.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
             }
         }

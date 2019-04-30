@@ -130,11 +130,12 @@ namespace analysis {
      *             P(it)
      * by
      * - substituting boundL->zero, boundR->n
-     * - defining P(it) := v(l(it)) = v(l(zero))
+     * - defining P(it) := v(l(zero)) = v(l(it))
      * - applying simplifications which use the reflexivity and transitivity of equality and the fact that 0 is the smallest natural number.
      *
      * Discussion on possible Variations:
-     *  No other ideas for now.
+     *  Could also add a similar lemma for other reflexive transitive predicates, i.e. for <= and >=. But this doesn't help to much probably,
+     *  since those lemmas are much less useful, and anyway also covered logically by the value-evolution-lemma.
      *
      * Why is this lemma useful:
      *  Vampire could discover this consequence semantically, but it takes much longer to do so.

@@ -55,6 +55,15 @@ namespace analysis {
                     
                     // PART 1: Add induction-axiom
                     auto inductionAxiom = logic::inductionAxiom1(inductionHypothesis);
+                    if (v->isArray)
+                    {
+                        inductionAxiom = logic::Formulas::universal({posSymbol}, inductionAxiom);
+                    }
+                    if (twoTraces)
+                    {
+                        auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
+                        inductionAxiom = logic::Formulas::universal({tr}, inductionAxiom);
+                    }
                     auto axiomName = "value-evolution-axiom-" + predicateString + "-" + v->name + "-" + whileStatement->location;
                     items.push_back(std::make_shared<logic::Axiom>(inductionAxiom, axiomName));
                     

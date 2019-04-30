@@ -64,6 +64,7 @@ namespace analysis {
      *             boundL<=it<=boundR
      *             P(it)
      *
+     * where P(it) := v(l(boundL)) C (l(it))
      *
      * Discussion on possible variations:
      * The following variations apply to induction in general and are not specific to the used induction hypothesis.
@@ -90,15 +91,6 @@ namespace analysis {
         using ProgramTraverser::ProgramTraverser; // inherit initializer, note: doesn't allow additional members in subclass!
         
         virtual void generateOutputFor(const program::WhileStatement* statement, std::vector<std::shared_ptr<const logic::ProblemItem>>& items) override;
-        
-    private:
-        enum class InductionKind { Equal, LessEqual, GreaterEqual};
-        
-        void generateLemmas(const program::WhileStatement* whileStatement,
-                                             std::vector<std::shared_ptr<const logic::ProblemItem>>& items,
-                                             const InductionKind kind);
-        void generateLemmasBoundedEq(const program::WhileStatement* whileStatement,
-                                         std::vector<std::shared_ptr<const logic::ProblemItem>>& items);
     };
     
     /* LEMMA 2

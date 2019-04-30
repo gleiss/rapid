@@ -7,158 +7,109 @@
 
 namespace analysis {
     
-    void ValueEvolutionLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::ProblemItem>>& items)
+    void ValueEvolutionLemmas::generateOutputFor(const program::WhileStatement* whileStatement,
+                                                                  std::vector<std::shared_ptr<const logic::ProblemItem>>& items)
     {
-        // generate lemmas
-        generateLemmas(statement, items, InductionKind::Equal);
-        //        generateValueEvolutionLemma(statement, items, InductionKind::LessEqual);
-        //        generateValueEvolutionLemma(statement, items, InductionKind::GreaterEqual);
+        auto boundLSymbol = logic::Signature::varSymbol("boundL", logic::Sorts::natSort());
+        auto boundRSymbol = logic::Signature::varSymbol("boundR", logic::Sorts::natSort());
         
-        generateLemmasBoundedEq(statement, items);
-    }
-    
-    void ValueEvolutionLemmas::generateLemmas(const program::WhileStatement* whileStatement,
-                                                                  std::vector<std::shared_ptr<const logic::ProblemItem>>& items,
-                                                                  const InductionKind kind)
-    {
+        auto boundL = logic::Terms::var(boundLSymbol);
+        auto boundR = logic::Terms::var(boundRSymbol);
         auto it = iteratorTermForLoop(whileStatement);
-        auto n = lastIterationTermForLoop(whileStatement, twoTraces);
-        
+
+        auto lStartBoundL = timepointForLoopStatement(whileStatement, boundL);
+        auto lStartboundR = timepointForLoopStatement(whileStatement, boundR);
         auto lStartIt = timepointForLoopStatement(whileStatement, it);
         auto lStartSuccOfIt = timepointForLoopStatement(whileStatement, logic::Theory::natSucc(it));
-        auto lStartZero = timepointForLoopStatement(whileStatement, logic::Theory::natZero());
-        auto lStartN = timepointForLoopStatement(whileStatement, n);
         
         auto posSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
         auto pos = logic::Terms::var(posSymbol);
         
-        auto predicateFunctor =
-        (kind == InductionKind::Equal) ? logic::Formulas::equality :
-        (kind == InductionKind::LessEqual) ? logic::Theory::intLessEqual :
-        logic::Theory::intGreaterEqual;
+        auto predicates = {
+            std::make_pair(logic::Formulas::equality, std::string("eq")),
+            std::make_pair(logic::Theory::intLessEqual, std::string("leq")),
+            std::make_pair(logic::Theory::intGreaterEqual, std::string("geq"))
+        };
         
-        std::map<InductionKind,std::string> connectiveToString = {
-            {InductionKind::Equal, "eq"},
-            {InductionKind::LessEqual, "leq"},
-            {InductionKind::GreaterEqual, "geq"}};
-        
-        // add lemma for each intVar and each intArrayVar
+        // add lemma for each intVar and each intArrayVar, for each variant
         for (const auto& v : locationToActiveVars.at(locationSymbolForStatement(whileStatement)->name))
         {
             if (!v->isConstant)
             {
-                // Premise: forall it (it<=n => v(l(it1,...,itk,it)    ) C v(l(it1,...,itk,s(it))    )), where C in {=,<=,>=} or
-                //          forall it (it<=n => v(l(it1,...,itk,it),pos) C v(l(it1,...,itk,s(it)),pos)), where C in {=,<=,>=}
-                auto premise =
-                    logic::Formulas::universal({it->symbol},
-                        logic::Formulas::implication(
-                            logic::Theory::natSub(it, n),
-                            predicateFunctor(
-                                v->isArray ? toTerm(v,lStartIt, pos) : toTerm(v,lStartIt),
-                                v->isArray ? toTerm(v,lStartSuccOfIt, pos) : toTerm(v,lStartSuccOfIt),
-                                ""
-                            )
-                        )
-                    );
-                
-                // Conclusion: v(l(it1,...,itk,0)    ) C v(l(it1,...,itk,n)    ), where C in {=,<=,>=} or
-                //             v(l(it1,...,itk,0),pos) C v(l(it1,...,itk,n),pos), where C in {=,<=,>=}
-                auto conclusion =
-                    predicateFunctor(
-                        v->isArray ? toTerm(v, lStartZero, pos) : toTerm(v,lStartZero),
-                        v->isArray ? toTerm(v, lStartN, pos) : toTerm(v,lStartN),
-                        ""
-                    );
-                
-                // forall enclosingIterators: (Premise => Conclusion) or
-                // forall enclosingIterators: forall pos. (Premise => Conclusion)
-                auto outerImp = logic::Formulas::implication(premise, conclusion);
-                auto universal = v->isArray ? logic::Formulas::universal({posSymbol}, outerImp) : outerImp;
-                auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols(whileStatement), universal);
-                
-                if (twoTraces)
+                for (const auto predicate : predicates)
                 {
-                    auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                    bareLemma = logic::Formulas::universal({tr}, bareLemma);
-                }
-                
-                auto name = "value-evolution-" + connectiveToString[kind] + "-" + v->name + "-" + whileStatement->location;
-                items.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
-            }
-        }
-    }
-    
-    void ValueEvolutionLemmas::generateLemmasBoundedEq(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::ProblemItem>>& items)
-    {
-        auto itSymbol = iteratorSymbol(statement);
-        auto it = iteratorTermForLoop(statement);
-        auto it2Symbol = logic::Signature::varSymbol("it", logic::Sorts::natSort());
-        auto it2 = logic::Terms::var(it2Symbol);
-        auto n = lastIterationTermForLoop(statement, twoTraces);
-        
-        auto lStartIt = timepointForLoopStatement(statement, it);
-        auto lStartSuccOfIt = timepointForLoopStatement(statement, logic::Theory::natSucc(it));
-        auto lStartSuccOfIt2 = timepointForLoopStatement(statement, logic::Theory::natSucc(it2));
-        auto lStartN = timepointForLoopStatement(statement, n);
-        
-        auto posSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
-        auto pos = logic::Terms::var(posSymbol);
-        
-        // add lemma for each intVar
-        //  forall (it2 : Nat)
-        //     =>
-        //        and
-        //           it2 < n
-        //           forall (it : Nat)
-        //              =>
-        //                 it2 < it
-        //                 v(l(s(it))) = v(l(it))
-        //        v(l(n)) = v(l(s(it2))
-        for (const auto& v : locationToActiveVars.at(locationSymbolForStatement(statement)->name))
-        {
-            if (!v->isConstant)
-            {
-                // Premise: it2 < n and forall it. (it2<it => v(l(s(it))) = v(l(it)))
-                auto premise =
-                    logic::Formulas::conjunction({
-                        logic::Theory::natSub(it2,n),
-                        logic::Formulas::universal({itSymbol},
+                    auto predicateFunctor = predicate.first;
+                    auto predicateString = predicate.second;
+                    
+                    // IH(it): v(l(it1,...,itk,boundL)    ) C v(l(it1,...,itk,it)    ), where C in {=,<=,>=} or
+                    //         v(l(it1,...,itk,boundL),pos) C v(l(it1,...,itk,it),pos), where C in {=,<=,>=}
+                    auto inductionHypothesis = [&](std::shared_ptr<const logic::Term> arg)
+                    {
+                        auto lStartArg = timepointForLoopStatement(whileStatement, arg);
+                        return predicateFunctor(
+                            v->isArray ? toTerm(v, lStartBoundL, pos) : toTerm(v,lStartBoundL),
+                            v->isArray ? toTerm(v, lStartArg, pos) : toTerm(v,lStartArg),
+                            ""
+                        );
+                    };
+                    
+                    // PART 1: Add induction-axiom
+                    auto inductionAxiom = logic::inductionAxiom1(inductionHypothesis);
+                    auto axiomName = "value-evolution-axiom-" + predicateString + "-" + v->name + "-" + whileStatement->location;
+                    items.push_back(std::make_shared<logic::Axiom>(inductionAxiom, axiomName));
+                    
+                    // PART 2: Add trace lemma
+                    // Premise: forall it. (boundL<=it<boundR => v(l(it1,...,itk,it)    ) C v(l(it1,...,itk,s(it))    )), where C in {=,<=,>=} or
+                    //          forall it. (boundL<=it<boundR => v(l(it1,...,itk,it),pos) C v(l(it1,...,itk,s(it)),pos)), where C in {=,<=,>=}
+                    auto premise =
+                        logic::Formulas::universal({it->symbol},
                             logic::Formulas::implication(
-                                logic::Theory::natSub(it2,it),
-                                logic::Formulas::equality(
-                                    v->isArray ? toTerm(v,lStartSuccOfIt,pos) : toTerm(v,lStartSuccOfIt),
-                                    v->isArray ? toTerm(v,lStartIt,pos) : toTerm(v,lStartIt)
+                                logic::Formulas::conjunction({
+                                    logic::Theory::natSubEq(boundL, it),
+                                    logic::Theory::natSub(it, boundR)
+                                }),
+                                predicateFunctor(
+                                    v->isArray ? toTerm(v,lStartIt, pos) : toTerm(v,lStartIt),
+                                    v->isArray ? toTerm(v,lStartSuccOfIt, pos) : toTerm(v,lStartSuccOfIt),
+                                    ""
                                 )
                             )
-                        )
-                    });
-
-                // Conclusion: (v(l(n)) = v(l(s(it2)))
-                auto conclusion =
-                    logic::Formulas::equality(
-                        v->isArray ? toTerm(v,lStartN,pos) : toTerm(v,lStartN),
-                        v->isArray ? toTerm(v,lStartSuccOfIt2,pos) : toTerm(v,lStartSuccOfIt2)
-                    );
-                
-                // forall enclosingIterators. forall it2. (premise => conclusion)
-                auto bareLemma =
-                    logic::Formulas::universal(enclosingIteratorsSymbols(statement),
-                        logic::Formulas::universal({it2Symbol, posSymbol},
-                            logic::Formulas::implication(premise,conclusion))
-                    );
-                
-                if (twoTraces)
-                {
-                    auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                    bareLemma = logic::Formulas::universal({tr}, bareLemma);
+                        );
+                    
+                    // Conclusion: forall it. (boundL<=it<=boundR => IH(it))
+                    auto conclusion =
+                        logic::Formulas::universal({it->symbol},
+                            logic::Formulas::implication(
+                                logic::Formulas::conjunction({
+                                    logic::Theory::natSubEq(boundL, it),
+                                    logic::Theory::natSubEq(it, boundR)
+                                }),
+                                inductionHypothesis(it)
+                            )
+                        );
+                    
+                    // forall enclosingIterators: forall boundL,boundR. (Premise => Conclusion) or
+                    // forall enclosingIterators: forall boundL,boundR. forall pos. (Premise => Conclusion)
+                    auto outerImp = logic::Formulas::implication(premise, conclusion);
+                    auto universal = v->isArray ? logic::Formulas::universal({posSymbol}, outerImp) : outerImp;
+                    auto bareLemma =
+                        logic::Formulas::universal(enclosingIteratorsSymbols(whileStatement),
+                            logic::Formulas::universal({boundLSymbol, boundRSymbol}, universal)
+                        );
+                    
+                    if (twoTraces)
+                    {
+                        auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
+                        bareLemma = logic::Formulas::universal({tr}, bareLemma);
+                    }
+                    
+                    auto name = "value-evolution-" + predicateString + "-" + v->name + "-" + whileStatement->location;
+                    items.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
                 }
-                
-                auto name = "value-evolution-bounded-" + v->name + "-" + statement->location;
-                items.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
             }
         }
     }
-    
+ 
     void StaticAnalysisLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::ProblemItem>>& items)
     {
         auto itSymbol = iteratorSymbol(statement);

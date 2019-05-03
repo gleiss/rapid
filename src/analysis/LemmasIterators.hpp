@@ -57,7 +57,6 @@ namespace analysis {
      *                it2<n
      *                v(l(it2))!=x
      *       v(l(n))<=x
-     * 
      * Lemma 1A follows from the following lemma 1B:
      * forall x.
      *    =>
@@ -72,7 +71,6 @@ namespace analysis {
      *          =>
      *             it<n
      *             v(l(s(it)))<=x
-     * 
      * Lemma 1B follows from the standard induction axiom by
      * - substituting boundL->zero, boundR->n
      * - defining P(it) := v(l(it))<=x
@@ -98,10 +96,40 @@ namespace analysis {
     
     /*
      * LEMMA 2:
-     * Iterators often have the property that they visit each element of the datastructure exactly once.
-     * This lemmas states that an array-iterator, which increase by 1 each iteration, visits each array-position only once.
+     * =>
+     *    and
+     *       forall it.
+     *          =>
+     *             and
+     *                0<=it
+     *                it<n
+     *          v(l(s(it)))=v(l(it))+1
+     *       it1<n
+     *       it2<n
+     *       it1!=it2
+     *    v(l(it1))!=v(l(it2))
+     *
+     * Soundness:
+     * This lemma uses two instances of the standard induction axiom (one for the case it1<it2 and one for the case it2<it1)
+     * Instance 1:
+     * - substitute boundL->s(it1), boundR->it2
+     * - define P(it) := v(l(it1))<v(l(it))
+     * Instance 2:
+     * - substitute boundL->s(it2), boundR->it1
+     * - define P(it) := v(l(it2))<v(l(it))
+     * There are further some theory axioms needed to prove this lemma (TODO)
+     * 
+     * Possible Variations
+     * - TODO: we probably should change it1<n and it2<n to it1<=n and it2<=n
+     * - We could switch back to the original encoding which used it1<it2 instead of it1!=it2. 
+     *   It is unclear whether this would make things better or worse.
+     * - We could use v(l(it1))<v(l(it2)) as conclusion instead of the logically weaker v(l(it1))!=v(l(it2)). 
+     *   It is again unclear whether this would make things better or worse. Note that the resulting lemma would 
+     *   be similar to the value-evolution lemmas (but applied to the non-reflexive relation <)
      *
      * Why is this lemma useful:
+     *  Iterators often have the property that they visit each element of the datastructure at most once.
+     *  This lemmas states that an array-iterator, which increases by 1 each iteration, visits each array-position at most once.
      *  If each array-position is visited only once, we know that its value is not changed after the first visit,
      *  and in particular the value at the end is the value after the first visit.
      */

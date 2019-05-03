@@ -31,7 +31,6 @@ namespace analysis {
         {
             if (!v->isConstant)
             {
-                                    
                 // IH(it): v(l(it1,...,itk,it)    ) <= x or
                 //         v(l(it1,...,itk,it),pos) <= x
                 auto inductionHypothesis = [&](std::shared_ptr<const logic::Term> arg)
@@ -133,33 +132,83 @@ namespace analysis {
         auto lStartIt1 = timepointForLoopStatement(statement, it1);
         auto lStartIt2 = timepointForLoopStatement(statement, it2);
         
-        // add lemma for each intVar and each intArrayVar
+        // add lemma for each intVar
         for (const auto& v : locationToActiveVars.at(locationSymbolForStatement(statement)->name))
         {
             if (!v->isConstant)
             {
                 if (!v->isArray) // We assume that loop counters are not array elements and therefore only add these lemmas for non-array-vars
                 {
-                    // Premise: (forall it. v(l(s(it)))=v(l(it))+1)) & v(l(it1))=v(l(it2))
+                    // PART 1:
+                    // IH1(arg): v(l(it1)) < v(l(arg))
+                    auto inductionHypothesis1 = [&](std::shared_ptr<const logic::Term> arg)
+                    {
+                        auto lStartArg = timepointForLoopStatement(statement, arg);
+                        return logic::Theory::intLess(toTerm(v,lStartIt1), toTerm(v,lStartArg));
+                    };
+                    // IH2(arg): v(l(it2)) < v(l(arg))
+                    auto inductionHypothesis2 = [&](std::shared_ptr<const logic::Term> arg)
+                    {
+                        auto lStartArg = timepointForLoopStatement(statement, arg);
+                        return logic::Theory::intLess(toTerm(v,lStartIt2), toTerm(v,lStartArg));
+                    };
+
+                    // Add induction-axiom
+                    auto inductionAxiom1 =
+                        logic::Formulas::universal({it1Symbol},
+                            logic::inductionAxiom1(inductionHypothesis1)
+                        );
+                    auto inductionAxiom2 =
+                        logic::Formulas::universal({it2Symbol},
+                            logic::inductionAxiom1(inductionHypothesis2)
+                        );
+                    if (twoTraces)
+                    {
+                        auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
+                        inductionAxiom1 = logic::Formulas::universal({tr}, inductionAxiom1);
+                        inductionAxiom2 = logic::Formulas::universal({tr}, inductionAxiom2);
+                    }
+                    auto axiomName1 = "iterator-injectivity-axiom1-" + v->name + "-" + statement->location;
+                    auto axiomName2 = "iterator-injectivity-axiom2-" + v->name + "-" + statement->location;
+                    items.push_back(std::make_shared<logic::Axiom>(inductionAxiom1, axiomName1));
+                    items.push_back(std::make_shared<logic::Axiom>(inductionAxiom2, axiomName2));
+
+                    // PART 2: Add trace lemma
+                    /* Premise:
+                     * and
+                     *    forall it.
+                     *       =>
+                     *          it<n
+                     *          v(l(s(it)))=v(l(it))+1
+                     *    it1<n
+                     *    it2<n
+                     *    it1!=it2
+                     */
                     auto premise =
                         logic::Formulas::conjunction({
                             logic::Formulas::universal({itSymbol},
-                                logic::Formulas::equality(
-                                    toTerm(v,lStartSuccOfIt),
-                                    logic::Theory::intAddition(
-                                        toTerm(v,lStartIt),
-                                        logic::Theory::intConstant(1)
+                                logic::Formulas::implication(
+                                    logic::Theory::natSub(it,n),
+                                    logic::Formulas::equality(
+                                        toTerm(v,lStartSuccOfIt),
+                                        logic::Theory::intAddition(
+                                            toTerm(v,lStartIt),
+                                            logic::Theory::intConstant(1)
+                                        )
                                     )
                                 )
                             ),
-                            logic::Formulas::equality(
-                                toTerm(v,lStartIt1),
-                                toTerm(v,lStartIt2)
-                            )
+                            logic::Theory::natSub(it1,n),
+                            logic::Theory::natSub(it2,n),
+                            logic::Formulas::disequality(it1,it2)
                         });
                     
-                    // Conclusion: it1 = it2
-                    auto conclusion = logic::Formulas::equality(it1,it2);
+                    // Conclusion: v(l(it1))!=v(l(it2))
+                    auto conclusion =
+                        logic::Formulas::disequality(
+                            toTerm(v,lStartIt1),
+                            toTerm(v,lStartIt2)
+                        );
                     
                     // forall enclosingIterators. forall it1,it2. (premise => conclusion)
                     auto bareLemma =
@@ -181,5 +230,4 @@ namespace analysis {
             }
         }
     }
-
 }

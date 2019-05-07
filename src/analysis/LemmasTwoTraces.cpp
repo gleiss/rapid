@@ -31,10 +31,11 @@ namespace analysis {
                                 v->isArray ? toTermFull(v, lStartArg, pos, t2) : toTermFull(v, lStartArg, t2)
                             );
                     };
-                auto inductionAxiom =
-                    logic::Formulas::universal({posSymbol},
-                        logic::inductionAxiom1(inductionHypothesis)
-                    );
+                auto inductionAxiom = logic::inductionAxiom1(inductionHypothesis);
+                if(v->isArray)
+                {
+                    inductionAxiom = logic::Formulas::universal({posSymbol}, inductionAxiom);
+                }
                 
                 // Note: We use the induction axiom directly as lemma, so the lemma trivially holds and we don't need to prove it.
                 auto name = "traces-eq-preservation-" + v->name + "-" + statement->location;

@@ -18,9 +18,9 @@ namespace analysis {
     /*
      * LEMMA 1
      * If a variable has the same value (or if an array has at one position the same value) in both traces at some iteration,
-     * and if that equality is preserved in an interval, then it also holds at the end of the interval.
+     * and if that equality is preserved in an interval, then the equality holds during any point of the interval (including the end of the interval).
      *
-     * Soundness: This lemma is exactly the instantiation of the following induction axiom scheme with P(it) := v(l(it),t1)=v(l(it),t2)
+     * Soundness: This lemma is exactly the instantiation of the following standard induction axiom scheme with P(it) := v(l(it),t1)=v(l(it),t2)
      * forall boundL,boundR.
      *    =>
      *       and
@@ -37,12 +37,8 @@ namespace analysis {
      *             P(it)
      *
      * Variations:
-     *  The most general version of this lemma allows arbitrary intervals.
-     *  More specific versions fix the left bound to 0 and/or the right bound to the last iteration of one trace (wlog. trace 1).
-     *  The current implementation supports all 4 combinations, but doesn't add the most general version.
-     *
-     * TODO: the cleanest solution would be to use only the most general version. Can we identify Vampire-options, where doing so
-     * doesn't slow down the proof search?
+     *  The currently used version is the most general one, and allows arbitrary intervals.
+     *  More specific versions could fix the left bound to 0 and/or the right bound to the last iteration of one trace (wlog. trace 1).
      *
      * Why is this lemma useful
      *  This lemma is central for reasoning about relational properties.
@@ -54,17 +50,6 @@ namespace analysis {
         
     private:
         virtual void generateOutputFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::ProblemItem>>& items) override;
-        
-        void generateLemmas(const program::WhileStatement* whileStatement,
-                                     bool itLeftZero,
-                                     bool itRightN,
-                                     std::vector<std::shared_ptr<const logic::ProblemItem>>& items);
-        void generateLemmasZeroToRight(const program::WhileStatement* whileStatement,
-                                                                 std::vector<std::shared_ptr<const logic::ProblemItem>>& items);
-        void generateLemmasLeftToEnd(const program::WhileStatement* whileStatement,
-                                                               std::vector<std::shared_ptr<const logic::ProblemItem>>& items);
-        void generateLemmasLeftToRight(const program::WhileStatement* whileStatement,
-                                                                 std::vector<std::shared_ptr<const logic::ProblemItem>>& items);
     };
     
     /*

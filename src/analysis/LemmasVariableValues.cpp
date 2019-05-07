@@ -131,6 +131,7 @@ namespace analysis {
 
         auto posSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
         auto pos = logic::Terms::var(posSymbol);
+        auto trSymbol= logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
         
         auto activeVars = locationToActiveVars.at(statement->location);
         auto assignedVars = computeAssignedVars(statement);
@@ -155,6 +156,15 @@ namespace analysis {
 
                 // PART 1: Add induction-axiom
                 auto inductionAxiom = logic::inductionAxiom1(inductionHypothesis);
+                if (v->isArray)
+                {
+                    inductionAxiom = logic::Formulas::universal({posSymbol}, inductionAxiom);
+                }
+                if (twoTraces)
+                {
+                    inductionAxiom = logic::Formulas::universal({trSymbol}, inductionAxiom);
+                }
+                
                 auto axiomName = "value-static-axiom-" + v->name + "-" + statement->location;
                 items.push_back(std::make_shared<logic::Axiom>(inductionAxiom, axiomName));
                 
@@ -174,8 +184,7 @@ namespace analysis {
 
                 if (twoTraces)
                 {
-                    auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                    bareLemma = logic::Formulas::universal({tr}, bareLemma);
+                    bareLemma = logic::Formulas::universal({trSymbol}, bareLemma);
                 }
                 
                 auto name = "value-static-" + v->name + "-" + statement->location;

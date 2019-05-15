@@ -176,17 +176,17 @@ namespace logic {
     public:
         
         // construct new terms
-        static std::shared_ptr<const PredicateFormula> predicate(std::string name, std::vector<std::shared_ptr<const Term>> subterms, std::string label = "", bool noDeclaration=false);
+        static std::shared_ptr<const Formula> predicate(std::string name, std::vector<std::shared_ptr<const Term>> subterms, std::string label = "", bool noDeclaration=false);
         
         static std::shared_ptr<const Formula> equality(std::shared_ptr<const Term> left, std::shared_ptr<const Term> right, std::string label = "");
-        static std::shared_ptr<const NegationFormula> disequality(std::shared_ptr<const Term> left, std::shared_ptr<const Term> right, std::string label = "");
+        static std::shared_ptr<const Formula> disequality(std::shared_ptr<const Term> left, std::shared_ptr<const Term> right, std::string label = "");
 
-        static std::shared_ptr<const NegationFormula>  negation(std::shared_ptr<const Formula> f, std::string label = "");
+        static std::shared_ptr<const Formula>  negation(std::shared_ptr<const Formula> f, std::string label = "");
 
-        static std::shared_ptr<const ConjunctionFormula> conjunction(std::vector<std::shared_ptr<const Formula>> conj, std::string label = "");
-        static std::shared_ptr<const DisjunctionFormula> disjunction(std::vector<std::shared_ptr<const Formula>> disj, std::string label = "");
+        static std::shared_ptr<const Formula> conjunction(std::vector<std::shared_ptr<const Formula>> conj, std::string label = "");
+        static std::shared_ptr<const Formula> disjunction(std::vector<std::shared_ptr<const Formula>> disj, std::string label = "");
         
-        static std::shared_ptr<const ImplicationFormula> implication(std::shared_ptr<const Formula> f1, std::shared_ptr<const Formula> f2, std::string label = "");
+        static std::shared_ptr<const Formula> implication(std::shared_ptr<const Formula> f1, std::shared_ptr<const Formula> f2, std::string label = "");
         
         static std::shared_ptr<const Formula> existential(std::vector<std::shared_ptr<const Symbol>> vars, std::shared_ptr<const Formula> f, std::string label = "");
         static std::shared_ptr<const Formula> universal(std::vector<std::shared_ptr<const Symbol>> vars, std::shared_ptr<const Formula> f, std::string label = "");

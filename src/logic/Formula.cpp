@@ -243,7 +243,7 @@ namespace logic {
     }
     
 # pragma mark - Formulas
-    std::shared_ptr<const PredicateFormula> Formulas::predicate(std::string name, std::vector<std::shared_ptr<const Term>> subterms, std::string label, bool noDeclaration)
+    std::shared_ptr<const Formula> Formulas::predicate(std::string name, std::vector<std::shared_ptr<const Term>> subterms, std::string label, bool noDeclaration)
     {
         std::vector<const Sort*> subtermSorts;
         for (const auto& subterm : subterms)
@@ -259,27 +259,27 @@ namespace logic {
         return std::make_shared<const EqualityFormula>(true, left, right, label);
     }
     
-    std::shared_ptr<const NegationFormula> Formulas::disequality(std::shared_ptr<const Term> left, std::shared_ptr<const Term> right, std::string label)
+    std::shared_ptr<const Formula> Formulas::disequality(std::shared_ptr<const Term> left, std::shared_ptr<const Term> right, std::string label)
     {
         auto eq = std::make_shared<const EqualityFormula>(true, left, right);
         return std::make_shared<const NegationFormula>(eq, label);
     }
     
-    std::shared_ptr<const NegationFormula>  Formulas::negation(std::shared_ptr<const Formula> f, std::string label)
+    std::shared_ptr<const Formula>  Formulas::negation(std::shared_ptr<const Formula> f, std::string label)
     {
         return std::make_shared<const NegationFormula>(f, label);
     }
     
-    std::shared_ptr<const ConjunctionFormula> Formulas::conjunction(std::vector<std::shared_ptr<const Formula>> conj, std::string label)
+    std::shared_ptr<const Formula> Formulas::conjunction(std::vector<std::shared_ptr<const Formula>> conj, std::string label)
     {
         return std::make_shared<const ConjunctionFormula>(conj, label);
     }
-    std::shared_ptr<const DisjunctionFormula> Formulas::disjunction(std::vector<std::shared_ptr<const Formula>> disj, std::string label)
+    std::shared_ptr<const Formula> Formulas::disjunction(std::vector<std::shared_ptr<const Formula>> disj, std::string label)
     {
         return std::make_shared<const DisjunctionFormula>(disj, label);
     }
     
-    std::shared_ptr<const ImplicationFormula> Formulas::implication(std::shared_ptr<const Formula> f1, std::shared_ptr<const Formula> f2, std::string label)
+    std::shared_ptr<const Formula> Formulas::implication(std::shared_ptr<const Formula> f1, std::shared_ptr<const Formula> f2, std::string label)
     {
         return std::make_shared<const ImplicationFormula>(f1, f2, label);
     }

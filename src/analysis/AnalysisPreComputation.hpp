@@ -22,10 +22,13 @@ namespace analysis
         static EndTimePointMap computeEndTimePointMap(const program::Program& program);
     private:
         static void addEndTimePointForStatement(const program::Statement* statement,
+                                                const std::shared_ptr<const logic::Term> nextTimepoint,
                                                 EndTimePointMap& endTimePointMap);
         static void addEndTimePointForIfElseStatement(const program::IfElse* ifElse,
+                                                      const std::shared_ptr<const logic::Term> nextTimepoint,
                                                       EndTimePointMap& endTimePointMap);
         static void addEndTimePointForWhileStatement(const program::WhileStatement* whileStatement,
+                                                     const std::shared_ptr<const logic::Term> nextTimepoint,
                                                      EndTimePointMap& endTimePointMap);
     };
 }

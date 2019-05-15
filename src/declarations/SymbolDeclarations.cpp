@@ -27,15 +27,6 @@ std::shared_ptr<const logic::Symbol> locationSymbolForStatement(const program::S
     }
 }
 
-std::shared_ptr<const logic::Symbol> locationSymbolLeftBranch(const program::IfElse* ifElse)
-{
-    return locationSymbol(ifElse->location + "_lEnd", ifElse->enclosingLoops->size());
-}
-std::shared_ptr<const logic::Symbol> locationSymbolRightBranch(const program::IfElse* ifElse)
-{
-    return locationSymbol(ifElse->location + "_rEnd", ifElse->enclosingLoops->size());
-}
-
 std::shared_ptr<const logic::Symbol> locationSymbolEndLocation(const program::Function* function)
 {
     return locationSymbol(function->name + "_end", 0);
@@ -116,10 +107,6 @@ void declareSymbolsForStatements(const program::Statement* statement, bool twoTr
     if (statement->type() == program::Statement::Type::IfElse)
     {
         auto castedStatement = static_cast<const program::IfElse*>(statement);
-        
-        // declare end-location symbols for both branches
-        locationSymbolLeftBranch(castedStatement);
-        locationSymbolRightBranch(castedStatement);
         
         // recurse
         for (const auto& statementInBranch : castedStatement->ifStatements)

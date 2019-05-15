@@ -8,9 +8,6 @@
 #include "Program.hpp"
 
 std::shared_ptr<const logic::Symbol> locationSymbolForStatement(const program::Statement* statement);
-
-std::shared_ptr<const logic::Symbol> locationSymbolLeftBranch(const program::IfElse* ifElse);
-std::shared_ptr<const logic::Symbol> locationSymbolRightBranch(const program::IfElse* ifElse);
 std::shared_ptr<const logic::Symbol> locationSymbolEndLocation(const program::Function* function);
 
 std::shared_ptr<const logic::Symbol> iteratorSymbol(const program::WhileStatement* whileStatement);

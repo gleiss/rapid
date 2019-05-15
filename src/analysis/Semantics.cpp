@@ -40,17 +40,14 @@ namespace analysis {
             for (const auto& statement : function->statements)
             {
                 auto semantics = generateSemantics(statement.get());
-                if (twoTraces)
-                {
-                    auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                    conjunctsFunction.push_back(logic::Formulas::universal({tr}, semantics));
-                }
-                else
-                {
-                    conjunctsFunction.push_back(semantics);
-                }
+                conjunctsFunction.push_back(semantics);
             }
             auto axiomFormula = logic::Formulas::conjunction(conjunctsFunction);
+            if(twoTraces)
+            {
+                auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
+                axiomFormula = logic::Formulas::universal({tr}, axiomFormula);
+            }
             axioms.push_back(std::make_shared<logic::Axiom>(axiomFormula, "Semantics of function " + function->name));
         }
         
@@ -182,129 +179,35 @@ namespace analysis {
         auto lStart = startTimepointForStatement(ifElse);
         auto lLeftStart = startTimepointForStatement(ifElse->ifStatements.front().get());
         auto lRightStart = startTimepointForStatement(ifElse->elseStatements.front().get());
-
         auto lEnd = endTimePointMap.at(ifElse);
-        auto lLeftEnd = endTimePointMap.at(ifElse->ifStatements.back().get());
-        auto lRightEnd = endTimePointMap.at(ifElse->elseStatements.back().get());
         
-        auto lStartName = lStart->symbol->name;
-        auto lLeftEndName = lLeftEnd->symbol->name;
-        auto lRightEndName = lRightEnd->symbol->name;
-        auto lEndName = lEnd->symbol->name;
+        auto condition = toFormula(ifElse->condition, lStart);
+        auto negatedCondition = logic::Formulas::negation(condition);
 
         // Part 1: values at the beginning of any branch are the same as at the beginning of the ifElse-statement
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts1;
         
          // don't need to take the intersection with active vars at lLeftStart/lRightStart, since the active vars at lStart are always a subset of those at lLeftStart/lRightStart
-        auto activeVars1 = locationToActiveVars.at(lStartName);
+        auto activeVars = locationToActiveVars.at(lStart->symbol->name);
         
-        for (const auto& var : activeVars1)
-        {
-            if (!var->isConstant)
-            {
-                if (!var->isArray)
-                {
-                    // v(lLeftStart) = v(lStart)
-                    auto eq = logic::Formulas::equality(toTerm(var,lLeftStart), toTerm(var,lStart));
-                    conjuncts1.push_back(eq);
-                }
-                else
-                {
-                    // forall p. v(lLeftStart,p) = v(lStart,p)
-                    auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
-                    auto p = logic::Terms::var(pSymbol);
-                    auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(toTerm(var, lLeftStart, p), toTerm(var, lStart, p)));
-                    conjuncts1.push_back(conjunct);
-                }
-            }
-        }
-        for (const auto& var : activeVars1)
-        {
-            if (!var->isConstant)
-            {
-                if (!var->isArray)
-                {
-                    // v(lRightStart) = v(lStart)
-                    auto eq = logic::Formulas::equality(toTerm(var,lRightStart), toTerm(var,lStart));
-                    conjuncts1.push_back(eq);
-                }
-                else
-                {
-                    // forall p. v(lRightStart,p) = v(lStart,p)
-                    auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
-                    auto p = logic::Terms::var(pSymbol);
-                    auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(toTerm(var, lRightStart, p), toTerm(var, lStart, p)));
-                    conjuncts1.push_back(conjunct);
-                }
-            }
-        }
+        auto implicationIfBranch = logic::Formulas::implication(condition, allVarEqual(activeVars,lLeftStart,lStart), "Jumping into the left branch doesn't change the variable values");
+        auto implicationElseBranch = logic::Formulas::implication(negatedCondition, allVarEqual(activeVars,lRightStart,lStart), "Jumping into the right branch doesn't change the variable values");
+
+        conjuncts.push_back(implicationIfBranch);
+        conjuncts.push_back(implicationElseBranch);
         
-        conjuncts.push_back(logic::Formulas::conjunction(conjuncts1, "Jumping into any branch doesn't change the variable values"));
-        
-        // Part 2: values at the end of the ifElse-statement are either values at the end of the left branch or the right branch,
-        // depending on the branching condition
-        std::vector<std::shared_ptr<const logic::Formula>> conjuncts2;
-        
-        auto c = toFormula(ifElse->condition, lStart);
-        
-        // TODO: activeVars2 and activeVars3 should be the same (not completely sure) and therefore only computed once.
-        auto activeVars2 = intersection(locationToActiveVars.at(lLeftEndName), locationToActiveVars.at(lEndName));
-        auto activeVars3 = intersection(locationToActiveVars.at(lRightEndName), locationToActiveVars.at(lEndName));
-        
-        for (const auto& var : activeVars2)
-        {
-            if(!var->isConstant)
-            {
-                if (!var->isArray)
-                {
-                    // condition(lStart) => v(lEnd)=v(lLeftEnd)
-                    auto eq1 = logic::Formulas::equality(toTerm(var,lEnd), toTerm(var,lLeftEnd));
-                    conjuncts2.push_back(logic::Formulas::implication(c, eq1));
-                }
-                else
-                {
-                    auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
-                    auto p = logic::Terms::var(pSymbol);
-                    
-                    // condition(lStart) => forall p. v(lEnd,p) = v(lLeftEnd,p)
-                    auto conclusion1 = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(toTerm(var, lEnd, p), toTerm(var, lLeftEnd, p)));
-                    conjuncts2.push_back(logic::Formulas::implication(c, conclusion1));
-                }
-            }
-        }
-        for (const auto& var : activeVars3)
-        {
-            if(!var->isConstant)
-            {
-                if (!var->isArray)
-                {
-                    // not condition(lStart) => v(lEnd)=v(lRightEnd)
-                    auto eq2 = logic::Formulas::equality(toTerm(var,lEnd), toTerm(var,lRightEnd));
-                    conjuncts2.push_back(logic::Formulas::implication(logic::Formulas::negation(c), eq2));
-                }
-                else
-                {
-                    auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
-                    auto p = logic::Terms::var(pSymbol);
-                    
-                    // not condition(lStart) => forall p. v(lEnd,p) = v(lLeftEnd,p)
-                    auto conclusion2 = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(toTerm(var, lEnd, p), toTerm(var, lRightEnd, p)));
-                    conjuncts2.push_back(logic::Formulas::implication(logic::Formulas::negation(c), conclusion2));
-                }
-            }
-        }
-        conjuncts.push_back(logic::Formulas::conjunction(conjuncts2, "The branching-condition determines which values to use after the if-statement"));
-        
-        // Part 3: collect all formulas describing semantics of branches
+        // Part 2: collect all formulas describing semantics of branches and assert them conditionally
         for (const auto& statement : ifElse->ifStatements)
         {
-            auto conjunct = generateSemantics(statement.get());
-            conjuncts.push_back(conjunct);
+            auto semanticsOfStatement = generateSemantics(statement.get());
+            auto implication = logic::Formulas::implication(condition, semanticsOfStatement);
+            conjuncts.push_back(implication);
         }
         for (const auto& statement : ifElse->elseStatements)
         {
-            auto conjunct = generateSemantics(statement.get());
-            conjuncts.push_back(conjunct);
+            auto semanticsOfStatement = generateSemantics(statement.get());
+            auto implication = logic::Formulas::implication(negatedCondition, semanticsOfStatement);
+            conjuncts.push_back(implication);
         }
         
         return logic::Formulas::conjunction(conjuncts, "Semantics of IfElse at location " + ifElse->location);
@@ -314,86 +217,64 @@ namespace analysis {
     {
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts;
 
-        auto iSymbol = iteratorSymbol(whileStatement);
-        auto i = logic::Terms::var(iSymbol);
+        auto itSymbol = iteratorSymbol(whileStatement);
+        auto it = logic::Terms::var(itSymbol);
         auto n = lastIterationTermForLoop(whileStatement, twoTraces);
 
         auto lStart0 = timepointForLoopStatement(whileStatement, logic::Theory::natZero());
-        auto lStartIt = timepointForLoopStatement(whileStatement, i);
+        auto lStartIt = timepointForLoopStatement(whileStatement, it);
         auto lStartN = timepointForLoopStatement(whileStatement, n);
         auto lBodyStartIt = startTimepointForStatement(whileStatement->bodyStatements.front().get());
         auto lEnd = endTimePointMap.at(whileStatement);
         
-        auto lStartName = lStart0->symbol->name;
-        auto activeVars1 = locationToActiveVars.at(lStartName);
-        
+        auto activeVars = locationToActiveVars.at(lStart0->symbol->name);
+
         // Part 1: values at the beginning of body are the same as at the beginning of the while-statement
-        std::vector<std::shared_ptr<const logic::Formula>> conjuncts1;
-        for (const auto& var : locationToActiveVars.at(lStartName))
-        {
-            if(!var->isConstant)
-            {
-                if (!var->isArray)
-                {
-                    // v(lBodyStartIt) = v(lStartIt)
-                    auto eq = logic::Formulas::equality(toTerm(var,lBodyStartIt), toTerm(var,lStartIt));
-                    conjuncts1.push_back(eq);
-                }
-                else
-                {
-                    // forall p. v(lBodyStartIt,p) = v(lStartIt,p)
-                    auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
-                    auto p = logic::Terms::var(pSymbol);
-                    auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(toTerm(var, lBodyStartIt, p), toTerm(var, lStartIt, p)));
-                    conjuncts1.push_back(conjunct);
-                }
-            }
-        }
-        conjuncts.push_back(logic::Formulas::universal({iSymbol}, logic::Formulas::conjunction(conjuncts1), "Jumping into the body doesn't change the variable values"));
+        auto part1 = 
+            logic::Formulas::universal({itSymbol}, 
+                logic::Formulas::implication(
+                    logic::Theory::natSub(it,n), 
+                    allVarEqual(activeVars,lBodyStartIt,lStartIt)
+                ),
+                "Jumping into the loop body doesn't change the variable values"
+            );
+        conjuncts.push_back(part1);
         
         // Part 2: collect all formulas describing semantics of body
-        std::vector<std::shared_ptr<const logic::Formula>> conjuncts2;
+        std::vector<std::shared_ptr<const logic::Formula>> conjunctsBody;
         for (const auto& statement : whileStatement->bodyStatements)
         {
             auto conjunct = generateSemantics(statement.get());
-            conjuncts2.push_back(conjunct);
+            conjunctsBody.push_back(conjunct);
         }
-        conjuncts.push_back(logic::Formulas::universal({iSymbol}, logic::Formulas::conjunction(conjuncts2), "Semantics of the body"));
+        auto bodySemantics = 
+            logic::Formulas::universal({itSymbol}, 
+                logic::Formulas::implication(
+                    logic::Theory::natSub(it,n),
+                    logic::Formulas::conjunction(conjunctsBody)
+                ),
+                "Semantics of the body"
+            );
+        conjuncts.push_back(bodySemantics);
         
         // Part 3: Define last iteration
         // Loop condition holds at main-loop-location for all iterations before n
-        auto iLessN = logic::Theory::natSub(i, n);
-        auto conditionAtLStartIt = toFormula(whileStatement->condition, lStartIt);
-        auto imp = logic::Formulas::implication(iLessN, conditionAtLStartIt);
-        conjuncts.push_back(logic::Formulas::universal({iSymbol}, imp, "The loop-condition holds always before the last iteration"));
+        auto universal = 
+            logic::Formulas::universal({itSymbol}, 
+                logic::Formulas::implication(
+                    logic::Theory::natSub(it, n), 
+                    toFormula(whileStatement->condition, lStartIt)), 
+                "The loop-condition holds always before the last iteration"
+            );
+        conjuncts.push_back(universal);
         
         // loop condition doesn't hold at n
         auto negConditionAtN = logic::Formulas::negation(toFormula(whileStatement->condition, lStartN), "The loop-condition doesn't hold in the last iteration");
         conjuncts.push_back(negConditionAtN);
         
         // Part 4: The values after the while-loop are the values from the timepoint with location lStart and iteration n
-        std::vector<std::shared_ptr<const logic::Formula>> conjuncts3;
-        for (const auto& var : locationToActiveVars.at(lStartName))
-        {
-            if(!var->isConstant)
-            {
-                if (!var->isArray)
-                {
-                    // v(lEnd) = v(lStartN)
-                    auto eq = logic::Formulas::equality(toTerm(var,lEnd), toTerm(var,lStartN));
-                    conjuncts3.push_back(eq);
-                }
-                else
-                {
-                    // forall p. v(lEnd,p) = v(lStartN,p)
-                    auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
-                    auto p = logic::Terms::var(pSymbol);
-                    auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(toTerm(var, lEnd, p), toTerm(var, lStartN, p)));
-                    conjuncts3.push_back(conjunct);
-                }
-            }
-        }
-        conjuncts.push_back(logic::Formulas::conjunction(conjuncts3, "The values after the while-loop are the values from the last iteration"));
+        auto part4 = allVarEqual(activeVars,lEnd,lStartN, "The values after the while-loop are the values from the last iteration");
+        conjuncts.push_back(part4);
         
         return logic::Formulas::conjunction(conjuncts, "Loop at location " + whileStatement->location);
     }

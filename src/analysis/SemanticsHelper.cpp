@@ -290,7 +290,41 @@ namespace analysis {
         auto tr = logic::Terms::var(trSymbol);
         return lastIterationTermForLoop(whileStatement, tr, twoTraces);
     }
-    
 
-    
+    std::shared_ptr<const logic::Formula> varEqual(std::shared_ptr<const program::Variable> v, std::shared_ptr<const logic::Term> timePoint1, std::shared_ptr<const logic::Term> timePoint2)
+    {
+        if(!v->isArray)
+        {
+            return
+                logic::Formulas::equality(
+                    toTerm(v,timePoint1),
+                    toTerm(v,timePoint2)
+                );
+        }
+        else
+        {
+            auto posSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
+            auto pos = logic::Terms::var(posSymbol);
+            return
+                logic::Formulas::universal({posSymbol},
+                    logic::Formulas::equality(
+                        toTerm(v,timePoint1,pos),
+                        toTerm(v,timePoint2,pos)
+                    )
+                );
+        }
+    }
+
+    std::shared_ptr<const logic::Formula> allVarEqual(const std::vector<std::shared_ptr<const program::Variable>>& activeVars, std::shared_ptr<const logic::Term> timePoint1, std::shared_ptr<const logic::Term> timePoint2, std::string label)
+    {
+        std::vector<std::shared_ptr<const logic::Formula>> conjuncts;
+        for (const auto& var : activeVars)
+        {
+            if(!var->isConstant)
+            {
+                conjuncts.push_back(varEqual(var, timePoint1, timePoint2));
+            }
+        }
+        return logic::Formulas::conjunction(conjuncts, label);
+    }
 }

@@ -179,7 +179,6 @@ namespace analysis {
         auto lStart = startTimepointForStatement(ifElse);
         auto lLeftStart = startTimepointForStatement(ifElse->ifStatements.front().get());
         auto lRightStart = startTimepointForStatement(ifElse->elseStatements.front().get());
-        auto lEnd = endTimePointMap.at(ifElse);
         
         auto condition = toFormula(ifElse->condition, lStart);
         auto negatedCondition = logic::Formulas::negation(condition);

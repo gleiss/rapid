@@ -199,13 +199,13 @@ namespace analysis {
         for (const auto& statement : ifElse->ifStatements)
         {
             auto semanticsOfStatement = generateSemantics(statement.get());
-            auto implication = logic::Formulas::implication(condition, semanticsOfStatement);
+            auto implication = logic::Formulas::implication(condition, semanticsOfStatement, "Semantics of left branch");
             conjuncts.push_back(implication);
         }
         for (const auto& statement : ifElse->elseStatements)
         {
             auto semanticsOfStatement = generateSemantics(statement.get());
-            auto implication = logic::Formulas::implication(negatedCondition, semanticsOfStatement);
+            auto implication = logic::Formulas::implication(negatedCondition, semanticsOfStatement,  "Semantics of right branch");
             conjuncts.push_back(implication);
         }
         

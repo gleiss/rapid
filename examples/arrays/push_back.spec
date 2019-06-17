@@ -22,3 +22,16 @@ func main()
 		(= (alength main_end) blength)
 	)
 )
+
+(conjecture
+	(forall ((j Int))
+		(=>
+			(and
+				(<= 0 blength)
+				(<= 0 j)
+				(< j (alength main_end))
+			)
+			(= (a main_end j) (b j))
+		)
+	)
+)

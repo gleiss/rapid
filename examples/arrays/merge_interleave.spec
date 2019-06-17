@@ -26,3 +26,16 @@ func main()
       )
    )
 )
+
+(conjecture
+   (forall ((pos Int))
+      (=>
+        (and
+          (<= 0 pos)
+          (< pos alength)
+          (<= 0 alength)
+        )
+        (= (c main_end (+ (* pos 2) 1)) (b pos))
+      )
+   )
+)

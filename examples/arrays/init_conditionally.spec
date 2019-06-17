@@ -31,6 +31,19 @@ func main()
             (< pos (j main_end))
             (<= 0 length)
          )
+         (<= (c main_end pos) (- (+ pos (i main_end)) (j main_end)))
+      )
+   )
+)
+
+(conjecture
+   (forall ((pos Int))
+      (=>
+         (and
+            (<= 0 pos)
+            (< pos (j main_end))
+            (<= 0 length)
+         )
          (<= pos (c main_end pos))
       )
    )

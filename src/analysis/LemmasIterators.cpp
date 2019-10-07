@@ -60,8 +60,8 @@ namespace analysis {
                 items.push_back(std::make_shared<logic::Axiom>(inductionAxiom, axiomName));
 
                 // PART 2: Add trace lemma
-                // Premise: v(l(zero))<=x     & x<v(l(n))     & forall it. v(l(s(it)))=v(l(it))+1         or
-                //          v(l(zero),pos)<=x & x<v(l(n),pos) & forall it. v(l(s(it)),pos)=v(l(it),pos)+1
+                // Premise: v(l(zero))<=x     & x<v(l(n))     & forall it. (it<n => v(l(s(it)))=v(l(it))+1)         , or
+                //          v(l(zero),pos)<=x & x<v(l(n),pos) & forall it. (it<n => v(l(s(it)),pos)=v(l(it),pos)+1)
                 auto premise =
                     logic::Formulas::conjunction({
                         logic::Theory::intLessEqual(
@@ -73,11 +73,14 @@ namespace analysis {
                             v->isArray ? toTerm(v,lStartN,pos) : toTerm(v,lStartN)
                         ),
                         logic::Formulas::universal({itSymbol},
-                            logic::Formulas::equality(
-                                v->isArray ? toTerm(v,lStartSuccOfIt,pos) : toTerm(v,lStartSuccOfIt),
-                                logic::Theory::intAddition(
-                                    v->isArray ?  toTerm(v,lStartIt,pos) : toTerm(v,lStartIt),
-                                    logic::Theory::intConstant(1)
+                            logic::Formulas::implication(
+                                logic::Theory::natSub(it, n),
+                                logic::Formulas::equality(
+                                    v->isArray ? toTerm(v,lStartSuccOfIt,pos) : toTerm(v,lStartSuccOfIt),
+                                    logic::Theory::intAddition(
+                                        v->isArray ?  toTerm(v,lStartIt,pos) : toTerm(v,lStartIt),
+                                        logic::Theory::intConstant(1)
+                                    )
                                 )
                             )
                         )

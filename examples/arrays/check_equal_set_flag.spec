@@ -11,7 +11,7 @@ func main()
   const Int[] b;
   const Int length;
 
-  Int r;
+  Int r = 0;
   Int i = 0;
   while(i < length)
   {
@@ -28,13 +28,26 @@ func main()
 }
 
 (conjecture
+  (=>
+    (and
+      (<= 0 length)
+      (= (r main_end) 1)
+    )
+    (exists ((k Int))
+      (not 
+        (= (a k) (b k))
+      )
+    )
+  )
+)
+
+(conjecture
   (forall ((k Int))
     (=>
       (and
         (<= 0 k)
         (< k length)
         (<= 0 length)
-        (not (= (r (l16 zero)) 1))
         (not (= (r main_end) 1))
       )
       (= (a k)(b k))

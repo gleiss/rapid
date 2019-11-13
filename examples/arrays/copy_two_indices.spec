@@ -1,5 +1,3 @@
-// Make blength and b const asap.
-
 func main()
 {
 	Int[] a;

@@ -32,3 +32,18 @@ func main()
 		)
 	)
 )
+
+(conjecture
+	(forall ((k Int))
+		(exists ((l Int))
+			(=>
+				(and
+					(<= 0 k)
+					(< k (alength main_end))
+					(<= 0 blength)
+				)
+				(= (a main_end k) (b l))
+			)
+		)
+	)
+)

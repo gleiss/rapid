@@ -12,6 +12,12 @@ func main()
   }
 }
 
+(conjecture
+  (=>
+    (= 0 alength)
+    (= (j main_end) 0)
+  )
+)
 
 (conjecture
   (=>

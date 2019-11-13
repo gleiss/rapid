@@ -14,6 +14,12 @@ func main()
 	}
 }
 
+(axiom
+	(forall ((it Nat))
+		(= (i (l9 it)) (j (l9 it)))
+	)
+)
+
 (conjecture
 	(forall ((k Int))
 		(=>

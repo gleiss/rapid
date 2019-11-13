@@ -5,13 +5,13 @@ func main()
 	const Int blength;
 
 	Int i = 0;
-	Int j = 0;
+	Int alength = 0;
 	while(i < blength)
 	{
 		if (b[i] >= 0)
 		{
-			a[j] = b[i];
-			j = j + 1;
+			a[alength] = b[i];
+			alength = alength + 1;
 		} else
 		{
 			skip;
@@ -25,7 +25,7 @@ func main()
 		(=>
 			(and
 				(<= 0 k)
-				(< k (j main_end))
+				(< k (alength main_end))
 				(<= 0 blength)
 			)
 			(<= 0 (a main_end k))

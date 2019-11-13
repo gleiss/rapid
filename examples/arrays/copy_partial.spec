@@ -1,15 +1,15 @@
 func main()
 {
 	Int[] a;
+	Int alength = 0;
 	const Int[] b;
 	const Int blength;
 	const Int k;
 
-	Int i = 0;
-	while(i < k)
+	while(alength < k)
 	{
-		a[i] = b[i];
-		i = i + 1;
+		a[alength] = b[alength];
+		alength = alength + 1;
 	}
 }
 

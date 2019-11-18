@@ -7,6 +7,7 @@
 
 #include "Term.hpp"
 #include "Formula.hpp"
+#include "Problem.hpp"
 
 namespace logic {
     
@@ -37,7 +38,7 @@ namespace logic {
     };
     
     /*
-     * Generates inductionAxiom1 from the induction hypothesis 'inductionHypothesis' (short IH, modelled as function which maps each timepoint to a formula).
+     * Generates inductionAxiom1 from the induction hypothesis 'inductionHypothesis' (short IH, modelled as function which maps each timepoint to a formula), and adds it to 'items'. 'freeVars' must contain exactly all free variables of 'inductionHypothesis' different from the free variable over which we perform induction.
      * The induction axiom then has the following form:
      * forall boundL,boundR.
      *    =>
@@ -61,7 +62,12 @@ namespace logic {
      *         boundL<=it<=boundR
      *         IH(it)
      */
-    std::shared_ptr<const Formula> inductionAxiom1(std::function<std::shared_ptr<const Formula> (std::shared_ptr<const Term>)> inductionHypothesis);
+    void addInductionAxiom1(
+        std::string name,
+        std::string shortName,
+        std::function<std::shared_ptr<const Formula> (std::shared_ptr<const Term>)> inductionHypothesis,
+        std::vector<std::shared_ptr<const Symbol>> freeVars,
+        std::vector<std::shared_ptr<const logic::ProblemItem>>& items);
 
     /*
      * Generates inductionAxiom2 from the induction hypothesis 'inductionHypothesis' (short IH, modelled as function which maps each timepoint to a formula).

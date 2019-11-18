@@ -115,8 +115,13 @@ namespace logic {
         auto succOfT2 = natSucc(t2);
         return Formulas::predicate("Sub", {t1,succOfT2}, label, false); // Sub needs a declaration, since it is not added by Vampire yet
     }
-    
-    std::shared_ptr<const Formula> inductionAxiom1(std::function<std::shared_ptr<const Formula> (std::shared_ptr<const Term>)> inductionHypothesis)
+
+    void addInductionAxiom1(
+        std::string name,
+        std::string shortName,
+        std::function<std::shared_ptr<const Formula> (std::shared_ptr<const Term>)> inductionHypothesis,
+        std::vector<std::shared_ptr<const Symbol>> freeVars,
+        std::vector<std::shared_ptr<const logic::ProblemItem>>& items)
     {
         auto boundLSymbol = logic::Signature::varSymbol("boundL", logic::Sorts::natSort());
         auto boundRSymbol = logic::Signature::varSymbol("boundR", logic::Sorts::natSort());
@@ -151,18 +156,22 @@ namespace logic {
                 )
             );
         
-        auto inductionAxiom =
-            Formulas::universal({boundLSymbol,boundRSymbol},
-                Formulas::implication(
-                    Formulas::conjunction({
-                        baseCase,
-                        inductiveCase
-                    }),
-                    conclusion
+        auto inductionAxiomFormula =
+            Formulas::universal(freeVars,
+                Formulas::universal({boundLSymbol,boundRSymbol},
+                    Formulas::implication(
+                        Formulas::conjunction({
+                            baseCase,
+                            inductiveCase
+                        }),
+                        conclusion
+                    )
                 )
             );
+
+        auto inductionAxiom = std::make_shared<logic::Axiom>(inductionAxiomFormula, name);
         
-        return inductionAxiom;
+        items.push_back(inductionAxiom);
     }
 
     std::shared_ptr<const Formula> inductionAxiom2(std::function<std::shared_ptr<const Formula> (std::shared_ptr<const Term>)> inductionHypothesis)

@@ -20,6 +20,9 @@ namespace analysis {
         {
             if (!v->isConstant)
             {
+                // Note: We use the induction axiom directly as lemma, so the lemma trivially holds and we don't need to prove it.
+                auto inductionAxiomName = "traces-eq-preservation-" + v->name + "-" + statement->location;
+
                 // IH(arg): v(l(arg),    t1) = v(l(arg),    t2) or
                 //          v(l(arg),pos,t1) = v(l(arg),pos,t2)
                 auto inductionHypothesis = [&](std::shared_ptr<const logic::Term> arg)
@@ -31,15 +34,14 @@ namespace analysis {
                                 v->isArray ? toTermFull(v, lStartArg, pos, t2) : toTermFull(v, lStartArg, t2)
                             );
                     };
-                auto inductionAxiom = logic::inductionAxiom1(inductionHypothesis);
+
+                std::vector<std::shared_ptr<const logic::Symbol>> freeVars = {};
                 if(v->isArray)
                 {
-                    inductionAxiom = logic::Formulas::universal({posSymbol}, inductionAxiom);
+                    freeVars.push_back(posSymbol);
                 }
-                
-                // Note: We use the induction axiom directly as lemma, so the lemma trivially holds and we don't need to prove it.
-                auto name = "traces-eq-preservation-" + v->name + "-" + statement->location;
-                items.push_back(std::make_shared<logic::Axiom>(inductionAxiom, name));
+
+                logic::addInductionAxiom1(inductionAxiomName, inductionAxiomName, inductionHypothesis, freeVars, items);
             }
         }
     }

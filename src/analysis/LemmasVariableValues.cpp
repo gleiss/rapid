@@ -41,6 +41,9 @@ namespace analysis {
                     auto predicateFunctor = predicate.first;
                     auto predicateString = predicate.second;
                     
+                    // PART 1: Add induction-axiom
+                    auto inductionAxiomName = "value-evolution-axiom-" + predicateString + "-" + v->name + "-" + whileStatement->location;
+
                     // IH(it): v(l(it1,...,itk,boundL)    ) C v(l(it1,...,itk,it)    ), where C in {=,<=,>=} or
                     //         v(l(it1,...,itk,boundL),pos) C v(l(it1,...,itk,it),pos), where C in {=,<=,>=}
                     auto inductionHypothesis = [&](std::shared_ptr<const logic::Term> arg)
@@ -52,21 +55,20 @@ namespace analysis {
                             ""
                         );
                     };
-                    
-                    // PART 1: Add induction-axiom
-                    auto inductionAxiom = logic::inductionAxiom1(inductionHypothesis);
+
+                    std::vector<std::shared_ptr<const logic::Symbol>> freeVars = {};
                     if (v->isArray)
                     {
-                        inductionAxiom = logic::Formulas::universal({posSymbol}, inductionAxiom);
+                        freeVars.push_back(posSymbol);
                     }
                     if (twoTraces)
                     {
-                        auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        inductionAxiom = logic::Formulas::universal({tr}, inductionAxiom);
+                        auto trSymbol = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
+                        freeVars.push_back(trSymbol);
                     }
-                    auto axiomName = "value-evolution-axiom-" + predicateString + "-" + v->name + "-" + whileStatement->location;
-                    items.push_back(std::make_shared<logic::Axiom>(inductionAxiom, axiomName));
-                    
+
+                    logic::addInductionAxiom1(inductionAxiomName, inductionAxiomName, inductionHypothesis, freeVars, items);
+
                     // PART 2: Add trace lemma
                     // Premise: forall it. (boundL<=it<boundR => v(l(it1,...,itk,it)    ) C v(l(it1,...,itk,s(it))    )), where C in {=,<=,>=} or
                     //          forall it. (boundL<=it<boundR => v(l(it1,...,itk,it),pos) C v(l(it1,...,itk,s(it)),pos)), where C in {=,<=,>=}
@@ -155,19 +157,20 @@ namespace analysis {
                 };
 
                 // PART 1: Add induction-axiom
-                auto inductionAxiom = logic::inductionAxiom1(inductionHypothesis);
+                auto inductionAxiomName = "value-static-axiom-" + v->name + "-" + statement->location;
+
+                std::vector<std::shared_ptr<const logic::Symbol>> freeVars = {};
                 if (v->isArray)
                 {
-                    inductionAxiom = logic::Formulas::universal({posSymbol}, inductionAxiom);
+                    freeVars.push_back(posSymbol);
                 }
                 if (twoTraces)
                 {
-                    inductionAxiom = logic::Formulas::universal({trSymbol}, inductionAxiom);
+                    freeVars.push_back(trSymbol);
                 }
-                
-                auto axiomName = "value-static-axiom-" + v->name + "-" + statement->location;
-                items.push_back(std::make_shared<logic::Axiom>(inductionAxiom, axiomName));
-                
+
+                logic::addInductionAxiom1(inductionAxiomName, inductionAxiomName, inductionHypothesis, freeVars, items);
+
                 // PART 2: Add trace lemma
                 // forall enclosing iterators. forall it. {forall pos.} (it<=n => IH(it))
                 auto implication =

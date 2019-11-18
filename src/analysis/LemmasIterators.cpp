@@ -31,6 +31,9 @@ namespace analysis {
         {
             if (!v->isConstant)
             {
+                // PART 1: Add induction-axiom
+                auto inductionAxiomName = "iterator-intermediateValue-axiom-" + v->name + "-" + statement->location;
+
                 // IH(it): v(l(it1,...,itk,it)    ) <= x or
                 //         v(l(it1,...,itk,it),pos) <= x
                 auto inductionHypothesis = [&](std::shared_ptr<const logic::Term> arg)
@@ -42,22 +45,18 @@ namespace analysis {
                     );
                 };
 
-                // PART 1: Add induction-axiom
-                auto inductionAxiom = 
-                    logic::Formulas::universal({xSymbol},
-                        logic::inductionAxiom1(inductionHypothesis)
-                    );
+                std::vector<std::shared_ptr<const logic::Symbol>> freeVars = {xSymbol};
                 if (v->isArray)
                 {
-                    inductionAxiom = logic::Formulas::universal({posSymbol}, inductionAxiom);
+                    freeVars.push_back(posSymbol);
                 }
                 if (twoTraces)
                 {
-                    auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                    inductionAxiom = logic::Formulas::universal({tr}, inductionAxiom);
+                    auto trSymbol = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
+                    freeVars.push_back(trSymbol);
                 }
-                auto axiomName = "iterator-intermediateValue-axiom-" + v->name + "-" + statement->location;
-                items.push_back(std::make_shared<logic::Axiom>(inductionAxiom, axiomName));
+
+                logic::addInductionAxiom1(inductionAxiomName, inductionAxiomName, inductionHypothesis, freeVars, items);
 
                 // PART 2: Add trace lemma
                 // Premise: v(l(zero))<=x     & x<v(l(n))     & forall it. (it<n => v(l(s(it)))=v(l(it))+1)         , or
@@ -142,7 +141,10 @@ namespace analysis {
             {
                 if (!v->isArray) // We assume that loop counters are not array elements and therefore only add these lemmas for non-array-vars
                 {
-                    // PART 1:
+                    // PART 1: Add induction-axiom
+                    auto inductionAxiomName1 = "iterator-injectivity-axiom1-" + v->name + "-" + statement->location;
+                    auto inductionAxiomName2 = "iterator-injectivity-axiom2-" + v->name + "-" + statement->location;
+
                     // IH1(arg): v(l(it1)) < v(l(arg))
                     auto inductionHypothesis1 = [&](std::shared_ptr<const logic::Term> arg)
                     {
@@ -156,25 +158,17 @@ namespace analysis {
                         return logic::Theory::intLess(toTerm(v,lStartIt2), toTerm(v,lStartArg));
                     };
 
-                    // Add induction-axiom
-                    auto inductionAxiom1 =
-                        logic::Formulas::universal({it1Symbol},
-                            logic::inductionAxiom1(inductionHypothesis1)
-                        );
-                    auto inductionAxiom2 =
-                        logic::Formulas::universal({it2Symbol},
-                            logic::inductionAxiom1(inductionHypothesis2)
-                        );
+                    std::vector<std::shared_ptr<const logic::Symbol>> freeVars1 = {it1Symbol};
+                    std::vector<std::shared_ptr<const logic::Symbol>> freeVars2 = {it2Symbol};
                     if (twoTraces)
                     {
-                        auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        inductionAxiom1 = logic::Formulas::universal({tr}, inductionAxiom1);
-                        inductionAxiom2 = logic::Formulas::universal({tr}, inductionAxiom2);
+                        auto trSymbol = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
+                        freeVars1.push_back(trSymbol);
+                        freeVars2.push_back(trSymbol);
                     }
-                    auto axiomName1 = "iterator-injectivity-axiom1-" + v->name + "-" + statement->location;
-                    auto axiomName2 = "iterator-injectivity-axiom2-" + v->name + "-" + statement->location;
-                    items.push_back(std::make_shared<logic::Axiom>(inductionAxiom1, axiomName1));
-                    items.push_back(std::make_shared<logic::Axiom>(inductionAxiom2, axiomName2));
+
+                    logic::addInductionAxiom1(inductionAxiomName1, inductionAxiomName1, inductionHypothesis1, freeVars1, items);
+                    logic::addInductionAxiom1(inductionAxiomName2, inductionAxiomName2, inductionHypothesis2, freeVars2, items);
 
                     // PART 2: Add trace lemma
                     /* Premise:

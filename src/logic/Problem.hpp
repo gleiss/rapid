@@ -11,12 +11,12 @@
 namespace logic {
     
     /*
-     * abstract class for wrapping a formula and tagging it as either axiom, lemma or conjecture
+     * abstract class for wrapping a formula and tagging it as either axiom, definition, lemma or conjecture
      */
     class ProblemItem
     {
     public:
-        enum class Type { Program, Axiom, Lemma, Conjecture};
+        enum class Type { Program, Axiom, Definition, Lemma, Conjecture};
         
         ProblemItem(Type type, std::shared_ptr<const logic::Formula> formula, std::string name) : type(type), formula(formula), name(name) {}
         virtual ~ProblemItem() = default;
@@ -33,6 +33,13 @@ namespace logic {
     {
     public:
         Axiom(std::shared_ptr<const logic::Formula> axiom, std::string name = "") : ProblemItem(ProblemItem::Type::Axiom, axiom, name){}
+    };
+
+    // a definition is a special case of an axiom.
+    class Definition : public ProblemItem
+    {
+    public:
+        Definition(std::shared_ptr<const logic::Formula> definition, std::string name = "") : ProblemItem(ProblemItem::Type::Definition, definition, name){}
     };
     
     class Lemma : public ProblemItem
@@ -52,9 +59,9 @@ namespace logic {
     class ReasoningTask
     {
     public:
-        ReasoningTask(std::vector<std::shared_ptr<const Axiom>> axioms, std::shared_ptr<const Conjecture> conjecture) : axioms(axioms), conjecture(conjecture) {}
+        ReasoningTask(std::vector<std::shared_ptr<const ProblemItem>> axioms, std::shared_ptr<const Conjecture> conjecture) : axioms(axioms), conjecture(conjecture) {}
         
-        const std::vector<std::shared_ptr<const Axiom>> axioms;
+        const std::vector<std::shared_ptr<const ProblemItem>> axioms;
         const std::shared_ptr<const Conjecture> conjecture;
 
         /*

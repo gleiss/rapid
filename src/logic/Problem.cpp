@@ -81,9 +81,10 @@ namespace logic {
         // output each axiom
         for (const auto& axiom : axioms)
         {
+            assert(axiom->type == ProblemItem::Type::Axiom || axiom->type == ProblemItem::Type::Definition);
             if (axiom->name != "")
             {
-                ostr << "\n; Axiom: " << axiom->name;
+                ostr << "\n; " << (axiom->type == ProblemItem::Type::Axiom ? "Axiom: " : "Definition: ") << axiom->name;
             }
             ostr << "\n(assert\n" << axiom->formula->toSMTLIB(3) + "\n)\n";
         }
@@ -117,13 +118,12 @@ namespace logic {
     std::vector<const ReasoningTask> Problem::generateReasoningTasks() const
     {
         std::vector<const ReasoningTask> tasks;
-        std::vector<std::shared_ptr<const Axiom>> currentAxioms;
+        std::vector<std::shared_ptr<const ProblemItem>> currentAxioms;
         for (const auto& item : items)
         {
-            if (item->type == ProblemItem::Type::Axiom)
+            if (item->type == ProblemItem::Type::Axiom || item->type == ProblemItem::Type::Definition)
             {
-                auto castedItem = std::dynamic_pointer_cast<const Axiom>(item);
-                currentAxioms.push_back(castedItem);
+                currentAxioms.push_back(item);
             }
          
             // if the item is a lemma or conjecture, generate a new reasoning task to prove that lemma/conjecture

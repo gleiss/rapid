@@ -38,7 +38,7 @@ namespace logic {
     };
     
     /*
-     * Generates inductionAxiom1 from the induction hypothesis 'inductionHypothesis' (short IH, modelled as function which maps each timepoint to a formula), and adds it to 'items'. 'freeVars' must contain exactly all free variables of 'inductionHypothesis' different from the free variable over which we perform induction.
+     * Generates inductionAxiom1 from the induction hypothesis 'inductionHypothesis' (short IH, modelled as function which maps each timepoint to a formula), and adds it to 'items'. 'freeVarSymbols' must contain exactly all free variables of 'inductionHypothesis' different from the free variable over which we perform induction. If two invocations of this function differ in 'inductionHypothesis', they also need to differ in the shortName.
      * The induction axiom then has the following form:
      * forall boundL,boundR.
      *    =>
@@ -66,7 +66,7 @@ namespace logic {
         std::string name,
         std::string shortName,
         std::function<std::shared_ptr<const Formula> (std::shared_ptr<const Term>)> inductionHypothesis,
-        std::vector<std::shared_ptr<const Symbol>> freeVars,
+        std::vector<std::shared_ptr<const Symbol>> freeVarSymbols,
         std::vector<std::shared_ptr<const logic::ProblemItem>>& items);
 
     /*

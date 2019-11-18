@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <string>
+#include <algorithm>
 
 namespace logic {
 
@@ -120,7 +121,7 @@ namespace logic {
         std::string name,
         std::string shortName,
         std::function<std::shared_ptr<const Formula> (std::shared_ptr<const Term>)> inductionHypothesis,
-        std::vector<std::shared_ptr<const Symbol>> freeVars,
+        std::vector<std::shared_ptr<const Symbol>> freeVarSymbols,
         std::vector<std::shared_ptr<const logic::ProblemItem>>& items)
     {
         auto boundLSymbol = logic::Signature::varSymbol("boundL", logic::Sorts::natSort());
@@ -130,48 +131,77 @@ namespace logic {
         auto boundL = Terms::var(boundLSymbol);
         auto boundR = Terms::var(boundRSymbol);
         auto itInd = Terms::var(itIndSymbol);
+
+        std::vector<std::shared_ptr<const Symbol>> argSymbols1 = {boundLSymbol};
+        std::vector<std::shared_ptr<const Symbol>> argSymbols2 = {boundLSymbol, boundRSymbol};
+        std::vector<std::shared_ptr<const Term>> args1 = {boundL};
+        std::vector<std::shared_ptr<const Term>> args2 = {boundL, boundR};
+        for (const auto& varSymbol : freeVarSymbols)
+        {
+            argSymbols1.push_back(varSymbol);
+            argSymbols2.push_back(varSymbol);
+            args1.push_back(Terms::var(varSymbol));
+            args2.push_back(Terms::var(varSymbol));
+        }
+
+        auto baseCase = Formulas::predicate("BC-" + shortName, args1);
+        auto inductiveCase = Formulas::predicate("IC-" + shortName, args2);
+        auto conclusion = Formulas::predicate("Con-" + shortName, args2);
         
-        auto baseCase = inductionHypothesis(boundL);
-        
-        auto inductiveCase =
-            Formulas::universal({itIndSymbol},
-                Formulas::implication(
-                    Formulas::conjunction({
-                        Theory::natSubEq(boundL, itInd),
-                        Theory::natSub(itInd, boundR),
-                        inductionHypothesis(itInd)
-                    }),
-                    inductionHypothesis(Theory::natSucc(itInd))
+        auto baseCaseDef =
+            Formulas::universal(argSymbols1,
+                Formulas::equivalence(
+                    baseCase,
+                    inductionHypothesis(boundL)
                 )
             );
-        
-        auto conclusion =
-            Formulas::universal({itIndSymbol},
-                Formulas::implication(
-                    Formulas::conjunction({
-                        Theory::natSubEq(boundL, itInd),
-                        Theory::natSubEq(itInd, boundR)
-                    }),
-                    inductionHypothesis(itInd)
+        auto inductiveCaseDef =
+            Formulas::universal(argSymbols2,
+                Formulas::equivalence(
+                    inductiveCase,
+                    Formulas::universal({itIndSymbol},
+                        Formulas::implication(
+                            Formulas::conjunction({
+                                Theory::natSubEq(boundL, itInd),
+                                Theory::natSub(itInd, boundR),
+                                inductionHypothesis(itInd)
+                            }),
+                            inductionHypothesis(Theory::natSucc(itInd))
+                        )
+                    )
                 )
             );
-        
-        auto inductionAxiomFormula =
-            Formulas::universal(freeVars,
-                Formulas::universal({boundLSymbol,boundRSymbol},
-                    Formulas::implication(
-                        Formulas::conjunction({
-                            baseCase,
-                            inductiveCase
-                        }),
-                        conclusion
+        auto conclusionDef =
+            Formulas::universal(argSymbols2,
+                Formulas::equivalence(
+                    conclusion,
+                    Formulas::universal({itIndSymbol},
+                        Formulas::implication(
+                            Formulas::conjunction({
+                                Theory::natSubEq(boundL, itInd),
+                                Theory::natSubEq(itInd, boundR)
+                            }),
+                            inductionHypothesis(itInd)
+                        )
                     )
                 )
             );
 
-        auto inductionAxiom = std::make_shared<logic::Axiom>(inductionAxiomFormula, name);
+        auto inductionAxiom =
+            Formulas::universal(argSymbols2,
+                Formulas::implication(
+                    Formulas::conjunction({
+                        baseCase,
+                        inductiveCase
+                    }),
+                    conclusion
+                )
+            );
         
-        items.push_back(inductionAxiom);
+        items.push_back(std::make_shared<logic::Axiom>(baseCaseDef, "Base-Case-Def for " + name));
+        items.push_back(std::make_shared<logic::Axiom>(inductiveCaseDef, "Inductive-Case-Def for " + name));
+        items.push_back(std::make_shared<logic::Axiom>(conclusionDef, "Conclusion-Def for " + name));
+        items.push_back(std::make_shared<logic::Axiom>(inductionAxiom, name));
     }
 
     std::shared_ptr<const Formula> inductionAxiom2(std::function<std::shared_ptr<const Formula> (std::shared_ptr<const Term>)> inductionHypothesis)

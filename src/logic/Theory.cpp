@@ -198,9 +198,9 @@ namespace logic {
                 )
             );
         
-        items.push_back(std::make_shared<logic::Axiom>(baseCaseDef, "Base-Case-Def for " + name));
-        items.push_back(std::make_shared<logic::Axiom>(inductiveCaseDef, "Inductive-Case-Def for " + name));
-        items.push_back(std::make_shared<logic::Axiom>(conclusionDef, "Conclusion-Def for " + name));
+        items.push_back(std::make_shared<logic::Definition>(baseCaseDef, "Base-Case for " + name));
+        items.push_back(std::make_shared<logic::Definition>(inductiveCaseDef, "Inductive-Case for " + name));
+        items.push_back(std::make_shared<logic::Definition>(conclusionDef, "Conclusion for " + name));
         items.push_back(std::make_shared<logic::Axiom>(inductionAxiom, name));
     }
 

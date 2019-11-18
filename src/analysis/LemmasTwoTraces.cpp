@@ -22,6 +22,7 @@ namespace analysis {
             {
                 // Note: We use the induction axiom directly as lemma, so the lemma trivially holds and we don't need to prove it.
                 auto inductionAxiomName = "traces-eq-preservation-" + v->name + "-" + statement->location;
+                auto inductionAxiomNameShort = "IndEqPres" + v->name + "-" + statement->location;
 
                 // IH(arg): v(l(arg),    t1) = v(l(arg),    t2) or
                 //          v(l(arg),pos,t1) = v(l(arg),pos,t2)
@@ -41,7 +42,7 @@ namespace analysis {
                     freeVars.push_back(posSymbol);
                 }
 
-                logic::addInductionAxiom1(inductionAxiomName, inductionAxiomName, inductionHypothesis, freeVars, items);
+                logic::addInductionAxiom1(inductionAxiomName, inductionAxiomNameShort, inductionHypothesis, freeVars, items);
             }
         }
     }

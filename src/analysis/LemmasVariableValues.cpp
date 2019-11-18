@@ -43,6 +43,7 @@ namespace analysis {
                     
                     // PART 1: Add induction-axiom
                     auto inductionAxiomName = "value-evolution-axiom-" + predicateString + "-" + v->name + "-" + whileStatement->location;
+                    auto inductionAxiomNameShort = "IndEvol-" + predicateString + "-" + v->name + "-" + whileStatement->location;
 
                     // IH(it): v(l(it1,...,itk,boundL)    ) C v(l(it1,...,itk,it)    ), where C in {=,<=,>=} or
                     //         v(l(it1,...,itk,boundL),pos) C v(l(it1,...,itk,it),pos), where C in {=,<=,>=}
@@ -67,7 +68,7 @@ namespace analysis {
                         freeVars.push_back(trSymbol);
                     }
 
-                    logic::addInductionAxiom1(inductionAxiomName, inductionAxiomName, inductionHypothesis, freeVars, items);
+                    logic::addInductionAxiom1(inductionAxiomName, inductionAxiomNameShort, inductionHypothesis, freeVars, items);
 
                     // PART 2: Add trace lemma
                     // Premise: forall it. (boundL<=it<boundR => v(l(it1,...,itk,it)    ) C v(l(it1,...,itk,s(it))    )), where C in {=,<=,>=} or
@@ -158,6 +159,7 @@ namespace analysis {
 
                 // PART 1: Add induction-axiom
                 auto inductionAxiomName = "value-static-axiom-" + v->name + "-" + statement->location;
+                auto inductionAxiomNameShort = "IndStatic" + v->name + "-" + statement->location;
 
                 std::vector<std::shared_ptr<const logic::Symbol>> freeVars = {};
                 if (v->isArray)
@@ -169,7 +171,7 @@ namespace analysis {
                     freeVars.push_back(trSymbol);
                 }
 
-                logic::addInductionAxiom1(inductionAxiomName, inductionAxiomName, inductionHypothesis, freeVars, items);
+                logic::addInductionAxiom1(inductionAxiomName, inductionAxiomNameShort, inductionHypothesis, freeVars, items);
 
                 // PART 2: Add trace lemma
                 // forall enclosing iterators. forall it. {forall pos.} (it<=n => IH(it))

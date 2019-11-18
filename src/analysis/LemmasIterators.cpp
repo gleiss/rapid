@@ -33,6 +33,7 @@ namespace analysis {
             {
                 // PART 1: Add induction-axiom
                 auto inductionAxiomName = "iterator-intermediateValue-axiom-" + v->name + "-" + statement->location;
+                auto inductionAxiomNameShort = "IndIntermed-" + v->name + "-" + statement->location;
 
                 // IH(it): v(l(it1,...,itk,it)    ) <= x or
                 //         v(l(it1,...,itk,it),pos) <= x
@@ -56,7 +57,7 @@ namespace analysis {
                     freeVars.push_back(trSymbol);
                 }
 
-                logic::addInductionAxiom1(inductionAxiomName, inductionAxiomName, inductionHypothesis, freeVars, items);
+                logic::addInductionAxiom1(inductionAxiomName, inductionAxiomNameShort, inductionHypothesis, freeVars, items);
 
                 // PART 2: Add trace lemma
                 // Premise: v(l(zero))<=x     & x<v(l(n))     & forall it. (it<n => v(l(s(it)))=v(l(it))+1)         , or
@@ -144,6 +145,8 @@ namespace analysis {
                     // PART 1: Add induction-axiom
                     auto inductionAxiomName1 = "iterator-injectivity-axiom1-" + v->name + "-" + statement->location;
                     auto inductionAxiomName2 = "iterator-injectivity-axiom2-" + v->name + "-" + statement->location;
+                    auto inductionAxiomNameShort1 = "Ind1Injec-" + v->name + "-" + statement->location;
+                    auto inductionAxiomNameShort2 = "Ind2Injec-" + v->name + "-" + statement->location;
 
                     // IH1(arg): v(l(it1)) < v(l(arg))
                     auto inductionHypothesis1 = [&](std::shared_ptr<const logic::Term> arg)
@@ -167,8 +170,8 @@ namespace analysis {
                         freeVars2.push_back(trSymbol);
                     }
 
-                    logic::addInductionAxiom1(inductionAxiomName1, inductionAxiomName1, inductionHypothesis1, freeVars1, items);
-                    logic::addInductionAxiom1(inductionAxiomName2, inductionAxiomName2, inductionHypothesis2, freeVars2, items);
+                    logic::addInductionAxiom1(inductionAxiomName1, inductionAxiomNameShort1, inductionHypothesis1, freeVars1, items);
+                    logic::addInductionAxiom1(inductionAxiomName2, inductionAxiomNameShort2, inductionHypothesis2, freeVars2, items);
 
                     // PART 2: Add trace lemma
                     /* Premise:

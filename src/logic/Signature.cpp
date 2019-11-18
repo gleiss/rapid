@@ -71,7 +71,8 @@ namespace logic {
 #pragma mark - Signature
     
     std::unordered_map<std::string, std::shared_ptr<const Symbol>> Signature::_signature;
-    
+    std::vector<std::shared_ptr<const Symbol>> Signature::_signatureOrderedByInsertion;
+
     bool Signature::isDeclared(std::string name)
     {
         auto it = _signature.find(name);
@@ -85,7 +86,10 @@ namespace logic {
         
         auto pair = _signature.insert(std::make_pair(name,std::unique_ptr<Symbol>(new Symbol(name, argSorts, rngSort, noDeclaration))));
         assert(pair.second); // must succeed since we checked that no such symbols existed before the insertion
-        return pair.first->second;
+
+        auto symbol = pair.first->second;
+        _signatureOrderedByInsertion.push_back(symbol);
+        return symbol;
     }
     
     std::shared_ptr<const Symbol> Signature::fetch(std::string name)
@@ -99,10 +103,14 @@ namespace logic {
     std::shared_ptr<const Symbol> Signature::fetchOrAdd(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration)
     {
         auto pair = _signature.insert(std::make_pair(name, std::shared_ptr<Symbol>(new Symbol(name, argSorts, rngSort, noDeclaration))));
-        
         auto symbol = pair.first->second;
+
+        if (pair.second)
+        {
+            _signatureOrderedByInsertion.push_back(symbol);
+        }
         // if a symbol with the name already exist, make sure it has the same sorts
-        if (!pair.second)
+        else
         {
             assert(argSorts.size() == symbol->argSorts.size());
             for (int i=0; i < argSorts.size(); ++i)

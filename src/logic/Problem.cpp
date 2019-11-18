@@ -73,9 +73,9 @@ namespace logic {
         }
         
         // output symbol definitions
-        for (const auto& pairStringSymbol : Signature::signature())
+        for (const auto& symbol : Signature::signatureOrderedByInsertion())
         {
-            ostr << pairStringSymbol.second->declareSymbolSMTLIB();
+            ostr << symbol->declareSymbolSMTLIB();
         }
         
         // output each axiom

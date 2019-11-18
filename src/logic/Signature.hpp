@@ -104,11 +104,13 @@ namespace logic {
         // return Symbol without adding it to Signature
         static std::shared_ptr<const Symbol> varSymbol(std::string name, const Sort* rngSort);
 
-        static const std::unordered_map<std::string, std::shared_ptr<const Symbol>>& signature(){return _signature;}
+        static const std::vector<std::shared_ptr<const Symbol>>& signatureOrderedByInsertion(){return _signatureOrderedByInsertion;}
         
     private:
         // _signature collects all symbols used so far.
         static std::unordered_map<std::string, std::shared_ptr<const Symbol>> _signature;
+        // symbols of signature, in the order of insertion.
+        static std::vector<std::shared_ptr<const Symbol>> _signatureOrderedByInsertion;
     };
 }
 #endif

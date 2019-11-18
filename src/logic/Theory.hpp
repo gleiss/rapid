@@ -37,47 +37,81 @@ namespace logic {
     };
     
     /*
-     * Generates an induction axiom from an induction hypothesis 'inductionHypothesis' (modelled as function which maps each timepoint to a formula)
-     * The induction axiom has the following form:
+     * Generates inductionAxiom1 from the induction hypothesis 'inductionHypothesis' (short IH, modelled as function which maps each timepoint to a formula).
+     * The induction axiom then has the following form:
      * forall boundL,boundR.
      *    =>
      *       and
-     *          P(boundL)
-     *          forall it.
-     *             =>
-     *                and
-     *                   boundL<=it<boundR
-     *                   P(it)
-     *                P(s(it))
-     *       forall it.
-     *          =>
-     *             boundL<=it<=boundR
-     *             P(it)
-     *
+     *          BC(boundL)
+     *          IC(boundL, boundR)
+     *       Con(boundL, boundR),
+     * where:
+     * - the base case BC(boundL) is defined as
+     *   IH(boundL)
+     * - the inductive case IC(boundL,boundR) is defined as
+     *   forall it.
+     *      =>
+     *         and
+     *            boundL<=it<boundR
+     *            IH(it)
+     *         IH(s(it))
+     * - the conclusion Con(boundL,boundR) is defined as
+     *   forall it.
+     *      =>
+     *         boundL<=it<=boundR
+     *         IH(it)
      */
     std::shared_ptr<const Formula> inductionAxiom1(std::function<std::shared_ptr<const Formula> (std::shared_ptr<const Term>)> inductionHypothesis);
 
     /*
-     * Generates the following variant of inductionAxiom1
-     * First, instantiate boundR to min(boundR1,boundR2) to get
+     * Generates inductionAxiom2 from the induction hypothesis 'inductionHypothesis' (short IH, modelled as function which maps each timepoint to a formula).
+     * The induction axiom then has the following form:
      * forall boundL,boundR1,boundR2.
      *    =>
      *       and
-     *          P(boundL)
-     *          forall it.
-     *             =>
-     *                and
-     *                   boundL<=it
-     *                   it<min(boundR1,boundR2)
-     *                   P(it)
-     *                P(s(it))
-     *       forall it.
-     *          =>
-     *             boundL<=it
-     *             it<=min(boundR1,boundR2)
-     *             P(it)
+     *          BC(boundL)
+     *          IC(boundL,boundR1,boundR2)
+     *       Con(boundL,boundR1,boundR2)
+     * where:
+     * - the base case BC(boundL) is defined as
+     *   IH(boundL)
+     * - the inductive case IC(boundL,boundR1,boundR2) is defined as
+     *   forall it.
+     *      =>
+     *         and
+     *            boundL<=it
+     *            it<boundR1
+     *            it<boundR2
+     *            IH(it)
+     *         IH(s(it))
+     * - the conclusion Con(boundL,boundR1,boundR2) is defined as
+     *   forall it.
+     *      =>
+     *         and
+     *            boundL<=it
+     *            it<=boundR1
+     *            it<=boundR2
+     *         IH(it)
+     * 
+     * InductionAxiom2 only differs from inductionAxiom1 in the inductive case and in 
+     * the conclusion. It can be obtained from inductionAxiom1 in the following way:
+     * 
+     * First, instantiate boundR to min(boundR1,boundR2) to get:
+     * - IC(boundL,boundR1,boundR2):
+     *   forall it.
+     *      =>
+     *         and
+     *            boundL<=it
+     *            it<min(boundR1,boundR2)
+     *            IH(it)
+     *         IH(s(it))
+     * - Con(boundL,boundR1,boundR2):
+     *   forall it.
+     *      =>
+     *         boundL<=it<=min(boundR1,boundR2)
+     *         IH(it)
      *
-     * Then eliminate min from the axiom by rewriting it using the following two defining axioms:
+     * Then eliminate min from both the inductive case and the conclusion by rewriting it using the following two defining axioms:
      * Axiom1:
      * forall it,it1,it2.
      *    <=>
@@ -92,26 +126,8 @@ namespace logic {
      *       and
      *          it <= it1
      *          it <= it2
-     *
-     * As result we get inductionAxiom2:
-     * forall boundL,boundR1,boundR2.
-     *    =>
-     *       and
-     *          P(boundL)
-     *          forall it.
-     *             =>
-     *                and
-     *                   boundL<=it
-     *                   it<boundR1
-     *                   it<boundR2
-     *                   P(it)
-     *                P(s(it))
-     *       forall it.
-     *          =>
-     *             boundL<=it
-     *             it<=boundR1
-     *             it<=boundR2
-     *             P(it)
+     * 
+     * As result we get inductionAxiom2.
      */
     std::shared_ptr<const Formula> inductionAxiom2(std::function<std::shared_ptr<const Formula> (std::shared_ptr<const Term>)> inductionHypothesis);
     

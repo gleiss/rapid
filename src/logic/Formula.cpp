@@ -146,6 +146,17 @@ namespace logic {
         return  str;
     }
 
+    std::string EquivalenceFormula::toSMTLIB(unsigned indentation) const
+    {
+        std::string str = stringForLabel(indentation);
+
+        str += std::string(indentation, ' ') + "(=\n";
+        str += f1->toSMTLIB(indentation + 3) + "\n";
+        str += f2->toSMTLIB(indentation + 3) + "\n";
+        str += std::string(indentation, ' ') + ")";
+        return  str;
+    }
+
     std::string PredicateFormula::prettyString(unsigned indentation) const
     {
         auto str = std::string(indentation, ' ');
@@ -241,6 +252,13 @@ namespace logic {
         str += f2->prettyString(indentation + 3);
         return  str;
     }
+    std::string EquivalenceFormula::prettyString(unsigned indentation) const
+    {
+        std::string str = std::string(indentation, ' ') + "=\n";
+        str += f1->prettyString(indentation + 3) + "\n";
+        str += f2->prettyString(indentation + 3);
+        return  str;
+    }
     
 # pragma mark - Formulas
     std::shared_ptr<const Formula> Formulas::predicate(std::string name, std::vector<std::shared_ptr<const Term>> subterms, std::string label, bool noDeclaration)
@@ -282,6 +300,10 @@ namespace logic {
     std::shared_ptr<const Formula> Formulas::implication(std::shared_ptr<const Formula> f1, std::shared_ptr<const Formula> f2, std::string label)
     {
         return std::make_shared<const ImplicationFormula>(f1, f2, label);
+    }
+    std::shared_ptr<const Formula> Formulas::equivalence(std::shared_ptr<const Formula> f1, std::shared_ptr<const Formula> f2, std::string label)
+    {
+        return std::make_shared<const EquivalenceFormula>(f1, f2, label);
     }
     
     std::shared_ptr<const Formula> Formulas::existential(std::vector<std::shared_ptr<const Symbol>> vars, std::shared_ptr<const Formula> f, std::string label)

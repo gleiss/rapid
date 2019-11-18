@@ -165,6 +165,21 @@ namespace logic {
         std::string toSMTLIB(unsigned indentation = 0) const override;
         std::string prettyString(unsigned indentation = 0) const override;
     };
+
+    class EquivalenceFormula : public Formula
+    {
+        friend class Formulas;
+
+    public:
+        EquivalenceFormula(std::shared_ptr<const Formula> f1, std::shared_ptr<const Formula> f2, std::string label = "")
+        : Formula(label), f1(f1), f2(f2) {}
+
+        const std::shared_ptr<const Formula> f1;
+        const std::shared_ptr<const Formula> f2;
+
+        std::string toSMTLIB(unsigned indentation = 0) const override;
+        std::string prettyString(unsigned indentation = 0) const override;
+    };
     
     inline std::ostream& operator<<(std::ostream& ostr, const Formula& e) { ostr << e.toSMTLIB(); return ostr; }
     
@@ -187,6 +202,7 @@ namespace logic {
         static std::shared_ptr<const Formula> disjunction(std::vector<std::shared_ptr<const Formula>> disj, std::string label = "");
         
         static std::shared_ptr<const Formula> implication(std::shared_ptr<const Formula> f1, std::shared_ptr<const Formula> f2, std::string label = "");
+        static std::shared_ptr<const Formula> equivalence(std::shared_ptr<const Formula> f1, std::shared_ptr<const Formula> f2, std::string label = "");
         
         static std::shared_ptr<const Formula> existential(std::vector<std::shared_ptr<const Symbol>> vars, std::shared_ptr<const Formula> f, std::string label = "");
         static std::shared_ptr<const Formula> universal(std::vector<std::shared_ptr<const Symbol>> vars, std::shared_ptr<const Formula> f, std::string label = "");

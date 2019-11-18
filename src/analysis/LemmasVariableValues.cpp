@@ -60,7 +60,7 @@ namespace analysis {
                         );
                     };
 
-                    std::vector<std::shared_ptr<const logic::Symbol>> freeVars = enclosingIteratorsSymbols(whileStatement);
+                    auto freeVars = enclosingIteratorsSymbols(whileStatement);
                     if (v->isArray)
                     {
                         freeVars.push_back(posSymbol);
@@ -74,8 +74,7 @@ namespace analysis {
                     logic::addInductionAxiom1(inductionAxiomName, inductionAxiomNameShort, inductionHypothesis, freeVars, items);
 
                     // PART 2: Add trace lemma
-
-                    std::vector<std::shared_ptr<const logic::Symbol>> argSymbols = freeVars;
+                    auto argSymbols = freeVars;
                     argSymbols.push_back(boundLSymbol);
                     argSymbols.push_back(boundRSymbol);
 
@@ -159,6 +158,10 @@ namespace analysis {
         {
             if (!v->isConstant && assignedVars.count(v) == 0)
             {
+                auto inductionAxiomName = "value-static-axiom-" + v->name + "-" + statement->location;
+                auto inductionAxiomNameShort = "Ax-Static-" + v->name + "-" + statement->location;
+                auto name = "value-static-" + v->name + "-" + statement->location;
+
                 // IH(it): v(l(it1,...,itk,zero)    ) = v(l(it1,...,itk,it)    ) or
                 //         v(l(it1,...,itk,zero),pos) = v(l(it1,...,itk,it),pos)
                 auto inductionHypothesis = [&](std::shared_ptr<const logic::Term> arg)
@@ -172,10 +175,7 @@ namespace analysis {
                 };
 
                 // PART 1: Add induction-axiom
-                auto inductionAxiomName = "value-static-axiom-" + v->name + "-" + statement->location;
-                auto inductionAxiomNameShort = "IndStatic" + v->name + "-" + statement->location;
-
-                std::vector<std::shared_ptr<const logic::Symbol>> freeVars = {};
+                auto freeVars = enclosingIteratorsSymbols(statement);
                 if (v->isArray)
                 {
                     freeVars.push_back(posSymbol);
@@ -188,26 +188,18 @@ namespace analysis {
                 logic::addInductionAxiom1(inductionAxiomName, inductionAxiomNameShort, inductionHypothesis, freeVars, items);
 
                 // PART 2: Add trace lemma
-                // forall enclosing iterators. forall it. {forall pos.} (it<=n => IH(it))
-                auto implication =
-                    logic::Formulas::implication(
-                        logic::Theory::natSubEq(it, n),
-                        inductionHypothesis(it)
-                    );
-                auto bareLemma =
-                    logic::Formulas::universal(enclosingIteratorsSymbols(statement),
-                        v->isArray ?
-                            logic::Formulas::universal({itSymbol, posSymbol}, implication) :
-                            logic::Formulas::universal({itSymbol}, implication)
-                    );
-
-                if (twoTraces)
-                {
-                    bareLemma = logic::Formulas::universal({trSymbol}, bareLemma);
-                }
+                auto argSymbols = freeVars;
+                argSymbols.push_back(itSymbol);
                 
-                auto name = "value-static-" + v->name + "-" + statement->location;
-                items.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
+                // forall enclosing iterators. {forall pos.} forall it. (it<=n => IH(it))
+                auto lemma =
+                    logic::Formulas::universal(argSymbols,
+                        logic::Formulas::implication(
+                            logic::Theory::natSubEq(it, n),
+                            inductionHypothesis(it)
+                        )
+                    );
+                items.push_back(std::make_shared<logic::Lemma>(lemma, name));
             }
         }
     }

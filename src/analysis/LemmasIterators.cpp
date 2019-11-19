@@ -32,8 +32,11 @@ namespace analysis {
             if (!v->isConstant)
             {
                 // PART 1: Add induction-axiom
-                auto inductionAxiomName = "iterator-intermediateValue-axiom-" + v->name + "-" + statement->location;
-                auto inductionAxiomNameShort = "IndIntermed-" + v->name + "-" + statement->location;
+                auto nameSuffix = "-" + v->name + "-" + statement->location;
+                auto name = "iterator-intermediateValue" + nameSuffix;
+                auto nameShort = "Intermed" + nameSuffix;
+                auto inductionAxiomName = "induction-axiom-" + name;
+                auto inductionAxiomNameShort = "Ax-" + nameShort;
 
                 // IH(it): v(l(it1,...,itk,it)    ) <= x or
                 //         v(l(it1,...,itk,it),pos) <= x
@@ -46,23 +49,64 @@ namespace analysis {
                     );
                 };
 
-                std::vector<std::shared_ptr<const logic::Symbol>> freeVars = {xSymbol};
+                auto freeVarSymbols1 = enclosingIteratorsSymbols(statement);
                 if (v->isArray)
                 {
-                    freeVars.push_back(posSymbol);
+                    freeVarSymbols1.push_back(posSymbol);
                 }
                 if (twoTraces)
                 {
                     auto trSymbol = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                    freeVars.push_back(trSymbol);
+                    freeVarSymbols1.push_back(trSymbol);
                 }
+                auto freeVarSymbols2 = freeVarSymbols1;
+                freeVarSymbols2.push_back(xSymbol);
 
-                logic::addInductionAxiom1(inductionAxiomName, inductionAxiomNameShort, inductionHypothesis, freeVars, items);
+                logic::addInductionAxiom1(inductionAxiomName, inductionAxiomNameShort, inductionHypothesis, freeVarSymbols2, items);
 
                 // PART 2: Add trace lemma
-                // Premise: v(l(zero))<=x     & x<v(l(n))     & forall it. (it<n => v(l(s(it)))=v(l(it))+1)         , or
-                //          v(l(zero),pos)<=x & x<v(l(n),pos) & forall it. (it<n => v(l(s(it)),pos)=v(l(it),pos)+1)
-                auto premise =
+                std::vector<std::shared_ptr<const logic::Term>> freeVars1 = {};
+                std::vector<std::shared_ptr<const logic::Term>> freeVars2 = {};
+                for (const auto& symbol : freeVarSymbols1)
+                {
+                    freeVars1.push_back(logic::Terms::var(symbol));
+                }
+                for (const auto& symbol : freeVarSymbols2)
+                {
+                    freeVars2.push_back(logic::Terms::var(symbol));
+                }
+
+                // PART 2A: Add definition for dense
+                auto dense = logic::Formulas::predicate("Dense-" + nameShort, freeVars1);
+                // Dense_v: forall it. (it<n => v(l(s(it)))=v(l(it))+1)         , or
+                //          forall it. (it<n => v(l(s(it)),pos)=v(l(it),pos)+1)
+                auto denseFormula =
+                    logic::Formulas::universal({itSymbol},
+                        logic::Formulas::implication(
+                            logic::Theory::natSub(it, n),
+                            logic::Formulas::equality(
+                                v->isArray ? toTerm(v,lStartSuccOfIt,pos) : toTerm(v,lStartSuccOfIt),
+                                logic::Theory::intAddition(
+                                    v->isArray ?  toTerm(v,lStartIt,pos) : toTerm(v,lStartIt),
+                                    logic::Theory::intConstant(1)
+                                )
+                            )
+                        )
+                    );
+                auto denseDef =
+                    logic::Formulas::universal(freeVarSymbols1,
+                        logic::Formulas::equivalence(
+                            dense,
+                            denseFormula
+                        )
+                    );
+                items.push_back(std::make_shared<logic::Definition>(denseDef, "Dense for " + name));
+
+                // PART 2B: Add definition for premise
+                auto premise = logic::Formulas::predicate("Prem-" + nameShort, freeVars2);
+                // Premise: v(l(zero))<=x     & x<v(l(n))     & Dense_v         , or
+                //          v(l(zero),pos)<=x & x<v(l(n),pos) & Dense_v
+                auto premiseFormula =
                     logic::Formulas::conjunction({
                         logic::Theory::intLessEqual(
                             v->isArray ? toTerm(v,lStartZero,pos) : toTerm(v,lStartZero),
@@ -72,20 +116,18 @@ namespace analysis {
                             x,
                             v->isArray ? toTerm(v,lStartN,pos) : toTerm(v,lStartN)
                         ),
-                        logic::Formulas::universal({itSymbol},
-                            logic::Formulas::implication(
-                                logic::Theory::natSub(it, n),
-                                logic::Formulas::equality(
-                                    v->isArray ? toTerm(v,lStartSuccOfIt,pos) : toTerm(v,lStartSuccOfIt),
-                                    logic::Theory::intAddition(
-                                        v->isArray ?  toTerm(v,lStartIt,pos) : toTerm(v,lStartIt),
-                                        logic::Theory::intConstant(1)
-                                    )
-                                )
-                            )
-                        )
+                        dense
                     });
+                auto premiseDef =
+                    logic::Formulas::universal(freeVarSymbols2,
+                        logic::Formulas::equivalence(
+                            premise,
+                            premiseFormula
+                        )
+                    );
+                items.push_back(std::make_shared<logic::Definition>(premiseDef, "Premise for " + name));
 
+                // PART 2C: Add lemma
                 // Conclusion: exists it2. (v(l(it2))=x     & it2<n) or
                 //             exists it2. (v(l(it2),pos)=x & it2<n)
                 auto conclusion =
@@ -98,24 +140,13 @@ namespace analysis {
                             logic::Theory::natSub(it2,n)
                         })
                     );
-                
                 // forall enclosingIterators. forall x. (premise => conclusion) or
                 // forall enclosingIterators. forall x,pos. (premise => conclusion)
-                auto implication = logic::Formulas::implication(premise,conclusion);
-                auto universal =
-                    v->isArray ?
-                        logic::Formulas::universal({xSymbol,posSymbol},implication) :
-                        logic::Formulas::universal({xSymbol},implication);
-                auto bareLemma = logic::Formulas::universal(enclosingIteratorsSymbols(statement), universal);
-                
-                if (twoTraces)
-                {
-                    auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                    bareLemma = logic::Formulas::universal({tr}, bareLemma);
-                }
-                
-                auto name = "iterator-intermediateValue-" + v->name + "-" + statement->location;
-                items.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
+                auto lemma =
+                    logic::Formulas::universal(freeVarSymbols2,
+                        logic::Formulas::implication(premise,conclusion)
+                    );
+                items.push_back(std::make_shared<logic::Lemma>(lemma, name));
             }
         }
     }

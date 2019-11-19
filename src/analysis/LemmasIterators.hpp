@@ -31,19 +31,24 @@ namespace analysis {
      *
      * forall x.
      *    =>
-     *       and
-     *          v(l(zero))<=x
-     *          x<v(l(n))
-     *          forall it.
-     *             =>
-     *                it<n
-     *                v(l(s(it)))=v(l(it))+1
-     *    exists it2.
-     *       and
-     *          it2<n
-     *          v(l(it2))=x
+     *       Prem(x)
+     *       exists it2.
+     *          and
+     *             it2<n
+     *             v(l(it2))=x
+     * where:
+     * - Prem(x) :=
+     *   and
+     *      v(l(zero))<=x
+     *      x<v(l(n))
+     *      Dense_v
+     * - Dense_v :=
+     *   forall it.
+     *      =>
+     *         it<n
+     *         v(l(s(it)))=v(l(it))+1
      *
-     * Soundness: The lemma is equivalent (by using modus tollens) to the following lemma 1A:
+     * Soundness: The lemma is equivalent (by using modus tollens and inlining definitions) to the following lemma 1A:
      * forall x.
      *    =>
      *       and

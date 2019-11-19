@@ -56,6 +56,13 @@ int main(int argc, char *argv[])
                 // generate problem
                 std::vector<std::shared_ptr<const logic::ProblemItem>> problemItems;
                 
+                analysis::TheoryAxioms theoryAxiomsGenerator;
+                auto theoryAxioms = theoryAxiomsGenerator.generate();
+                for (const auto& axiom : theoryAxioms)
+                {
+                    problemItems.push_back(axiom);
+                }
+
                 analysis::Semantics s(*parserResult.program, parserResult.locationToActiveVars, parserResult.twoTraces);
                 auto semantics = s.generateSemantics();
                 problemItems.insert(problemItems.end(), semantics.begin(), semantics.end());
@@ -63,12 +70,7 @@ int main(int argc, char *argv[])
                 auto traceLemmas = analysis::generateTraceLemmas(*parserResult.program, parserResult.locationToActiveVars, parserResult.twoTraces);
                 problemItems.insert(problemItems.end(), traceLemmas.begin(), traceLemmas.end());
                 
-                analysis::TheoryAxioms theoryAxiomsGenerator;
-                auto theoryAxioms = theoryAxiomsGenerator.generate();
-                for (const auto& axiom : theoryAxioms)
-                {
-                    problemItems.push_back(std::make_shared<logic::Axiom>(axiom));
-                }
+
                 
                 problemItems.insert(problemItems.end(), parserResult.problemItems.begin(), parserResult.problemItems.end());
                 

@@ -12,6 +12,7 @@
 #include "Expression.hpp"
 #include "Variable.hpp"
 #include "Program.hpp"
+#include "Problem.hpp"
 
 namespace analysis {
     
@@ -20,11 +21,11 @@ namespace analysis {
     public:
         TheoryAxioms() {}
 
-         std::vector<std::shared_ptr<const logic::Formula>> generate();
+         std::vector<std::shared_ptr<const logic::Axiom>> generate();
         
     private:
-        void generateTheoryAxiom1(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);    
-        void generateTheoryAxiom2(std::vector<std::shared_ptr<const logic::Formula>>& lemmas);    
+        void generateTheoryAxiom1(std::vector<std::shared_ptr<const logic::Axiom>>& axioms);
+        void generateTheoryAxiom2(std::vector<std::shared_ptr<const logic::Axiom>>& axioms);
     };
 }
 #endif

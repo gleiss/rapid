@@ -41,11 +41,11 @@ namespace analysis {
                     auto predicateFunctor = predicate.first;
                     auto predicateString = predicate.second;
 
-                    auto nameSuffix = predicateString + "-" + v->name + "-" + whileStatement->location;
-                    auto inductionAxiomName = "induction-axiom-value-evolution-" + nameSuffix;
-                    auto name = "value-evolution-" + nameSuffix;
-                    auto inductionAxiomNameShort = "Ax-Evol-" + nameSuffix;
-                    auto nameShort = "Prem-Evol-" + nameSuffix;
+                    auto nameSuffix = "-" + predicateString + "-" + v->name + "-" + whileStatement->location;
+                    auto name = "value-evolution" + nameSuffix;
+                    auto nameShort = "Evol" + nameSuffix;
+                    auto inductionAxiomName = "induction-axiom-" + name;
+                    auto inductionAxiomNameShort = "Ax" + nameShort;
 
                     // PART 1: Add induction-axiom
                     // IH(it): v(l(it1,...,itk,boundL)    ) C v(l(it1,...,itk,it)    ), where C in {=,<=,>=} or
@@ -85,7 +85,7 @@ namespace analysis {
                     }
 
                     // Part 2A: Add definition for premise:
-                    auto premise = logic::Formulas::predicate(nameShort, args);
+                    auto premise = logic::Formulas::predicate("Prem" + nameShort, args);
                     // forall it. (boundL<=it<boundR => v(l(it1,...,itk,it)    ) C v(l(it1,...,itk,s(it))    )), where C in {=,<=,>=} or
                     // forall it. (boundL<=it<boundR => v(l(it1,...,itk,it),pos) C v(l(it1,...,itk,s(it)),pos)), where C in {=,<=,>=}
                     auto premiseFormula =
@@ -158,9 +158,11 @@ namespace analysis {
         {
             if (!v->isConstant && assignedVars.count(v) == 0)
             {
-                auto inductionAxiomName = "value-static-axiom-" + v->name + "-" + statement->location;
-                auto inductionAxiomNameShort = "Ax-Static-" + v->name + "-" + statement->location;
-                auto name = "value-static-" + v->name + "-" + statement->location;
+                auto nameSuffix = "-" + v->name + "-" + statement->location;
+                auto name = "value-static" + nameSuffix;
+                auto nameShort = "Static" + nameSuffix;
+                auto inductionAxiomName = "induction-axiom-" + name;
+                auto inductionAxiomNameShort = "Ax" + nameShort;
 
                 // IH(it): v(l(it1,...,itk,zero)    ) = v(l(it1,...,itk,it)    ) or
                 //         v(l(it1,...,itk,zero),pos) = v(l(it1,...,itk,it),pos)

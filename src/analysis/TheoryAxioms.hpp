@@ -26,6 +26,7 @@ namespace analysis {
     private:
         void generateTheoryAxiom1(std::vector<std::shared_ptr<const logic::Axiom>>& axioms);
         void generateTheoryAxiom2(std::vector<std::shared_ptr<const logic::Axiom>>& axioms);
+        void generateTheoryAxiom3(std::vector<std::shared_ptr<const logic::Axiom>>& axioms);
     };
 }
 #endif

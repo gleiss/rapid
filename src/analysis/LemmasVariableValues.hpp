@@ -34,7 +34,7 @@ namespace analysis {
      *         boundL<=it<boundR
      *         v(l(it)) C v(l(s(it)))
      *
-     * Soundness: This lemma is equivalent to the following lemma 1A (the first precondition always holds for reflexive C and
+     * Soundness: This lemma is equivalent to the following lemma 1A (by inlining the definitions. The first precondition always holds for reflexive C and
      * the second precondition can be simplified for transitive C):
      * forall boundL,boundR.
      *    =>

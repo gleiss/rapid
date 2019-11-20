@@ -42,7 +42,11 @@ namespace analysis {
                     freeVars.push_back(posSymbol);
                 }
 
-                logic::addInductionAxiom1(inductionAxiomName, inductionAxiomNameShort, inductionHypothesis, freeVars, items);
+                auto [inductionAxBCDef, inductionAxICDef,inductionAxiomConDef, inductionAxiom] = inductionAxiom1(inductionAxiomName, inductionAxiomNameShort, inductionHypothesis, freeVars, logic::ProblemItem::Visibility::Implicit);
+                items.push_back(inductionAxBCDef);
+                items.push_back(inductionAxICDef);
+                items.push_back(inductionAxiomConDef);
+                items.push_back(inductionAxiom);
             }
         }
     }

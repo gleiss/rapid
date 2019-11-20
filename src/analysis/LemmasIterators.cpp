@@ -62,7 +62,11 @@ namespace analysis {
                 auto freeVarSymbols2 = freeVarSymbols1;
                 freeVarSymbols2.push_back(xSymbol);
 
-                logic::addInductionAxiom1(inductionAxiomName, inductionAxiomNameShort, inductionHypothesis, freeVarSymbols2, items);
+                auto [inductionAxBCDef, inductionAxICDef,inductionAxiomConDef, inductionAxiom] = logic::inductionAxiom1(inductionAxiomName, inductionAxiomNameShort, inductionHypothesis, freeVarSymbols2);
+                items.push_back(inductionAxBCDef);
+                items.push_back(inductionAxICDef);
+                items.push_back(inductionAxiomConDef);
+                items.push_back(inductionAxiom);
 
                 // PART 2: Add trace lemma
                 std::vector<std::shared_ptr<const logic::Term>> freeVars1 = {};
@@ -93,14 +97,19 @@ namespace analysis {
                             )
                         )
                     );
-                auto denseDef =
-                    logic::Formulas::universal(freeVarSymbols1,
-                        logic::Formulas::equivalence(
-                            dense,
-                            denseFormula
-                        )
+                auto denseDef = 
+                    std::make_shared<logic::Definition>(
+                        logic::Formulas::universal(freeVarSymbols1,
+                            logic::Formulas::equivalence(
+                                dense,
+                                denseFormula
+                            )
+                        ), 
+                        "Dense for " + name, 
+                        logic::ProblemItem::Visibility::Implicit
                     );
-                items.push_back(std::make_shared<logic::Definition>(denseDef, "Dense for " + name));
+
+                items.push_back(denseDef);
 
                 // PART 2B: Add definition for premise
                 auto premise = logic::Formulas::predicate("Prem-" + nameShort, freeVars2);
@@ -119,13 +128,18 @@ namespace analysis {
                         dense
                     });
                 auto premiseDef =
-                    logic::Formulas::universal(freeVarSymbols2,
-                        logic::Formulas::equivalence(
-                            premise,
-                            premiseFormula
-                        )
+                    std::make_shared<logic::Definition>(
+                        logic::Formulas::universal(freeVarSymbols2,
+                            logic::Formulas::equivalence(
+                                premise,
+                                premiseFormula
+                            )
+                        ),
+                        "Premise for " + name,
+                        logic::ProblemItem::Visibility::Implicit
                     );
-                items.push_back(std::make_shared<logic::Definition>(premiseDef, "Premise for " + name));
+
+                items.push_back(premiseDef);
 
                 // PART 2C: Add lemma
                 // Conclusion: exists it2. (v(l(it2))=x     & it2<n) or
@@ -146,7 +160,8 @@ namespace analysis {
                     logic::Formulas::universal(freeVarSymbols2,
                         logic::Formulas::implication(premise,conclusion)
                     );
-                items.push_back(std::make_shared<logic::Lemma>(lemma, name));
+                std::vector<std::shared_ptr<logic::ProblemItem>> fromItems = {inductionAxBCDef, inductionAxICDef, inductionAxiomConDef, inductionAxiom, denseDef, premiseDef};
+                items.push_back(std::make_shared<logic::Lemma>(lemma, name, logic::ProblemItem::Visibility::Implicit, fromItems));
             }
         }
     }
@@ -201,8 +216,16 @@ namespace analysis {
                         freeVars2.push_back(trSymbol);
                     }
 
-                    logic::addInductionAxiom1(inductionAxiomName1, inductionAxiomNameShort1, inductionHypothesis1, freeVars1, items);
-                    logic::addInductionAxiom1(inductionAxiomName2, inductionAxiomNameShort2, inductionHypothesis2, freeVars2, items);
+                    auto [inductionAxBCDef1, inductionAxICDef1,inductionAxiomConDef1, inductionAxiom1] = logic::inductionAxiom1(inductionAxiomName1, inductionAxiomNameShort1, inductionHypothesis1, freeVars1);
+                    auto [inductionAxBCDef2, inductionAxICDef2,inductionAxiomConDef2, inductionAxiom2] = logic::inductionAxiom1(inductionAxiomName2, inductionAxiomNameShort2, inductionHypothesis2, freeVars2);
+                    items.push_back(inductionAxBCDef1);
+                    items.push_back(inductionAxICDef1);
+                    items.push_back(inductionAxiomConDef1);
+                    items.push_back(inductionAxiom1);
+                    items.push_back(inductionAxBCDef2);
+                    items.push_back(inductionAxICDef2);
+                    items.push_back(inductionAxiomConDef2);
+                    items.push_back(inductionAxiom2);
 
                     // PART 2: Add trace lemma
                     /* Premise:
@@ -256,7 +279,8 @@ namespace analysis {
                     }
                     
                     auto name = "iterator-injectivity-" + v->name + "-" + statement->location;
-                    items.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
+                    std::vector<std::shared_ptr<logic::ProblemItem>> fromItems = {inductionAxBCDef1, inductionAxICDef1, inductionAxiomConDef1, inductionAxiom1, inductionAxBCDef2, inductionAxICDef2, inductionAxiomConDef2, inductionAxiom2};
+                    items.push_back(std::make_shared<logic::Lemma>(bareLemma, name, logic::ProblemItem::Visibility::Implicit, fromItems));
                 }
             }
         }

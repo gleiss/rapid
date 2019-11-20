@@ -118,29 +118,67 @@ namespace logic {
     std::vector<const ReasoningTask> Problem::generateReasoningTasks() const
     {
         std::vector<const ReasoningTask> tasks;
-        std::vector<std::shared_ptr<const ProblemItem>> currentAxioms;
-        for (const auto& item : items)
+
+        for (int i = 0; i < items.size(); ++i)
         {
-            if (item->type == ProblemItem::Type::Axiom || item->type == ProblemItem::Type::Definition)
-            {
-                currentAxioms.push_back(item);
-            }
-         
+            auto item = items[i];
+
             // if the item is a lemma or conjecture, generate a new reasoning task to prove that lemma/conjecture
             if (item->type == ProblemItem::Type::Lemma || item->type == ProblemItem::Type::Conjecture)
             {
+                // collect all previous axioms, which are not hidden or occur in fromItems
+                std::vector<std::shared_ptr<const ProblemItem>> currentAxioms;
+                for (int j = 0; j < i; ++j)
+                {
+                    auto curr = items[j];
+
+                    if (item->fromItems.empty())
+                    {
+                        // implicit mode: collect all axioms visible for implicit mode
+                        if ((curr->type == ProblemItem::Type::Axiom || curr->type == ProblemItem::Type::Definition))
+                        {
+                            if(curr->visibility == ProblemItem::Visibility::All || curr->visibility == ProblemItem::Visibility::Implicit)
+                            {
+                                currentAxioms.push_back(curr);
+                            }
+                        }
+                        else if (curr->type == ProblemItem::Type::Lemma)
+                        {
+                            if(curr->visibility == ProblemItem::Visibility::All || curr->visibility == ProblemItem::Visibility::Implicit)
+                            {
+                                currentAxioms.push_back(std::make_shared<Axiom>(curr->formula, "already-proven-lemma " + curr->name));
+                            }
+                        }
+                    }
+                    else 
+                    {
+                        // explicit mode: collect all axioms, which are either visible for explicit mode or occur in fromItems
+                        if (curr->visibility == ProblemItem::Visibility::All || std::find(item->fromItems.begin(), item->fromItems.end(), curr) != item->fromItems.end())
+                        {
+                            if ((curr->type == ProblemItem::Type::Axiom || curr->type == ProblemItem::Type::Definition))
+                            {
+                                currentAxioms.push_back(curr);
+                            }
+                            else if (curr->type == ProblemItem::Type::Lemma)
+                            {
+                                currentAxioms.push_back(std::make_shared<Axiom>(curr->formula, "already-proven-lemma " + curr->name));
+                            }
+                        }
+                    }
+                }
+
+                // sanity check: if explicit mode is used, all axioms must have been found (note: there could be other axioms too)
+                if (!item->fromItems.empty())
+                {
+                    assert(item->fromItems.size() <= currentAxioms.size());
+                }
+
+                // add item as conjecture
                 auto conjecture = std::make_shared<Conjecture>(item->formula, item->name);
                 auto task = ReasoningTask(currentAxioms, conjecture);
                 tasks.push_back(task);
             }
-            
-            // after generating a task to prove the lemma, the lemma can be used as axiom
-            if (item->type == ProblemItem::Type::Lemma)
-            {
-                currentAxioms.push_back(std::make_shared<Axiom>(item->formula, "already-proven-lemma " + item->name));
-            }
         }
-        
         return tasks;
     }
 

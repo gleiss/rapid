@@ -62,12 +62,17 @@ namespace logic {
      *         boundL<=it<=boundR
      *         IH(it)
      */
-    void addInductionAxiom1(
+    std::tuple<
+        std::shared_ptr<logic::Definition>,
+        std::shared_ptr<logic::Definition>,
+        std::shared_ptr<logic::Definition>,
+        std::shared_ptr<logic::Axiom>
+    > inductionAxiom1(
         std::string name,
         std::string shortName,
         std::function<std::shared_ptr<const Formula> (std::shared_ptr<const Term>)> inductionHypothesis,
         std::vector<std::shared_ptr<const Symbol>> freeVarSymbols,
-        std::vector<std::shared_ptr<const logic::ProblemItem>>& items);
+        ProblemItem::Visibility visibility = ProblemItem::Visibility::None);
 
     /*
      * Generates inductionAxiom2 from the induction hypothesis 'inductionHypothesis' (short IH, modelled as function which maps each timepoint to a formula).

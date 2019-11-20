@@ -71,7 +71,11 @@ namespace analysis {
                         freeVars.push_back(trSymbol);
                     }
 
-                    logic::addInductionAxiom1(inductionAxiomName, inductionAxiomNameShort, inductionHypothesis, freeVars, items);
+                    auto [inductionAxBCDef, inductionAxICDef,inductionAxiomConDef, inductionAxiom] = inductionAxiom1(inductionAxiomName, inductionAxiomNameShort, inductionHypothesis, freeVars);
+                    items.push_back(inductionAxBCDef);
+                    items.push_back(inductionAxICDef);
+                    items.push_back(inductionAxiomConDef);
+                    items.push_back(inductionAxiom);
 
                     // PART 2: Add trace lemma
                     auto argSymbols = freeVars;
@@ -102,14 +106,18 @@ namespace analysis {
                                 )
                             )
                         );
-                    auto premiseDef =
-                        logic::Formulas::universal(argSymbols,
-                            logic::Formulas::equivalence(
-                                premise,
-                                premiseFormula
-                            )
+                    auto premiseDef = 
+                        std::make_shared<logic::Definition>(
+                            logic::Formulas::universal(argSymbols,
+                                logic::Formulas::equivalence(
+                                    premise,
+                                    premiseFormula
+                                )
+                            ),
+                            "Premise for " + name, 
+                            logic::ProblemItem::Visibility::Implicit
                         );
-                    items.push_back(std::make_shared<logic::Definition>(premiseDef, "Premise for " + name));
+                    items.push_back(premiseDef);
 
                     // Part 2B: Define lemma:
                     //forall it. (boundL<=it<=boundR => IH(it))
@@ -129,7 +137,8 @@ namespace analysis {
                         logic::Formulas::universal(argSymbols,
                             logic::Formulas::implication(premise, conclusionFormula)
                         );
-                    items.push_back(std::make_shared<logic::Lemma>(lemma, name));
+                    std::vector<std::shared_ptr<logic::ProblemItem>> fromItems = {inductionAxBCDef, inductionAxICDef, inductionAxiomConDef, inductionAxiom, premiseDef};
+                    items.push_back(std::make_shared<logic::Lemma>(lemma, name, logic::ProblemItem::Visibility::Implicit, fromItems));
                 }
             }
         }
@@ -187,7 +196,11 @@ namespace analysis {
                     freeVars.push_back(trSymbol);
                 }
 
-                logic::addInductionAxiom1(inductionAxiomName, inductionAxiomNameShort, inductionHypothesis, freeVars, items);
+                auto [inductionAxBCDef, inductionAxICDef,inductionAxiomConDef, inductionAxiom] = logic::inductionAxiom1(inductionAxiomName, inductionAxiomNameShort, inductionHypothesis, freeVars);
+                items.push_back(inductionAxBCDef);
+                items.push_back(inductionAxICDef);
+                items.push_back(inductionAxiomConDef);
+                items.push_back(inductionAxiom);
 
                 // PART 2: Add trace lemma
                 auto argSymbols = freeVars;
@@ -201,7 +214,9 @@ namespace analysis {
                             inductionHypothesis(it)
                         )
                     );
-                items.push_back(std::make_shared<logic::Lemma>(lemma, name));
+                
+                std::vector<std::shared_ptr<logic::ProblemItem>> fromItems = {inductionAxBCDef, inductionAxICDef, inductionAxiomConDef, inductionAxiom};
+                items.push_back(std::make_shared<logic::Lemma>(lemma, name, logic::ProblemItem::Visibility::Implicit, fromItems));
             }
         }
     }

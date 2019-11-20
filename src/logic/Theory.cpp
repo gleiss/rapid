@@ -117,12 +117,17 @@ namespace logic {
         return Formulas::predicate("Sub", {t1,succOfT2}, label, false); // Sub needs a declaration, since it is not added by Vampire yet
     }
 
-    void addInductionAxiom1(
+    std::tuple<
+        std::shared_ptr<logic::Definition>,
+        std::shared_ptr<logic::Definition>,
+        std::shared_ptr<logic::Definition>,
+        std::shared_ptr<logic::Axiom>
+    > inductionAxiom1(
         std::string name,
         std::string shortName,
         std::function<std::shared_ptr<const Formula> (std::shared_ptr<const Term>)> inductionHypothesis,
-        std::vector<std::shared_ptr<const Symbol>> freeVarSymbols,
-        std::vector<std::shared_ptr<const logic::ProblemItem>>& items)
+        std::vector<std::shared_ptr<const Symbol>> freeVarSymbols, 
+        ProblemItem::Visibility visibility)
     {
         auto boundLSymbol = logic::Signature::varSymbol("boundL", logic::Sorts::natSort());
         auto boundRSymbol = logic::Signature::varSymbol("boundR", logic::Sorts::natSort());
@@ -198,10 +203,12 @@ namespace logic {
                 )
             );
         
-        items.push_back(std::make_shared<logic::Definition>(baseCaseDef, "Base-Case for " + name));
-        items.push_back(std::make_shared<logic::Definition>(inductiveCaseDef, "Inductive-Case for " + name));
-        items.push_back(std::make_shared<logic::Definition>(conclusionDef, "Conclusion for " + name));
-        items.push_back(std::make_shared<logic::Axiom>(inductionAxiom, name));
+        return std::make_tuple(
+            std::make_shared<logic::Definition>(baseCaseDef, "Base-Case for " + name, visibility),
+            std::make_shared<logic::Definition>(inductiveCaseDef, "Inductive-Case for " + name, visibility),
+            std::make_shared<logic::Definition>(conclusionDef, "Conclusion for " + name, visibility),
+            std::make_shared<logic::Axiom>(inductionAxiom, name, visibility)
+        );
     }
 
     std::shared_ptr<const Formula> inductionAxiom2(std::function<std::shared_ptr<const Formula> (std::shared_ptr<const Term>)> inductionHypothesis)

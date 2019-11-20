@@ -17,13 +17,34 @@ namespace logic {
     {
     public:
         enum class Type { Program, Axiom, Definition, Lemma, Conjecture};
+        enum class Visibility { All, Implicit, None};
         
-        ProblemItem(Type type, std::shared_ptr<const logic::Formula> formula, std::string name) : type(type), formula(formula), name(name) {}
+        ProblemItem(Type type, std::shared_ptr<const logic::Formula> formula, std::string name, Visibility visibility, std::vector<std::shared_ptr<ProblemItem>> fromItems) : type(type), formula(formula), name(name), visibility(visibility), fromItems(fromItems)
+        {
+            // it doesn't make sense to hide conjectures
+            if (type == Type::Conjecture)
+            {
+                assert(visibility == Visibility::All);
+            }
+            // hidden items without a name can't be used as axioms
+            if (name.empty())
+            {
+                assert(visibility != Visibility::None);
+            }
+            // don't have to prove axioms or definitions, so it does not make sense to annotate them.
+            if (type == Type::Axiom || type == Type::Definition)
+            {
+                assert(fromItems.empty());
+            }
+        }
+
         virtual ~ProblemItem() = default;
         
         const Type type;
         const std::shared_ptr<const logic::Formula> formula;
         const std::string name;
+        const Visibility visibility;
+        const std::vector<std::shared_ptr<ProblemItem>> fromItems;
     };
     
     // hack needed for bison: std::vector has no overload for ostream, but these overloads are needed for bison
@@ -32,26 +53,30 @@ namespace logic {
     class Axiom : public ProblemItem
     {
     public:
-        Axiom(std::shared_ptr<const logic::Formula> axiom, std::string name = "") : ProblemItem(ProblemItem::Type::Axiom, axiom, name){}
+        Axiom(std::shared_ptr<const logic::Formula> axiom, std::string name = "", ProblemItem::Visibility visibility = ProblemItem::Visibility::All) : 
+            ProblemItem(ProblemItem::Type::Axiom, axiom, name, visibility, {}) {}
     };
 
     // a definition is a special case of an axiom.
     class Definition : public ProblemItem
     {
     public:
-        Definition(std::shared_ptr<const logic::Formula> definition, std::string name = "") : ProblemItem(ProblemItem::Type::Definition, definition, name){}
+        Definition(std::shared_ptr<const logic::Formula> definition, std::string name = "", ProblemItem::Visibility visibility = ProblemItem::Visibility::All) : 
+            ProblemItem(ProblemItem::Type::Definition, definition, name, visibility, {}) {}
     };
     
     class Lemma : public ProblemItem
     {
     public:
-        Lemma(std::shared_ptr<const logic::Formula> lemma, std::string name = "") : ProblemItem(ProblemItem::Type::Lemma, lemma, name){}
+        Lemma(std::shared_ptr<const logic::Formula> lemma, std::string name = "", ProblemItem::Visibility visibility = ProblemItem::Visibility::All, std::vector<std::shared_ptr<ProblemItem>> fromItems = {}) : 
+            ProblemItem(ProblemItem::Type::Lemma, lemma, name, visibility, fromItems) {}
     };
     
     class Conjecture : public ProblemItem
     {
     public:
-        Conjecture(std::shared_ptr<const logic::Formula> conjecture, std::string name = "") : ProblemItem(ProblemItem::Type::Conjecture, conjecture, name){}
+        Conjecture(std::shared_ptr<const logic::Formula> conjecture, std::string name = "", std::vector<std::shared_ptr<ProblemItem>> fromItems = {}) : 
+            ProblemItem(ProblemItem::Type::Conjecture, conjecture, name, ProblemItem::Visibility::All, fromItems) {}
     };
     
     // represents a first-order reasoning task which can be passed to a prover.

@@ -48,7 +48,7 @@ namespace analysis {
                 auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
                 axiomFormula = logic::Formulas::universal({tr}, axiomFormula);
             }
-            axioms.push_back(std::make_shared<logic::Axiom>(axiomFormula, "Semantics of function " + function->name));
+            axioms.push_back(std::make_shared<logic::Axiom>(axiomFormula, "Semantics of function " + function->name, logic::ProblemItem::Visibility::Implicit));
         }
         
         return axioms;

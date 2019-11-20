@@ -147,9 +147,16 @@ namespace analysis {
     class StaticAnalysisLemmas : public ProgramTraverser<std::vector<std::shared_ptr<const logic::ProblemItem>>>
     {
     public:
-        using ProgramTraverser::ProgramTraverser; // inherit initializer, note: doesn't allow additional members in subclass!
+        StaticAnalysisLemmas(
+            const program::Program& program,
+            std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars,
+            bool twoTraces,
+            std::vector<std::shared_ptr<const logic::Axiom>> programSemantics) : 
+            ProgramTraverser<std::vector<std::shared_ptr<const logic::ProblemItem>>>(program, locationToActiveVars, twoTraces), programSemantics(programSemantics) {}
         
     private:
+        std::vector<std::shared_ptr<const logic::Axiom>> programSemantics;
+
         virtual void generateOutputFor(const program::WhileStatement* statement, std::vector<std::shared_ptr<const logic::ProblemItem>>& items) override;
         
         std::unordered_set<std::shared_ptr<const program::Variable>> computeAssignedVars(const program::Statement* statement);

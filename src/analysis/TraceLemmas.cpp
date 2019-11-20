@@ -24,9 +24,11 @@ namespace analysis {
 
 #pragma mark - High level methods
     
-    std::vector<std::shared_ptr<const logic::ProblemItem>> generateTraceLemmas(const program::Program& program,
-                                                                           std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars,
-                                                                           bool twoTraces)
+    std::vector<std::shared_ptr<const logic::ProblemItem>> generateTraceLemmas(
+        const program::Program& program,
+        std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars,
+        bool twoTraces,
+        std::vector<std::shared_ptr<const logic::Axiom>> programSemantics)
     {
         std::vector<std::shared_ptr<const logic::ProblemItem>> items;
         
@@ -34,7 +36,7 @@ namespace analysis {
         ValueEvolutionLemmas valueEvolutionLemmas(program, locationToActiveVars, twoTraces);
         valueEvolutionLemmas.generate(items);
         
-        StaticAnalysisLemmas staticAnalysisLemmas(program, locationToActiveVars, twoTraces);
+        StaticAnalysisLemmas staticAnalysisLemmas(program, locationToActiveVars, twoTraces, programSemantics);
         staticAnalysisLemmas.generate(items);
         
         // Lemmas for iterators

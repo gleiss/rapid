@@ -160,7 +160,7 @@ namespace analysis {
                     logic::Formulas::universal(freeVarSymbols2,
                         logic::Formulas::implication(premise,conclusion)
                     );
-                std::vector<std::shared_ptr<logic::ProblemItem>> fromItems = {inductionAxBCDef, inductionAxICDef, inductionAxiomConDef, inductionAxiom, denseDef, premiseDef};
+                std::vector<std::shared_ptr<const logic::ProblemItem>> fromItems = {inductionAxBCDef, inductionAxICDef, inductionAxiomConDef, inductionAxiom, denseDef, premiseDef};
                 items.push_back(std::make_shared<logic::Lemma>(lemma, name, logic::ProblemItem::Visibility::Implicit, fromItems));
             }
         }
@@ -279,7 +279,7 @@ namespace analysis {
                     }
                     
                     auto name = "iterator-injectivity-" + v->name + "-" + statement->location;
-                    std::vector<std::shared_ptr<logic::ProblemItem>> fromItems = {inductionAxBCDef1, inductionAxICDef1, inductionAxiomConDef1, inductionAxiom1, inductionAxBCDef2, inductionAxICDef2, inductionAxiomConDef2, inductionAxiom2};
+                    std::vector<std::shared_ptr<const logic::ProblemItem>> fromItems = {inductionAxBCDef1, inductionAxICDef1, inductionAxiomConDef1, inductionAxiom1, inductionAxBCDef2, inductionAxICDef2, inductionAxiomConDef2, inductionAxiom2};
                     items.push_back(std::make_shared<logic::Lemma>(bareLemma, name, logic::ProblemItem::Visibility::Implicit, fromItems));
                 }
             }

@@ -19,7 +19,7 @@ namespace logic {
         enum class Type { Program, Axiom, Definition, Lemma, Conjecture};
         enum class Visibility { All, Implicit, None};
         
-        ProblemItem(Type type, std::shared_ptr<const logic::Formula> formula, std::string name, Visibility visibility, std::vector<std::shared_ptr<ProblemItem>> fromItems) : type(type), formula(formula), name(name), visibility(visibility), fromItems(fromItems)
+        ProblemItem(Type type, std::shared_ptr<const logic::Formula> formula, std::string name, Visibility visibility, std::vector<std::shared_ptr<const ProblemItem>> fromItems) : type(type), formula(formula), name(name), visibility(visibility), fromItems(fromItems)
         {
             // it doesn't make sense to hide conjectures
             if (type == Type::Conjecture)
@@ -44,7 +44,7 @@ namespace logic {
         const std::shared_ptr<const logic::Formula> formula;
         const std::string name;
         const Visibility visibility;
-        const std::vector<std::shared_ptr<ProblemItem>> fromItems;
+        const std::vector<std::shared_ptr<const ProblemItem>> fromItems;
     };
     
     // hack needed for bison: std::vector has no overload for ostream, but these overloads are needed for bison
@@ -68,14 +68,14 @@ namespace logic {
     class Lemma : public ProblemItem
     {
     public:
-        Lemma(std::shared_ptr<const logic::Formula> lemma, std::string name = "", ProblemItem::Visibility visibility = ProblemItem::Visibility::All, std::vector<std::shared_ptr<ProblemItem>> fromItems = {}) : 
+        Lemma(std::shared_ptr<const logic::Formula> lemma, std::string name = "", ProblemItem::Visibility visibility = ProblemItem::Visibility::All, std::vector<std::shared_ptr<const ProblemItem>> fromItems = {}) : 
             ProblemItem(ProblemItem::Type::Lemma, lemma, name, visibility, fromItems) {}
     };
     
     class Conjecture : public ProblemItem
     {
     public:
-        Conjecture(std::shared_ptr<const logic::Formula> conjecture, std::string name = "", std::vector<std::shared_ptr<ProblemItem>> fromItems = {}) : 
+        Conjecture(std::shared_ptr<const logic::Formula> conjecture, std::string name = "", std::vector<std::shared_ptr<const ProblemItem>> fromItems = {}) : 
             ProblemItem(ProblemItem::Type::Conjecture, conjecture, name, ProblemItem::Visibility::All, fromItems) {}
     };
     

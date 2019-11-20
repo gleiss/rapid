@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
                 auto semantics = s.generateSemantics();
                 problemItems.insert(problemItems.end(), semantics.begin(), semantics.end());
 
-                auto traceLemmas = analysis::generateTraceLemmas(*parserResult.program, parserResult.locationToActiveVars, parserResult.twoTraces);
+                auto traceLemmas = analysis::generateTraceLemmas(*parserResult.program, parserResult.locationToActiveVars, parserResult.twoTraces, semantics);
                 problemItems.insert(problemItems.end(), traceLemmas.begin(), traceLemmas.end());
                 
 

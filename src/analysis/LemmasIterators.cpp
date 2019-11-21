@@ -189,54 +189,39 @@ namespace analysis {
                 if (!v->isArray) // We assume that loop counters are not array elements and therefore only add these lemmas for non-array-vars
                 {
                     // PART 1: Add induction-axiom
-                    auto inductionAxiomName1 = "iterator-injectivity-axiom1-" + v->name + "-" + statement->location;
-                    auto inductionAxiomName2 = "iterator-injectivity-axiom2-" + v->name + "-" + statement->location;
-                    auto inductionAxiomNameShort1 = "Ind1Injec-" + v->name + "-" + statement->location;
-                    auto inductionAxiomNameShort2 = "Ind2Injec-" + v->name + "-" + statement->location;
+                    auto nameSuffix = "-" + v->name + "-" + statement->location;
+                    auto inductionAxiomName = "iterator-injectivity-axiom1" + nameSuffix;
+                    auto inductionAxiomNameShort = "Ind1Injec" + nameSuffix;
 
-                    // IH1(arg): v(l(it1)) < v(l(arg))
-                    auto inductionHypothesis1 = [&](std::shared_ptr<const logic::Term> arg)
+                    // IH(arg): v(l(it1)) < v(l(arg))
+                    auto inductionHypothesis = [&](std::shared_ptr<const logic::Term> arg)
                     {
                         auto lStartArg = timepointForLoopStatement(statement, arg);
                         return logic::Theory::intLess(toTerm(v,lStartIt1), toTerm(v,lStartArg));
                     };
-                    // IH2(arg): v(l(it2)) < v(l(arg))
-                    auto inductionHypothesis2 = [&](std::shared_ptr<const logic::Term> arg)
-                    {
-                        auto lStartArg = timepointForLoopStatement(statement, arg);
-                        return logic::Theory::intLess(toTerm(v,lStartIt2), toTerm(v,lStartArg));
-                    };
 
-                    std::vector<std::shared_ptr<const logic::Symbol>> freeVars1 = {it1Symbol};
-                    std::vector<std::shared_ptr<const logic::Symbol>> freeVars2 = {it2Symbol};
+                    std::vector<std::shared_ptr<const logic::Symbol>> freeVars = {it1Symbol};
                     if (twoTraces)
                     {
                         auto trSymbol = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        freeVars1.push_back(trSymbol);
-                        freeVars2.push_back(trSymbol);
+                        freeVars.push_back(trSymbol);
                     }
 
-                    auto [inductionAxBCDef1, inductionAxICDef1,inductionAxiomConDef1, inductionAxiom1] = logic::inductionAxiom1(inductionAxiomName1, inductionAxiomNameShort1, inductionHypothesis1, freeVars1);
-                    auto [inductionAxBCDef2, inductionAxICDef2,inductionAxiomConDef2, inductionAxiom2] = logic::inductionAxiom1(inductionAxiomName2, inductionAxiomNameShort2, inductionHypothesis2, freeVars2);
-                    items.push_back(inductionAxBCDef1);
-                    items.push_back(inductionAxICDef1);
-                    items.push_back(inductionAxiomConDef1);
-                    items.push_back(inductionAxiom1);
-                    items.push_back(inductionAxBCDef2);
-                    items.push_back(inductionAxICDef2);
-                    items.push_back(inductionAxiomConDef2);
-                    items.push_back(inductionAxiom2);
+                    auto [inductionAxBCDef, inductionAxICDef,inductionAxiomConDef, inductionAxiom] = logic::inductionAxiom1(inductionAxiomName, inductionAxiomNameShort, inductionHypothesis, freeVars);
+                    items.push_back(inductionAxBCDef);
+                    items.push_back(inductionAxICDef);
+                    items.push_back(inductionAxiomConDef);
+                    items.push_back(inductionAxiom);
 
                     // PART 2: Add trace lemma
                     /* Premise:
-                     * and
-                     *    forall it.
-                     *       =>
-                     *          it<n
-                     *          v(l(s(it)))=v(l(it))+1
-                     *    it1<n
-                     *    it2<n
-                     *    it1!=it2
+                     *    and
+                     *       forall it.
+                     *          =>
+                     *             it<n
+                     *             v(l(s(it)))=v(l(it))+1
+                     *       it1<it2
+                     *       it2<=n
                      */
                     auto premise =
                         logic::Formulas::conjunction({
@@ -252,9 +237,8 @@ namespace analysis {
                                     )
                                 )
                             ),
-                            logic::Theory::natSub(it1,n),
-                            logic::Theory::natSub(it2,n),
-                            logic::Formulas::disequality(it1,it2)
+                            logic::Theory::natSub(it1,it2),
+                            logic::Theory::natSubEq(it2,n),
                         });
                     
                     // Conclusion: v(l(it1))!=v(l(it2))
@@ -279,7 +263,7 @@ namespace analysis {
                     }
                     
                     auto name = "iterator-injectivity-" + v->name + "-" + statement->location;
-                    std::vector<std::shared_ptr<const logic::ProblemItem>> fromItems = {inductionAxBCDef1, inductionAxICDef1, inductionAxiomConDef1, inductionAxiom1, inductionAxBCDef2, inductionAxICDef2, inductionAxiomConDef2, inductionAxiom2};
+                    std::vector<std::shared_ptr<const logic::ProblemItem>> fromItems = {inductionAxBCDef, inductionAxICDef, inductionAxiomConDef, inductionAxiom};
                     items.push_back(std::make_shared<logic::Lemma>(bareLemma, name, logic::ProblemItem::Visibility::Implicit, fromItems));
                 }
             }

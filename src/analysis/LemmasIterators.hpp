@@ -103,31 +103,30 @@ namespace analysis {
      * LEMMA 2:
      * =>
      *    and
-     *       forall it.
-     *          =>
-     *             and
-     *                0<=it
-     *                it<n
-     *          v(l(s(it)))=v(l(it))+1
-     *       it1<n
-     *       it2<n
-     *       it1!=it2
+     *       Dense_v
+     *       it1<it2
+     *       it2<=n
      *    v(l(it1))!=v(l(it2))
+     * where:
+     * - Dense_v :=
+     *   forall it.
+     *      =>
+     *         it<n
+     *         v(l(s(it)))=v(l(it))+1
      *
      * Soundness:
-     * This lemma uses two instances of the standard induction axiom (one for the case it1<it2 and one for the case it2<it1)
-     * Instance 1:
+     * This lemma uses the following instance of the standard induction axiom
      * - substitute boundL->s(it1), boundR->it2
      * - define P(it) := v(l(it1))<v(l(it))
-     * Instance 2:
-     * - substitute boundL->s(it2), boundR->it1
-     * - define P(it) := v(l(it2))<v(l(it))
-     * There are further some theory axioms needed to prove this lemma (TODO)
+     * It uses the following theory axioms for Nat:
+     * - transitivity for Nat (for the variant <=,<)
+     * - monotonicity of s with respect to <
+     * It uses he following theory axioms for Int:
+     * - forall x: x<x+1
+     * - transitivity for Int (for the variant <,<)
+     * - x<y => x!=y
      * 
      * Possible Variations
-     * - TODO: we probably should change it1<n and it2<n to it1<=n and it2<=n
-     * - We could switch back to the original encoding which used it1<it2 instead of it1!=it2. 
-     *   It is unclear whether this would make things better or worse.
      * - We could use v(l(it1))<v(l(it2)) as conclusion instead of the logically weaker v(l(it1))!=v(l(it2)). 
      *   It is again unclear whether this would make things better or worse. Note that the resulting lemma would 
      *   be similar to the value-evolution lemmas (but applied to the non-reflexive relation <)

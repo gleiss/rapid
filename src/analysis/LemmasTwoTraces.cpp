@@ -36,7 +36,7 @@ namespace analysis {
                             );
                     };
 
-                std::vector<std::shared_ptr<const logic::Symbol>> freeVars = {};
+                std::vector<std::shared_ptr<const logic::Symbol>> freeVars = enclosingIteratorsSymbols(statement);
                 if(v->isArray)
                 {
                     freeVars.push_back(posSymbol);

@@ -214,3 +214,18 @@
 ; Theory clause: 21. ! [X1 : $int,X0 : $int] : ($less(X0,X1) | $less(X1,$sum(X0,1))) [theory axiom]
 ; Theory clause: 23. ! [X0 : $int] : $uminus($uminus(X0)) = X0 [theory axiom]
 ; Theory clause: 25. ! [X1 : $int,X0 : $int] : (~$less(X0,X1) | ~$less(X1,$sum(X0,1))) [theory axiom]
+
+; ================================================
+; Part 3: Additional Integer axioms
+; ================================================
+
+; note: this axiom is e.g. useful to conclude for a loop condition i<alength that after the loop finished, 
+; we have i<=alength. From such fact we can then conclude i=alength (using totality).
+(assert
+	(forall ((x Int) (y Int))
+		(=>
+			(< x y)
+			(<= (+ x 1) y)
+		)
+	)
+)

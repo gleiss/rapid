@@ -188,11 +188,23 @@ namespace analysis {
             {
                 if (!v->isArray) // We assume that loop counters are not array elements and therefore only add these lemmas for non-array-vars
                 {
-                    // PART 1: Add induction-axiom
                     auto nameSuffix = "-" + v->name + "-" + statement->location;
-                    auto inductionAxiomName = "iterator-injectivity-axiom1" + nameSuffix;
-                    auto inductionAxiomNameShort = "Ind1Injec" + nameSuffix;
+                    auto name = "iterator-injectivity" + nameSuffix;
+                    auto nameShort = "Injec" + nameSuffix;
+                    auto inductionAxiomName = "induction-axiom-" + name;
+                    auto inductionAxiomNameShort = "Ax-" + nameShort;
 
+                    auto freeVarSymbols = enclosingIteratorsSymbols(statement);
+                    if (twoTraces)
+                    {
+                        auto trSymbol = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
+                        freeVarSymbols.push_back(trSymbol);
+                    }
+
+                    auto freeVarSymbolsInd = freeVarSymbols;
+                    freeVarSymbolsInd.push_back(it1Symbol);
+
+                    // PART 1: Add induction-axiom
                     // IH(arg): v(l(it1)) < v(l(arg))
                     auto inductionHypothesis = [&](std::shared_ptr<const logic::Term> arg)
                     {
@@ -200,43 +212,60 @@ namespace analysis {
                         return logic::Theory::intLess(toTerm(v,lStartIt1), toTerm(v,lStartArg));
                     };
 
-                    std::vector<std::shared_ptr<const logic::Symbol>> freeVars = {it1Symbol};
-                    if (twoTraces)
-                    {
-                        auto trSymbol = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        freeVars.push_back(trSymbol);
-                    }
-
-                    auto [inductionAxBCDef, inductionAxICDef,inductionAxiomConDef, inductionAxiom] = logic::inductionAxiom1(inductionAxiomName, inductionAxiomNameShort, inductionHypothesis, freeVars);
+                    auto [inductionAxBCDef, inductionAxICDef,inductionAxiomConDef, inductionAxiom] = logic::inductionAxiom1(inductionAxiomName, inductionAxiomNameShort, inductionHypothesis, freeVarSymbolsInd);
                     items.push_back(inductionAxBCDef);
                     items.push_back(inductionAxICDef);
                     items.push_back(inductionAxiomConDef);
                     items.push_back(inductionAxiom);
 
                     // PART 2: Add trace lemma
+
+                    // PART 2A: Add definition for dense
+                    // TODO: share definition dense between IntermediateValueTheorem and this lemma.
+                    std::vector<std::shared_ptr<const logic::Term>> freeVars = {};
+                    for (const auto& symbol : freeVarSymbols)
+                    {
+                        freeVars.push_back(logic::Terms::var(symbol));
+                    }
+                    auto dense = logic::Formulas::predicate("Dense-" + nameShort, freeVars);
+
+                    // Dense_v: forall it. (it<n => v(l(s(it)))=v(l(it))+1)
+                    auto denseFormula =
+                        logic::Formulas::universal({itSymbol},
+                            logic::Formulas::implication(
+                                logic::Theory::natSub(it, n),
+                                logic::Formulas::equality(
+                                    toTerm(v,lStartSuccOfIt),
+                                    logic::Theory::intAddition(
+                                        toTerm(v,lStartIt),
+                                        logic::Theory::intConstant(1)
+                                    )
+                                )
+                            )
+                        );
+                    auto denseDef =
+                        std::make_shared<logic::Definition>(
+                            logic::Formulas::universal(freeVarSymbols,
+                                logic::Formulas::equivalence(
+                                    dense,
+                                    denseFormula
+                                )
+                            ),
+                            "Dense for " + name,
+                            logic::ProblemItem::Visibility::Implicit
+                        );
+
+                    items.push_back(denseDef);
+
                     /* Premise:
                      *    and
-                     *       forall it.
-                     *          =>
-                     *             it<n
-                     *             v(l(s(it)))=v(l(it))+1
+                     *       Dense_v
                      *       it1<it2
                      *       it2<=n
                      */
                     auto premise =
                         logic::Formulas::conjunction({
-                            logic::Formulas::universal({itSymbol},
-                                logic::Formulas::implication(
-                                    logic::Theory::natSub(it,n),
-                                    logic::Formulas::equality(
-                                        toTerm(v,lStartSuccOfIt),
-                                        logic::Theory::intAddition(
-                                            toTerm(v,lStartIt),
-                                            logic::Theory::intConstant(1)
-                                        )
-                                    )
-                                )
-                            ),
+                            dense,
                             logic::Theory::natSub(it1,it2),
                             logic::Theory::natSubEq(it2,n),
                         });
@@ -249,22 +278,15 @@ namespace analysis {
                         );
                     
                     // forall enclosingIterators. forall it1,it2. (premise => conclusion)
-                    auto bareLemma =
-                        logic::Formulas::universal(enclosingIteratorsSymbols(statement),
+                    auto lemma =
+                        logic::Formulas::universal(freeVarSymbols,
                             logic::Formulas::universal({it1Symbol,it2Symbol},
                                 logic::Formulas::implication(premise, conclusion)
                             )
                         );
 
-                    if (twoTraces)
-                    {
-                        auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        bareLemma = logic::Formulas::universal({tr}, bareLemma);
-                    }
-                    
-                    auto name = "iterator-injectivity-" + v->name + "-" + statement->location;
-                    std::vector<std::shared_ptr<const logic::ProblemItem>> fromItems = {inductionAxBCDef, inductionAxICDef, inductionAxiomConDef, inductionAxiom};
-                    items.push_back(std::make_shared<logic::Lemma>(bareLemma, name, logic::ProblemItem::Visibility::Implicit, fromItems));
+                    std::vector<std::shared_ptr<const logic::ProblemItem>> fromItems = {inductionAxBCDef, inductionAxICDef, inductionAxiomConDef, inductionAxiom, denseDef};
+                    items.push_back(std::make_shared<logic::Lemma>(lemma, name, logic::ProblemItem::Visibility::Implicit, fromItems));
                 }
             }
         }

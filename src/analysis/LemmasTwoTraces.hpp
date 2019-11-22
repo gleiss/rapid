@@ -54,14 +54,38 @@ namespace analysis {
     
     /*
      * LEMMA 2
-     * If the last iteration of trace 2 fulfils the defining properties of the last iteration of trace 1, then those last iterations are the same.
-     * Holds, since for the natural numbers the smallest element with property P is unique.
+     * if all variables used in the loop iteration have the same value in both traces in each iteration,
+     * then the loops terminate after the same number of steps
      *
-     * Discussion on Variations:
-     *  This lemma seems to be the most general lemma to conclude that the loop iterations are the same.
-     *  One could also add more specific lemmas, e.g.:
-     *      if all variables used in the loop iteration are the same in each iteration,
-     *      then the loops terminate after the same number of steps
+     * =>
+     *    and
+     *       EqVC
+     *       IH(0)
+     *       IC
+     *    n(t1)=n(t2)
+     * where:
+     * - EqVC :=
+     *   "forall" const variables v
+     *      v(t1) = v(t2)
+     * - IH(it) :=
+     *   "forall" non-const variables v
+     *      v(l(it),t1) = v(l(it),t2)
+     * - IC :=
+     *   forall it.
+     *      =>
+     *         and
+     *            it<n(t1)
+     *            it<n(t2)
+     *            IH(it)
+     *         IH(s(it))
+     *
+     * Soundness:
+     * This lemma follows from
+     * - the semantics
+     * - inductionAxiom2 instantiated with the IH EqV(it)
+     * - the theory axioms
+     *   1) totality of Nat
+     *   2) TODO: do we need further theory axioms?
      *
      * Why is this lemma useful?
      * Most relational properties only hold, if the number of iterations of the involved loops is the same in both traces.
@@ -69,10 +93,19 @@ namespace analysis {
     class NEqualLemmas : public ProgramTraverser<std::vector<std::shared_ptr<const logic::ProblemItem>>>
     {
     public:
-        using ProgramTraverser::ProgramTraverser; // inherit initializer, note: doesn't allow additional members in subclass!
-        
+        NEqualLemmas(
+            const program::Program& program,
+            std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars,
+            bool twoTraces,
+            std::vector<std::shared_ptr<const logic::Axiom>> programSemantics) :
+            ProgramTraverser<std::vector<std::shared_ptr<const logic::ProblemItem>>>(program, locationToActiveVars, twoTraces), programSemantics(programSemantics) {}
+
     private:
+        std::vector<std::shared_ptr<const logic::Axiom>> programSemantics;
+
         virtual void generateOutputFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::ProblemItem>>& items) override;
+        void computeVariablesContainedInLoopCondition(std::shared_ptr<const program::BoolExpression> expr, std::unordered_set<std::shared_ptr<const program::Variable>>& variables);
+        void computeVariablesContainedInLoopCondition(std::shared_ptr<const program::IntExpression> expr, std::unordered_set<std::shared_ptr<const program::Variable>>& variables);
     };
     
 

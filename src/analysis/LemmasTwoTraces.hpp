@@ -1,11 +1,9 @@
 #ifndef __LemmasTwoTraces__
 #define __LemmasTwoTraces__
 
-#include <memory>
-#include <string>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
+#include <memory>
+#include <unordered_set>
 
 #include "ProgramTraverser.hpp"
 #include "Problem.hpp"
@@ -86,8 +84,9 @@ namespace analysis {
      * - the semantics
      * - inductionAxiom2 instantiated with the IH EqV(it)
      * - the theory axioms
-     *   1) totality of Nat
-     *   2) TODO: do we need further theory axioms?
+     *   1) forall it. it<s(it)
+     *   2) weakening for Nat
+     *   3) totality for Nat
      *
      * Why is this lemma useful?
      * Most relational properties only hold, if the number of iterations of the involved loops is the same in both traces.

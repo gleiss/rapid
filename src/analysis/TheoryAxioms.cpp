@@ -26,6 +26,7 @@ namespace analysis {
         // generateTheoryAxiom1(axioms);
         // generateTheoryAxiom2(axioms);
         generateTheoryAxiom3(axioms);
+        generateTheoryAxiom4(axioms);
         return axioms;
     }
 
@@ -101,5 +102,25 @@ namespace analysis {
             );
 
         axioms.push_back(std::make_shared<const logic::Axiom>(axiom, "Theory axiom: forall x,y. (x<y => x+1<=y)"));
+    }
+
+    void TheoryAxioms::generateTheoryAxiom4(std::vector<std::shared_ptr<const logic::Axiom>>& axioms)
+    {
+        auto xSym = logic::Signature::varSymbol("xNat", logic::Sorts::natSort());
+        auto ySym = logic::Signature::varSymbol("yNat", logic::Sorts::natSort());
+        auto x = logic::Terms::var(xSym);
+        auto y = logic::Terms::var(ySym);
+
+        // forall x,y. (x<y or x=y or x>y)
+        auto axiom =
+            logic::Formulas::universal({xSym,ySym},
+                logic::Formulas::disjunction({
+                    logic::Theory::natSub(x,y),
+                    logic::Formulas::equality(x,y),
+                    logic::Theory::natSub(y,x)
+                })
+            );
+
+        axioms.push_back(std::make_shared<const logic::Axiom>(axiom, "Theory axiom (totality Nat): forall x,y. (x<y or x=y or x>y)"));
     }
 }   

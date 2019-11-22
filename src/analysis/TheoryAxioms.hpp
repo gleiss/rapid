@@ -2,8 +2,6 @@
 #define __TheoryAxioms__
 
 #include <memory>
-#include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "Formula.hpp"

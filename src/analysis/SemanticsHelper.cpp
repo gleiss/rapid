@@ -1,7 +1,5 @@
 #include "SemanticsHelper.hpp"
 
-#include <memory>
-#include <vector>
 #include <cassert>
 
 #include "Variable.hpp"

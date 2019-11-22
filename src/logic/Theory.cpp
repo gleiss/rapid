@@ -1,9 +1,5 @@
 #include "Theory.hpp"
 
-#include <memory>
-#include <string>
-#include <algorithm>
-
 namespace logic {
 
     // declare each function-/predicate-symbol by constructing it

@@ -1,6 +1,7 @@
 #include "LemmasTwoTraces.hpp"
 
-#include <memory>
+#include <cassert>
+#include <iostream>
 
 #include "Formula.hpp"
 #include "Theory.hpp"

@@ -1,9 +1,11 @@
 #ifndef __Theory__
 #define __Theory__
 
+#include <functional>
 #include <memory>
 #include <string>
-#include <functional>
+#include <tuple>
+#include <vector>
 
 #include "Term.hpp"
 #include "Formula.hpp"

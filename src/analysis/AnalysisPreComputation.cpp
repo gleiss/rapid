@@ -1,7 +1,7 @@
 #include "AnalysisPreComputation.hpp"
 
+#include <cassert>
 #include <memory>
-#include <vector>
 
 #include "Theory.hpp"
 #include "SymbolDeclarations.hpp"

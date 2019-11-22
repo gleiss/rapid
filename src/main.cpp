@@ -1,7 +1,9 @@
-#include <fstream>
+#include <cassert>
 #include <iostream>
-#include <string>
+#include <memory>
 #include <sstream>
+#include <string>
+#include <vector>
 
 #include "logic/Theory.hpp"
 #include "logic/Problem.hpp"

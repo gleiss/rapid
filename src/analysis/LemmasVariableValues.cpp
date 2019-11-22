@@ -1,5 +1,8 @@
 #include "LemmasVariableValues.hpp"
 
+#include <cassert>
+#include <utility>
+
 #include "Formula.hpp"
 #include "Theory.hpp"
 #include "SymbolDeclarations.hpp"

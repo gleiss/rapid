@@ -33,13 +33,13 @@ namespace analysis {
             {
                 if (!v->isArray) // We assume that loop counters are not array elements and therefore only add iterator-lemmas for non-array-vars
                 {
-                    // PART 1: Add induction-axiom
                     auto nameSuffix = "-" + v->name + "-" + statement->location;
                     auto name = "iterator-intermediateValue" + nameSuffix;
                     auto nameShort = "Intermed" + nameSuffix;
                     auto inductionAxiomName = "induction-axiom-" + name;
                     auto inductionAxiomNameShort = "Ax-" + nameShort;
 
+                    // PART 1: Add induction-axiom
                     // IH(it): v(l(it1,...,itk,it)    ) <= x or
                     //         v(l(it1,...,itk,it),pos) <= x
                     auto inductionHypothesis = [&](std::shared_ptr<const logic::Term> arg)

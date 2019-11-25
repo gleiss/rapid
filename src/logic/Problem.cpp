@@ -1,10 +1,8 @@
 #include "Problem.hpp"
 
-#include <iostream>
-#include <fstream>
-
-#include <cassert>
+#include <algorithm>
 #include <ctime>
+#include <fstream>
 
 #include "Output.hpp"
 #include "Options.hpp"

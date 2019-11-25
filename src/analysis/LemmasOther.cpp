@@ -1,5 +1,7 @@
 #include "LemmasOther.hpp"
 
+#include <cassert>
+
 #include "Formula.hpp"
 #include "Theory.hpp"
 #include "SymbolDeclarations.hpp"

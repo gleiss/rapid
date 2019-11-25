@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <string>
 #include <memory>
+#include <cassert>
 
 #include "Formula.hpp"
 

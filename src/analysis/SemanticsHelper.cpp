@@ -1,7 +1,5 @@
 #include "SemanticsHelper.hpp"
 
-#include <memory>
-#include <vector>
 #include <cassert>
 
 #include "Variable.hpp"
@@ -110,7 +108,6 @@ namespace analysis {
     std::shared_ptr<const logic::Term> toTermFull(std::shared_ptr<const program::Variable> var, std::shared_ptr<const logic::Term> timePoint, std::shared_ptr<const logic::Term> trace)
     {
         assert(var != nullptr);
-        assert(timePoint != nullptr);
         assert(trace != nullptr);
         
         assert(!var->isArray);
@@ -119,6 +116,7 @@ namespace analysis {
         
         if (!var->isConstant)
         {
+            assert(timePoint != nullptr);
             arguments.push_back(timePoint);
         }
         if (var->twoTraces)
@@ -132,7 +130,6 @@ namespace analysis {
     std::shared_ptr<const logic::Term> toTermFull(std::shared_ptr<const program::Variable> var, std::shared_ptr<const logic::Term> timePoint, std::shared_ptr<const logic::Term> position, std::shared_ptr<const logic::Term> trace)
     {
         assert(var != nullptr);
-        assert(timePoint != nullptr);
         assert(position != nullptr);
         assert(trace != nullptr);
         
@@ -142,6 +139,7 @@ namespace analysis {
         
         if (!var->isConstant)
         {
+            assert(timePoint != nullptr);
             arguments.push_back(timePoint);
         }
         

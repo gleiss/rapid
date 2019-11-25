@@ -43,7 +43,11 @@ namespace program {
     class IntVariableAccess : public IntExpression
     {
     public:
-        IntVariableAccess(std::shared_ptr<const Variable> var) : IntExpression(), var(var) {}
+        IntVariableAccess(std::shared_ptr<const Variable> var) : IntExpression(), var(var)
+        {
+            assert(this->var != nullptr);
+            assert(!this->var->isArray);
+        }
         
         const std::shared_ptr<const Variable> var;
 
@@ -59,6 +63,7 @@ namespace program {
         {
             assert(this->array != nullptr);
             assert(this->index != nullptr);
+            assert(this->array->isArray);
         }
         
         const std::shared_ptr<const Variable> array;

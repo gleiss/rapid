@@ -1,8 +1,11 @@
 #ifndef __Problem__
 #define __Problem__
 
+#include <cassert>
 #include <iostream>
 #include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "Formula.hpp"

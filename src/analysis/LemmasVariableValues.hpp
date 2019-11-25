@@ -1,9 +1,11 @@
 #ifndef __LemmasVariableValues__
 #define __LemmasVariableValues__
 
-#include <vector>
 #include <memory>
+#include <string>
+#include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
 #include "ProgramTraverser.hpp"
 #include "Problem.hpp"

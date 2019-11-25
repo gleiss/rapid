@@ -2,6 +2,8 @@
 #define __SemanticsHelper__
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "Term.hpp"
 #include "Formula.hpp"

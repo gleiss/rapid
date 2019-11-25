@@ -1,10 +1,5 @@
 #include "TraceLemmas.hpp"
 
-#include <memory>
-#include <string>
-#include <vector>
-#include <cassert>
-
 #include "Signature.hpp"
 #include "Theory.hpp"
 #include "Options.hpp"
@@ -59,7 +54,7 @@ namespace analysis {
             EqualityPreservationTracesLemmas equalityPreservationTracesLemmas(program, locationToActiveVars, twoTraces);
             equalityPreservationTracesLemmas.generate(items);
             
-            NEqualLemmas nEqualLemmas(program, locationToActiveVars, twoTraces);
+            NEqualLemmas nEqualLemmas(program, locationToActiveVars, twoTraces, programSemantics);
             nEqualLemmas.generate(items);
         }
         

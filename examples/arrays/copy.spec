@@ -1,11 +1,11 @@
 func main()
 {
-	Int[] a;
 	const Int[] b;
-	Int i;
 	const Int blength;
+	Int[] a;
 
-	i = 0;
+	Int i = 0;
+
 	while(i < blength)
 	{
 		a[i] = b[i];

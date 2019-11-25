@@ -21,6 +21,19 @@ func main()
 }
 
 (conjecture
+	(forall ((k Int))
+		(=>
+			(and
+				(<= 0 alength)
+				(<= 0 k)
+				(< k alength)
+			)
+			(<= (a k) (max main_end))
+		)
+	)
+)
+
+(conjecture
 	(=>
 		(and
 			(<= 0 alength)

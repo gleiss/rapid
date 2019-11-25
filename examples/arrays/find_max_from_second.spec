@@ -34,3 +34,29 @@ func main()
 		)
 	)
 )
+
+(conjecture
+	(=>
+		(and
+			(<= 0 alength)
+			(forall ((k Int))
+				(=>
+					(and
+						(<= 0 k)
+						(< k alength)
+					)
+					(<= 0 (a k))
+				)
+			)
+		)
+		(forall ((k Int))
+			(=>
+				(and
+					(<= 0 k)
+					(< k alength)
+				)
+				(<= (a k) (max main_end))
+			)
+		)
+	)
+)

@@ -2,8 +2,8 @@
 func main()
 {
 	const Int[] a;
-	Int[] b;
 	const Int alength;
+	Int[] b;
 
 	Int i = 0;
 	Int m = 0;
@@ -32,7 +32,7 @@ func main()
 				(<= j k)
 				(< k alength)
 			)
-			(<= (b main_end k) (a j))
+			(<= (a j) (b main_end k))
 		)
 	)
 )
@@ -48,6 +48,21 @@ func main()
 				)
 				(= (b main_end j) (a k))
 			)
+		)
+	)
+)
+
+(conjecture
+	(forall ((j Int)(k Int))
+		(=>
+			(and
+				(<= 0 alength)
+				(<= 0 j)
+				(<= 0 k)
+				(<= j k)
+				(< k alength)
+			)
+			(<= (b main_end j) (b main_end k))
 		)
 	)
 )

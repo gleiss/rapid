@@ -8,7 +8,7 @@ func main()
 	const Int v;
 
 	Int i = 0;
-   a[0] = v;
+  a[0] = v;
 	while((i+1) < alength)
 	{
 		a[i + 1] = a[i] + 1;
@@ -25,6 +25,19 @@ func main()
             (<= 0 alength)
          )
          (<= (a main_end pos) (a main_end (+ pos 1)))
+      )
+   )
+)
+
+(conjecture
+   (forall ((pos Int))
+      (=>
+         (and
+            (<= 0 pos)
+            (< (+ pos 1) alength)
+            (<= 0 alength)
+         )
+         (< (a main_end pos) (a main_end (+ pos 1)))
       )
    )
 )

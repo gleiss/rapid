@@ -10,7 +10,6 @@ func main()
 	const Int v;
 
 	Int i = 0;
-
 	while (i < alength && a[i] != v)
 	{
 		i = i + 1;
@@ -20,11 +19,21 @@ func main()
 (conjecture
 	(=>
 		(<= 0 alength)
+		(or
+			(= (i main_end) alength)
+			(= (a (i main_end)) v)
+		)
+	)
+)
+
+(conjecture
+	(=>
+		(and
+			(<= 0 alength)
+			(< (i main_end) alength)
+		)
 		(exists ((pos Int))
-			(=>
-				(< (i main_end) alength)
-				(= (a pos) v)
-			)
+			(= (a pos) v)
 		)
 	)
 )
@@ -42,6 +51,8 @@ func main()
 	)
 )
 
+// This conjecture is unnecessary as this case is already covered by
+// the conjecture above.
 (conjecture
 	(forall ((pos Int))
 		(=>

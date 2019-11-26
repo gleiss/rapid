@@ -37,6 +37,18 @@ func main()
 )
 
 (conjecture
+	(=>
+		(and
+			(<= 0 alength)
+			(< (r main_end) alength)
+		)
+		(exists ((pos Int))
+			(= (a pos) v)
+		)
+	)
+)
+
+(conjecture
 	(forall ((pos Int))
 		(=>
 			(and
@@ -52,7 +64,6 @@ func main()
 
 // This conjecture is unnecessary as this case is already covered by
 // the conjecture above.
-
 (conjecture
 	(forall ((pos Int))
 		(=>

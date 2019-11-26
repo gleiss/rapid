@@ -13,5 +13,13 @@ func main()
 }
 
 (conjecture
-	(= (i main_end) alength)
+	(=>
+		(<= 0 alength)
+		(= (i main_end) alength)
+	)
+)
+
+// not valid
+(conjecture
+		(= (i main_end) alength)
 )

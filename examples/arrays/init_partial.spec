@@ -5,7 +5,7 @@ func main()
 	const Int k;
 
 	Int i = 0;
-	while(i < alength)
+	while (i < k)
 	{
 		a[i] = 0;
 		i = i + 1;

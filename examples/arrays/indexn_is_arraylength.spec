@@ -2,7 +2,6 @@
 
 func main()
 {
-
 	const Int alength;
 	Int i = 0;
 

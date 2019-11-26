@@ -1,14 +1,14 @@
 func main()
 {
 	const Int[] a;
-	Int[] b;
 	const Int alength;
+	Int[] b;
 
 	Int i = 0;
 	Int m = 0;
 	while (i < alength)
 	{
-		if (a[i] > a[m])
+		if (a[i] < a[m])
 		{
 			b[i] = a[i];
 			m = i;
@@ -21,6 +21,7 @@ func main()
 	}
 }
 
+
 (conjecture
 	(=>
 		(<= 0 alength)
@@ -29,11 +30,43 @@ func main()
 				(=>
 					(and
 						(<= 0 j)
+						(<= 0 k)
+						(<= k j)
 						(< j alength)
 					)
 					(= (b main_end j) (a k))
 				)
 			)
+		)
+	)
+)
+
+(conjecture
+	(forall ((j Int)(k Int))
+		(=>
+			(and
+				(<= 0 alength)
+				(<= 0 j)
+				(<= 0 k)
+				(<= j k)
+				(< k alength)
+			)
+			(<= (b main_end k) (a j))
+		)
+	)
+)
+
+(conjecture
+	(forall ((j Int)(k Int))
+		(=>
+			(and
+				(<= 0 alength)
+				(<= 0 j)
+				(<= 0 k)
+				(<= k j)
+				(< j alength)
+			)
+			(<= (b main_end j) (b main_end k))
 		)
 	)
 )

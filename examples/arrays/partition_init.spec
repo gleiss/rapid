@@ -1,24 +1,24 @@
 func main()
 {
-  Int[] bb;
-  Int[] cc;
-  const Int[] aa;
+  Int[] b;
+  const Int[] c;
+  const Int[] a;
   const Int alength;
 
-	Int a = 0;
-  Int b = 0;
-	while(a < alength)
+	Int i = 0;
+  Int j = 0;
+	while(i < alength)
 	{
-    if(aa[a] == cc[a])
+    if(a[i] == c[i])
     {
-      bb[b] = a;
-      b = b + 1;
+      b[j] = i;
+      j = j + 1;
     }
     else
     {
       skip;
     }
-    a = a + 1;
+    i = i + 1;
 	}
 }
 
@@ -27,10 +27,23 @@ func main()
       (=>
         (and
           (<= 0 pos)
-          (< pos (b main_end))
+          (< pos (j main_end))
           (<= 0 alength)
         )
-        (<= 0 (bb main_end pos))
+        (<= 0 (b main_end pos))
       )
    )
+)
+
+(conjecture
+  (forall ((pos Int))
+    (=>
+      (and
+        (<= 0 alength)
+        (<= 0 pos)
+        (< pos (j main_end))
+      )
+      (= (a (b main_end pos)) (c (b main_end pos)))
+    )
+  )
 )

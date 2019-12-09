@@ -1,26 +1,27 @@
 func main()
 {
-  Int[] bb;
-  Int[] cc;
-  const Int[] aa;
+  const Int[] a;
   const Int alength;
 
-	Int a = 0;
-  Int b = 0;
-  Int c = 0;
-	while(a < alength)
+  Int[] b;
+  Int[] c;
+
+	Int i = 0;
+  Int j = 0;
+  Int k = 0;
+	while(i < alength)
 	{
-    if(aa[a] >= 0)
+    if(a[i] >= 0)
     {
-      bb[b] = aa[a];
-      b = b + 1;
-    }
+      b[j] = a[i];
+      j = j + 1;
+    }s
     else
     {
-      cc[c] = aa[a];
-      c = c + 1;
+      c[k] = a[i];
+      k = k + 1;
     }
-    a = a + 1;
+    i = i + 1;
 	}
 }
 
@@ -29,10 +30,23 @@ func main()
       (=>
         (and
           (<= 0 pos)
-          (< pos (b main_end))
+          (< pos (j main_end))
           (<= 0 alength)
         )
-        (<= 0 (bb main_end pos))
+        (<= 0 (b main_end pos))
+      )
+   )
+)
+
+(conjecture
+   (forall ((pos Int))
+      (=>
+        (and
+          (<= 0 pos)
+          (< pos (k main_end))
+          (<= 0 alength)
+        )
+        (< (c main_end pos) 0)
       )
    )
 )

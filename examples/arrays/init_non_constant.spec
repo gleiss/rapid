@@ -8,9 +8,23 @@ func main()
 	while(i < alength)
 	{
 		a[i] = (2 * i) + v;
-		i = i+1;
+		i = i + 1;
 	}
 }
+
+(conjecture
+  (forall ((pos Int))
+    (=>
+       (and
+          (<= 0 pos)
+          (< pos alength)
+          (<= 0 alength)
+       )
+       (= (a main_end pos) (+ (* 2 pos) v))
+    )
+  )
+)
+
 
 (conjecture
    (forall ((pos Int))
@@ -20,7 +34,7 @@ func main()
             (< pos alength)
             (<= 0 alength)
          )
-         (= (a main_end pos) (+ (* 2 pos) v))
+         (<= (* 2 pos) (a main_end pos))
       )
    )
 )

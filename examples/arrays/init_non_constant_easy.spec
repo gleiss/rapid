@@ -24,3 +24,16 @@ func main()
       )
    )
 )
+
+(conjecture
+   (forall ((pos Int))
+      (=>
+         (and
+            (<= 0 pos)
+            (< pos alength)
+            (<= 0 alength)
+         )
+         (<= pos (a main_end pos))
+      )
+   )
+)

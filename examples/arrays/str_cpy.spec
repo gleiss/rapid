@@ -1,3 +1,5 @@
+// variation of copy_nonzero
+
 func main()
 {
 	Int[] a;
@@ -13,13 +15,26 @@ func main()
 }
 
 (conjecture
-	(forall ((j Int))
+	(forall ((pos Int))
 		(=>
 			(and
-				(<= 0 j)
-				(< j (i main_end))
+				(<= 0 pos)
+				(< pos (i main_end))
 			)
-			(= (a main_end j) (b j) )
+			(= (a main_end pos) (b pos) )
+		)
+	)
+)
+
+(conjecture
+	(forall ((pos Int))
+		(=>
+			(and
+				(<= 0 blength)
+				(<= 0 pos)
+				(< pos (alength main_end))
+			)
+			(not (= (a main_end pos) 0))
 		)
 	)
 )

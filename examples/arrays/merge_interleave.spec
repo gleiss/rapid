@@ -42,7 +42,7 @@ func main()
 
 (conjecture
    (forall ((pos Int))
-      (exists ((i Int))
+      (exists ((j Int))
         (=>
           (and
             (<= 0 pos)
@@ -50,8 +50,8 @@ func main()
             (<= 0 alength)
           )
           (or
-            (= (c main_end pos) (a i))
-            (= (c main_end pos) (b i))
+            (= (c main_end pos) (a j))
+            (= (c main_end pos) (b j))
           )
         )
       )

@@ -15,7 +15,7 @@ func main()
     {
       b[j] = a[i];
       j = j + 1;
-    }s
+    }
     else
     {
       c[k] = a[i];

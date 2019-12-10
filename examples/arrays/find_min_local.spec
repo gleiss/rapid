@@ -5,7 +5,9 @@ func main()
 	const Int alength;
 
 	Int[] b;
-	Int blength = 0;
+	
+	b[0] = a[0];
+	Int blength = 1;
 
 	Int i = 0;
 	Int m = 0;
@@ -26,17 +28,47 @@ func main()
 }
 
 (conjecture
+	(forall ((k Int))
+		(=>
+			(and
+				(<= 1 alength)
+				(<= 0 k)
+				(< k alength)
+				(forall ((l Int))
+					(=>
+						(and
+							(<= 0 l)
+							(< l k)
+						)
+						(< (a k) (a l))
+					)
+				)
+			)
+			(exists ((j Int))
+				(and
+					(<= 0 j)
+					(< j (blength main_end))
+					(= (a k) (b main_end j))
+				)
+			)
+		)
+	)
+)
+
+(conjecture
 	(forall ((j Int))
 		(exists ((k Int))
 			(=>
 				(and
-					(<= 0 alength)
+					(<= 1 alength)
 					(<= 0 j)
-					(<= 0 k)
 					(< j (blength main_end))
-					(< k alength)
 				)
-				(= (b main_end j) (a k))
+				(and
+					(<= 0 k)
+					(< k alength)
+					(= (b main_end j) (a k))
+				)
 			)
 		)
 	)
@@ -46,7 +78,7 @@ func main()
 	(forall ((j Int)(k Int))
 		(=>
 			(and
-				(<= 0 alength)
+				(<= 1 alength)
 				(<= 0 j)
 				(<= 0 k)
 				(<= j k)

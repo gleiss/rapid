@@ -30,7 +30,7 @@ func main()
 	(forall ((k Int))
 		(=>
 			(and
-				(<= 0 alength)
+				(<= 1 alength)
 				(<= 0 k)
 				(< k alength)
 				(forall ((l Int))
@@ -59,7 +59,7 @@ func main()
 		(exists ((k Int))
 			(=>
 				(and
-					(<= 0 alength)
+					(<= 1 alength)
 					(<= 0 j)
 					(< j (blength main_end))
 				)
@@ -77,7 +77,7 @@ func main()
 	(forall ((j Int)(k Int))
 		(=>
 			(and
-				(<= 0 alength)
+				(<= 1 alength)
 				(<= 0 j)
 				(<= 0 k)
 				(<= j k)

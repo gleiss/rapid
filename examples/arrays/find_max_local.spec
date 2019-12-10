@@ -1,4 +1,3 @@
-
 func main()
 {
 	const Int[] a;
@@ -32,11 +31,13 @@ func main()
 				(and
 					(<= 0 alength)
 					(<= 0 j)
-					(<= 0 k)
 					(< j (blength main_end))
-					(< k alength)
 				)
-				(= (b main_end j) (a k))
+				(and
+					(<= 0 k)
+					(< k alength)
+					(= (b main_end j) (a k))
+				)
 			)
 		)
 	)

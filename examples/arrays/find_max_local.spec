@@ -4,9 +4,11 @@ func main()
 	const Int alength;
 
 	Int[] b;
-	Int blength = 0;
+	
+	b[0] = a[0];
+	Int blength = 1;
 
-	Int i = 0;
+	Int i = 1;
 	Int m = 0;
 	while (i < alength)
 	{
@@ -23,6 +25,34 @@ func main()
 		i = i + 1;
 	}
 }
+
+(conjecture
+	(forall ((k Int))
+		(=>
+			(and
+				(<= 0 alength)
+				(<= 0 k)
+				(< k alength)
+				(forall ((l Int))
+					(=>
+						(and
+							(<= 0 l)
+							(< l k)
+						)
+						(< (a l) (a k))
+					)
+				)
+			)
+			(exists ((j Int))
+				(and
+					(<= 0 j)
+					(< j (blength main_end))
+					(= (a k) (b main_end j))
+				)
+			)
+		)
+	)
+)
 
 (conjecture
 	(forall ((j Int))

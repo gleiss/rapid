@@ -18,9 +18,9 @@ func main()
    (forall ((pos Int))
       (=>
         (and
+          (<= 0 alength)
           (<= 0 pos)
           (< pos alength)
-          (<= 0 alength)
         )
         (= (c main_end (* pos 2)) (a pos))
       )
@@ -31,9 +31,9 @@ func main()
    (forall ((pos Int))
       (=>
         (and
+          (<= 0 alength)
           (<= 0 pos)
           (< pos alength)
-          (<= 0 alength)
         )
         (= (c main_end (+ (* pos 2) 1)) (b pos))
       )
@@ -45,9 +45,9 @@ func main()
       (exists ((j Int))
         (=>
           (and
+            (<= 0 alength)
             (<= 0 pos)
             (< pos alength)
-            (<= 0 alength)
           )
           (or
             (= (c main_end pos) (a j))

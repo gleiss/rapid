@@ -31,3 +31,43 @@ func main()
 		)
 	)
 )
+
+(conjecture
+	(=>
+		(and
+			(<= 0 alength)
+			(exists ((k Int))
+				(and
+					(<= 0 k)
+					(< k alength)
+					(<= (a k) 0)
+				)
+			)
+		)
+		(exists ((k Int))
+			(and
+				(<= 0 k)
+				(< k alength)
+				(= (a k) (min main_end))
+			)
+		)
+	)
+)
+
+(conjecture
+	(=>
+		(and 
+			(<= 0 alength)
+			(forall ((k Int))
+				(=>
+					(and
+						(<= 0 k)
+						(< k alength)
+					)
+					(not (<= (a k) 0))
+				)
+			)
+		)
+		(= (min main_end) 0)
+	)
+)

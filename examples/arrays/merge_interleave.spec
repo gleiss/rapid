@@ -18,9 +18,9 @@ func main()
    (forall ((pos Int))
       (=>
         (and
+          (<= 0 alength)
           (<= 0 pos)
           (< pos alength)
-          (<= 0 alength)
         )
         (= (c main_end (* pos 2)) (a pos))
       )
@@ -31,11 +31,29 @@ func main()
    (forall ((pos Int))
       (=>
         (and
+          (<= 0 alength)
           (<= 0 pos)
           (< pos alength)
-          (<= 0 alength)
         )
         (= (c main_end (+ (* pos 2) 1)) (b pos))
+      )
+   )
+)
+
+(conjecture
+   (forall ((pos Int))
+      (exists ((j Int))
+        (=>
+          (and
+            (<= 0 alength)
+            (<= 0 pos)
+            (< pos alength)
+          )
+          (or
+            (= (c main_end pos) (a j))
+            (= (c main_end pos) (b j))
+          )
+        )
       )
    )
 )

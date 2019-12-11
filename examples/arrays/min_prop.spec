@@ -7,7 +7,7 @@ func main()
 	Int i = 0;
 	while(i < blength)
 	{
-    if(b[i] >= 0)
+    if(b[i] < 0)
     {
        a[i] = b[i];
     }
@@ -27,7 +27,7 @@ func main()
             (< pos blength)
             (<= 0 blength)
          )
-         (<= 0 (a main_end pos))
+         (<= (a main_end pos) 0)
       )
    )
 )

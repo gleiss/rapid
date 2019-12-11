@@ -7,11 +7,11 @@ func main()
 	const Int alength;
 	const Int v;
 
-	Int i = 0;
   a[0] = v;
-	while((i+1) < alength)
+  Int i = 1;
+	while(i < alength)
 	{
-		a[i + 1] = a[i] + 1;
+		a[i] = a[i-1] + 1;
 		i = i + 1;
 	}
 }

@@ -1,7 +1,9 @@
 // a new encoding of find, which is easier for the solvers, where we want to prove that
-// 1) if we found a position p, then we have A[p] == v.
-// 2) if we found a position, then for all previous positions p, we have A[p] != v.
-// 3) if we found no position, then forall positions p we have that A[i]= v.
+// 1) if we find a position, the element at that position is equal to v
+// 2) variation of property 1)
+// 3) variation of property 1)
+// 4) variation of property 1)
+// 5) forall positions pos between 0 and i, A[pos] is different from v
 
 func main()
 {
@@ -10,7 +12,6 @@ func main()
 	const Int v;
 
 	Int i = 0;
-
 	while (i < alength && a[i] != v)
 	{
 		i = i + 1;
@@ -19,12 +20,44 @@ func main()
 
 (conjecture
 	(=>
-		(<= 0 alength)
+		(and
+			(<= 0 alength)
+			(not (= (i main_end) alength))
+		)
+		(= (a (i main_end)) v)
+	)
+)
+
+(conjecture
+	(=>
+		(and
+			(<= 0 alength)
+			(< (i main_end) alength)
+		)
+		(= (a (i main_end)) v)
+	)
+)
+
+(conjecture
+	(=>
+		(and
+			(<= 0 alength)
+			(not (= (i main_end) alength))
+		)
 		(exists ((pos Int))
-			(=>
-				(< (i main_end) alength)
-				(= (a pos) v)
-			)
+			(= (a pos) v)
+		)
+	)
+)
+
+(conjecture
+	(=>
+		(and
+			(<= 0 alength)
+			(< (i main_end) alength)
+		)
+		(exists ((pos Int))
+			(= (a pos) v)
 		)
 	)
 )
@@ -36,20 +69,6 @@ func main()
 				(<= 0 alength)
 				(<= 0 pos)
 				(< pos (i main_end))
-			)
-			(not (= (a pos) v))
-		)
-	)
-)
-
-(conjecture
-	(forall ((pos Int))
-		(=>
-			(and
-				(<= 0 alength)
-				(= (i main_end) alength)
-				(<= 0 pos)
-				(< pos alength)
 			)
 			(not (= (a pos) v))
 		)

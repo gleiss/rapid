@@ -1,15 +1,15 @@
-// similar to copy, but keeps track of the size of a and asserts the property with respect to the size of a
+// similar to copy, but in reverse
 
 func main()
 {
 	Int[] a;
 	const Int[] b;
-	const Int alength;
+	const Int length;
 
 	Int i = 0;
-	while(i < alength)
+	while(i < length)
 	{
-		a[i] = b[alength - 1 - i];
+		a[i] = b[length - 1 - i];
 		i = i + 1;
 	}
 }
@@ -18,11 +18,11 @@ func main()
 	(forall ((j Int))
 		(=>
 			(and
-				(<= 0 alength)
+				(<= 0 length)
 				(<= 0 j)
-				(< j alength)
+				(< j length)
 			)
-			(= (a main_end j) (b (- (- alength 1) j)) )
+			(= (a main_end j) (b (- (- length 1) j)) )
 		)
 	)
 )

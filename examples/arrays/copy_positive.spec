@@ -12,7 +12,8 @@ func main()
 		{
 			a[alength] = b[i];
 			alength = alength + 1;
-		} else
+		}
+		else
 		{
 			skip;
 		}

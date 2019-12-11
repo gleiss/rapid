@@ -34,3 +34,16 @@ func main()
 		)
 	)
 )
+
+(conjecture
+	(=>
+		(<= 0 alength)
+		(exists ((k Int))
+			(and
+				(<= 0 k)
+				(< k alength)
+				(= (a k) (max main_end))
+			)
+		)
+	)
+)

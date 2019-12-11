@@ -21,8 +21,43 @@ func main()
 }
 
 (conjecture
+	(forall ((k Int))
+		(=>
+			(and
+				(<= 0 alength)
+				(<= 0 k)
+				(< k alength)
+			)
+			(<= (a k) (max main_end))
+		)
+	)
+)
+
+(conjecture
 	(=>
 		(and
+			(<= 0 alength)
+			(exists ((k Int))
+				(and
+					(<= 0 k)
+					(< k alength)
+					(<= 0 (a k))
+				)
+			)
+		)
+		(exists ((k Int))
+			(and
+				(<= 0 k)
+				(< k alength)
+				(= (a k) (max main_end))
+			)
+		)
+	)
+)
+
+(conjecture
+	(=>
+		(and 
 			(<= 0 alength)
 			(forall ((k Int))
 				(=>
@@ -30,18 +65,10 @@ func main()
 						(<= 0 k)
 						(< k alength)
 					)
-					(<= 0 (a k))
+					(not (<= 0 (a k)))
 				)
 			)
 		)
-		(forall ((k Int))
-			(=>
-				(and
-					(<= 0 k)
-					(< k alength)
-				)
-				(<= (a k) (max main_end))
-			)
-		)
+		(= (max main_end) 0)
 	)
 )

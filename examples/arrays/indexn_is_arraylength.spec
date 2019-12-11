@@ -1,8 +1,13 @@
-// example which shows that we need the requirement that array-lengths are nonnegative: If we remove the precondition "0 <= alength", then neither the standard-encoding nor the timepoint encoding is able to prove the postcondition "i == alength".
+// example which shows that we need the requirement that array-lengths are nonnegative: 
+// If we remove the precondition "0 <= alength", then neither the standard-encoding nor 
+// the timepoint encoding is able to prove the postcondition "i == alength".
+// In particular, the following property is not valid:
+// (conjecture
+// 		 (= (i main_end) alength)
+// )
 
 func main()
 {
-
 	const Int alength;
 	Int i = 0;
 
@@ -13,5 +18,14 @@ func main()
 }
 
 (conjecture
-	(= (i main_end) alength)
+	(not 
+		(< (i main_end) alength)
+	)
+)
+
+(conjecture
+	(=>
+		(<= 0 alength)
+		(= (i main_end) alength)
+	)
 )

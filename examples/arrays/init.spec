@@ -8,7 +8,7 @@ func main()
 	while(i < alength)
 	{
 		a[i] = v;
-		i = i+1;
+		i = i + 1;
 	}
 }
 

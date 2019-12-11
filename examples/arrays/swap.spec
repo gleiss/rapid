@@ -2,52 +2,42 @@ func main()
 {
 	Int[] a;
 	Int[] b;
-	const Int[] olda;
-	const Int[] oldb;
-	const Int alength;
-	const Int blength;
+
+	const Int length;
+
+	Int current;
 
 	Int i = 0;
-	while(i < alength)
+	while(i < length)
 	{
+		current = a[i];
 		a[i] = b[i];
-		b[i] = a[i];
+		b[i] = current;
 		i = i + 1;
 	}
 }
 
 (conjecture
-	(forall ((j Int)(k Int)(l Int))
+	(forall ((pos Int))
 		(=>
 			(and
-				(<= 0 j)
-				(< j blength)
-				(<= 0 k)
-				(< k alength)
-				(<= 0 l)
-				(< l blength)
-				(= alength blength)
-				(= (a (l11 zero) k) (olda k))
-				(= (b (l11 zero) l) (oldb l))
+				(<= 0 length)
+				(<= 0 pos)
+				(< pos length)
 			)
-			(= (a main_end j) (oldb j))
+			(= (a main_end pos) (b l10 pos))
 		)
 	)
 )
-
 (conjecture
-	(forall ((j Int)(k Int))
+	(forall ((pos Int))
 		(=>
 			(and
-				(<= 0 j)
-				(< j blength)
-				(<= 0 k)
-				(< k alength)
-				(= alength blength)
-				(= (a (l11 zero) k) (olda k))
-				(= (b (l11 zero) k) (oldb k))
+				(<= 0 length)
+				(<= 0 pos)
+				(< pos length)
 			)
-			(= (b main_end j) (olda j))
+			(= (b main_end pos) (a l10 pos))
 		)
 	)
 )

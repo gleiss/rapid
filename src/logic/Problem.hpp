@@ -115,7 +115,7 @@ namespace logic {
         
         std::vector<std::shared_ptr<const ProblemItem>> items;
         
-        std::vector<const ReasoningTask> generateReasoningTasks() const;
+        std::vector<ReasoningTask> generateReasoningTasks() const;
     };
 }
 #endif

@@ -113,9 +113,9 @@ namespace logic {
         ostr << "\n(check-sat)\n" << std::endl;
     }
     
-    std::vector<const ReasoningTask> Problem::generateReasoningTasks() const
+    std::vector<ReasoningTask> Problem::generateReasoningTasks() const
     {
-        std::vector<const ReasoningTask> tasks;
+        std::vector<ReasoningTask> tasks;
 
         for (int i = 0; i < items.size(); ++i)
         {

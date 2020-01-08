@@ -40,7 +40,7 @@ func main()
 	}
 
 	if (j < length)
-   {
+    {
 	   if (b[j] < c[j])
 	   {
 		   return2 = 1;
@@ -49,11 +49,11 @@ func main()
 	   {
 		   return2 = 2;
 	   }
-   }
-   else
-   {
-	   return2 = 0;
-   }
+    }
+    else
+    {
+	    return2 = 0;
+    }
 
     while(a[k] == c[k] && k < length)
 	{
@@ -81,9 +81,9 @@ func main()
 (conjecture
 	(=>
 		(and
-			(= (return1 main_end) 1)
-			(= (return2 main_end) 1)
+			(= (return1 main_end) 0)
+			(= (return2 main_end) 0)
 		)
-		(= (return3 main_end) 1)
+		(= (return3 main_end) 0)
 	)
 )

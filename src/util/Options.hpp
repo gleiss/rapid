@@ -75,10 +75,12 @@ namespace util {
         Configuration() :
         _outputDir("-dir", ""),
         _generateBenchmark("generateBenchmark", false),
+        _nativeNat("-nat", false),
         _allOptions()
         {
             registerOption(&_outputDir);
             registerOption(&_generateBenchmark);
+            registerOption(&_nativeNat);
         }
         
         bool setAllValues(int argc, char *argv[]);
@@ -87,12 +89,14 @@ namespace util {
         
         StringOption outputDir() { return _outputDir; }
         BooleanOption generateBenchmark() { return _generateBenchmark; }
+        BooleanOption nativeNat() { return _nativeNat; }
 
         static Configuration instance() { return _instance; }
         
     protected:
         StringOption _outputDir;
         BooleanOption _generateBenchmark;
+        BooleanOption _nativeNat;
 
         std::map<std::string, Option*> _allOptions;
         

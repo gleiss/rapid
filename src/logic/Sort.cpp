@@ -37,7 +37,14 @@ namespace logic {
         }
         else if (s.toSMTLIB() == "Nat")
         {
-            return "(declare-datatypes ((Nat 0)) (( (zero) (s (p Nat)) )) )\n";
+            if (util::Configuration::instance().nativeNat().getValue())
+            {
+                return "(declare-nat Nat zero s p Sub)\n";
+            }
+            else
+            {
+                return "(declare-datatypes ((Nat 0)) (( (zero) (s (p Nat)) )) )\n";
+            }
         }
         else
         {

@@ -1,4 +1,5 @@
 #include "Theory.hpp"
+#include "Options.hpp"
 
 namespace logic {
 
@@ -103,14 +104,14 @@ namespace logic {
     
     std::shared_ptr<const Formula> Theory::natSub(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2, std::string label)
     {
-        return Formulas::predicate("Sub", {t1,t2}, label, false); // Sub needs a declaration, since it is not added by Vampire yet
+        bool alreadyDeclared = util::Configuration::instance().nativeNat().getValue();
+        return Formulas::predicate("Sub", {t1,t2}, label, alreadyDeclared);
     }
     
     std::shared_ptr<const Formula> Theory::natSubEq(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2, std::string label)
     {
         // encode t1<=t2 as t1 < s(t2).
-        auto succOfT2 = natSucc(t2);
-        return Formulas::predicate("Sub", {t1,succOfT2}, label, false); // Sub needs a declaration, since it is not added by Vampire yet
+        return Theory::natSub(t1,natSucc(t2), label);
     }
 
     std::tuple<

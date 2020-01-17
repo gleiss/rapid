@@ -9,6 +9,8 @@
 #include <vector>
 #include <cassert>
 
+#include "Options.hpp"
+
 namespace logic {
     
 #pragma mark - Symbol
@@ -21,7 +23,7 @@ namespace logic {
         {
             // hack since Vampire currently doesn't add the sub-predicate itself
             // declare and define the symbol time_sub
-            if (name == "Sub")
+            if (!util::Configuration::instance().nativeNat().getValue() && name == "Sub")
             {
                 std::string ret = "(declare-fun Sub (Nat Nat) Bool)\n";
                 ret += "(assert (forall ((it Nat)) (Sub it (s it))) )\n";

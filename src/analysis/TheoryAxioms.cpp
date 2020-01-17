@@ -20,8 +20,12 @@ namespace analysis {
 
         // generateTheoryAxiom1(axioms);
         // generateTheoryAxiom2(axioms);
-        generateTheoryAxiom3(axioms);
-        generateTheoryAxiom4(axioms);
+        if (!util::Configuration::instance().nativeNat().getValue())
+        {
+            generateTheoryAxiom3(axioms);
+            generateTheoryAxiom4(axioms);
+        }
+        
         return axioms;
     }
 

@@ -21,6 +21,13 @@ namespace logic {
 
         std::shared_ptr<const Symbol> symbol;
         
+        enum class Type
+        {
+            Variable,
+            FuncTerm,
+        };
+        virtual Type type() const = 0;
+
         virtual std::string toSMTLIB() const = 0;
         virtual std::string prettyString() const = 0;
     };
@@ -34,6 +41,7 @@ namespace logic {
     public:
         const unsigned id;
 
+        Type type() const override { return Term::Type::Variable; }
         std::string toSMTLIB() const override;
         virtual std::string prettyString() const override;
         
@@ -58,6 +66,7 @@ namespace logic {
     public:
         const std::vector<std::shared_ptr<const Term>> subterms;
         
+        Type type() const override { return Term::Type::FuncTerm; }
         std::string toSMTLIB() const override;
         virtual std::string prettyString() const override;
     };

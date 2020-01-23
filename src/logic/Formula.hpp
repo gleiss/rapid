@@ -18,6 +18,20 @@ namespace logic {
         Formula(std::string label) : label(label) {}
         virtual ~Formula() {}
         const std::string label;
+
+        enum class Type
+        {
+            Predicate,
+            Equality,
+            Conjunction,
+            Disjunction,
+            Negation,
+            Existential,
+            Universal,
+            Implication,
+            Equivalence
+        };
+        virtual Type type() const = 0;
         
         std::string declareSMTLIB(std::string decl, bool conjecture = false) const;
         
@@ -48,6 +62,7 @@ namespace logic {
         std::shared_ptr<const Symbol> symbol;
         const std::vector<std::shared_ptr<const Term>> subterms;
 
+        Type type() const override { return Formula::Type::Predicate; }
         std::string toSMTLIB(unsigned indentation = 0) const override;
         std::string prettyString(unsigned indentation = 0) const override;
     };
@@ -65,6 +80,7 @@ namespace logic {
         const std::shared_ptr<const Term> left;
         const std::shared_ptr<const Term> right;
         
+        Type type() const override { return Formula::Type::Equality; }
         std::string toSMTLIB(unsigned indentation = 0) const override;
         std::string prettyString(unsigned indentation = 0) const override;
     };
@@ -78,6 +94,7 @@ namespace logic {
         
         const std::vector<std::shared_ptr<const Formula>> conj;
 
+        Type type() const override { return Formula::Type::Conjunction; }
         std::string toSMTLIB(unsigned indentation = 0) const override;
         std::string prettyString(unsigned indentation = 0) const override;
     };
@@ -91,6 +108,7 @@ namespace logic {
         
         const std::vector<std::shared_ptr<const Formula>> disj;
 
+        Type type() const override { return Formula::Type::Disjunction; }
         std::string toSMTLIB(unsigned indentation = 0) const override;
         std::string prettyString(unsigned indentation = 0) const override;
     };
@@ -104,6 +122,7 @@ namespace logic {
         
         const std::shared_ptr<const Formula> f;
 
+        Type type() const override { return Formula::Type::Negation; }
         std::string toSMTLIB(unsigned indentation = 0) const override;
         std::string prettyString(unsigned indentation = 0) const override;
         
@@ -126,6 +145,7 @@ namespace logic {
         const std::vector<std::shared_ptr<const Symbol>> vars;
         const std::shared_ptr<const Formula> f;
         
+        Type type() const override { return Formula::Type::Existential; }
         std::string toSMTLIB(unsigned indentation = 0) const override;
         std::string prettyString(unsigned indentation = 0) const override;
     };
@@ -147,6 +167,7 @@ namespace logic {
         const std::vector<std::shared_ptr<const Symbol>> vars;
         const std::shared_ptr<const Formula> f;
         
+        Type type() const override { return Formula::Type::Universal; }
         std::string toSMTLIB(unsigned indentation = 0) const override;
         std::string prettyString(unsigned indentation = 0) const override;
     };
@@ -162,6 +183,7 @@ namespace logic {
         const std::shared_ptr<const Formula> f1;
         const std::shared_ptr<const Formula> f2;
         
+        Type type() const override { return Formula::Type::Implication; }
         std::string toSMTLIB(unsigned indentation = 0) const override;
         std::string prettyString(unsigned indentation = 0) const override;
     };
@@ -177,6 +199,7 @@ namespace logic {
         const std::shared_ptr<const Formula> f1;
         const std::shared_ptr<const Formula> f2;
 
+        Type type() const override { return Formula::Type::Equivalence; }
         std::string toSMTLIB(unsigned indentation = 0) const override;
         std::string prettyString(unsigned indentation = 0) const override;
     };

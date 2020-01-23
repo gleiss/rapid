@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
                     problemItems.push_back(axiom);
                 }
 
-                analysis::Semantics s(*parserResult.program, parserResult.locationToActiveVars, parserResult.twoTraces);
+                analysis::Semantics s(*parserResult.program, parserResult.locationToActiveVars, parserResult.problemItems, parserResult.twoTraces);
                 auto semantics = s.generateSemantics();
                 problemItems.insert(problemItems.end(), semantics.begin(), semantics.end());
 

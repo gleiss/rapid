@@ -287,4 +287,171 @@ namespace analysis {
         auto eq = logic::Formulas::equality(l1, l2, "Ignore any skip statement");
         return eq;
     }
+
+    typedef std::vector<std::pair<std::string, std::string>> PairsVarLoc;
+
+    PairsVarLoc Semantics::collectVariableTerms(std::vector<std::shared_ptr<const logic::ProblemItem>>& problemItems) const
+    {
+        PairsVarLoc s;
+        for (auto item : problemItems)
+        {
+            collectVariableTerms(item->formula, s);
+        }
+
+        // sort s and remove duplicates
+        std::sort(s.begin(), s.end());
+        s.erase( std::unique( s.begin(), s.end() ), s.end() );
+
+        for (const auto& pair : s)
+        {
+            std::cout << "result: " << pair.first << ", " << pair.second << std::endl;
+        }
+        
+        return s;
+    }
+
+    void Semantics::collectVariableTerms(std::shared_ptr<const logic::Formula> f, PairsVarLoc& s) const
+    {
+        switch (f->type())
+        {
+            case logic::Formula::Type::Predicate:
+            {
+                auto castedFormula = std::static_pointer_cast<const logic::PredicateFormula>(f);
+                for (const auto& subterm : castedFormula->subterms)
+                {
+                    collectVariableTerms(subterm, s);
+                }
+                break;
+            }
+            case logic::Formula::Type::Equality:
+            {
+                auto castedFormula = std::static_pointer_cast<const logic::EqualityFormula>(f);
+                collectVariableTerms(castedFormula->left, s);
+                collectVariableTerms(castedFormula->right, s);
+                break;
+            }
+            case logic::Formula::Type::Conjunction:
+            {
+                auto castedFormula = std::static_pointer_cast<const logic::ConjunctionFormula>(f);
+                for (const auto& subterm : castedFormula->conj)
+                {
+                    collectVariableTerms(subterm, s);
+                }
+                break;
+            }
+            case logic::Formula::Type::Disjunction:
+            {
+                auto castedFormula = std::static_pointer_cast<const logic::DisjunctionFormula>(f);
+                for (const auto& subterm : castedFormula->disj)
+                {
+                    collectVariableTerms(subterm, s);
+                }
+                break;
+            }
+            case logic::Formula::Type::Negation:
+            {
+                auto castedFormula = std::static_pointer_cast<const logic::NegationFormula>(f);
+                collectVariableTerms(castedFormula->f, s);
+                break;
+            }
+            case logic::Formula::Type::Existential:
+            {
+                auto castedFormula = std::static_pointer_cast<const logic::ExistentialFormula>(f);
+                collectVariableTerms(castedFormula->f, s);
+                break;
+            }
+            case logic::Formula::Type::Universal:
+            {
+                auto castedFormula = std::static_pointer_cast<const logic::UniversalFormula>(f);
+                collectVariableTerms(castedFormula->f, s);
+                break;
+            }
+            case logic::Formula::Type::Implication:
+            {
+                auto castedFormula = std::static_pointer_cast<const logic::ImplicationFormula>(f);
+                collectVariableTerms(castedFormula->f1, s);
+                collectVariableTerms(castedFormula->f2, s);
+                break;
+            }
+            case logic::Formula::Type::Equivalence:
+            {
+                auto castedFormula = std::static_pointer_cast<const logic::EquivalenceFormula>(f);
+                collectVariableTerms(castedFormula->f1, s);
+                collectVariableTerms(castedFormula->f2, s);
+                break;
+            }
+            default:
+            {
+                assert(false);
+                break;
+            }
+        }
+    }
+
+    void Semantics::collectVariableTerms(std::shared_ptr<const logic::Term> t, PairsVarLoc& s) const
+    {
+        switch (t->type())
+        {
+            case logic::Term::Type::Variable:
+            {
+                // do nothing
+                break;
+            }
+            case logic::Term::Type::FuncTerm:
+            {
+                auto castedTerm = std::static_pointer_cast<const logic::FuncTerm>(t);
+
+                // handle term: search for a term of sort Int, which has a subterm of sort Location
+                // TODO: could make this check more precise, so that it always only detects terms v(l(...)), where v is a variable occuring in the program and l is a location of the program
+                if (castedTerm->symbol->rngSort == logic::Sorts::intSort())
+                {
+                    // check whether castedTerm could denote mutable program variable
+                    if (castedTerm->subterms.size() >= 1 && castedTerm->subterms[0]->symbol->rngSort == logic::Sorts::timeSort())
+                    {
+                        auto programVarName = castedTerm->symbol->name;
+                        auto timepointName = castedTerm->subterms[0]->symbol->name;
+                        std::cout << "Found reference to mutable-var in problemItem: " << programVarName << ", " << timepointName << std::endl;
+                        s.push_back(std::make_pair(programVarName, timepointName));
+                    } 
+                    else 
+                    {
+                        // check whether castedTerm could denote constant program variable
+                        // TODO: make this check more precise, currently just ensure that no subterm is of sort time.
+                        bool noTimepointSubterms = true;
+                        for (const auto& subterm : castedTerm->subterms)
+                        {
+                            if (subterm->symbol->rngSort == logic::Sorts::timeSort())
+                            {
+                                noTimepointSubterms = false;
+                                break;
+                            }
+                        }
+                        if (noTimepointSubterms)
+                        {
+                            auto programVarName = castedTerm->symbol->name;
+                            if (programVarName != "0" && programVarName != "1" && programVarName != "-")
+                            {
+                                std::cout << "Found reference to const-var in problemItem: " << programVarName<< std::endl;
+                                s.push_back(std::make_pair(programVarName, ""));
+                            }
+                        }
+                    }
+                }
+
+                // recurse on subterms
+                for (const auto& subterm : castedTerm->subterms)
+                {
+                    collectVariableTerms(subterm, s);
+                }
+                break;
+            }
+            default:
+            {
+                assert(false);
+                break;
+            }
+        }
+    }
+
+    
 }

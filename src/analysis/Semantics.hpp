@@ -19,6 +19,7 @@ namespace analysis {
     public:
         Semantics(const program::Program& program,
                   std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars,
+                  std::vector<std::shared_ptr<const logic::ProblemItem>>& problemItems,
                   bool twoTraces) :
         program(program),
         endTimePointMap(AnalysisPreComputation::computeEndTimePointMap(program)),
@@ -39,6 +40,10 @@ namespace analysis {
         std::shared_ptr<const logic::Formula> generateSemantics(const program::IfElse* ifElse);
         std::shared_ptr<const logic::Formula> generateSemantics(const program::WhileStatement* whileStatement);
         std::shared_ptr<const logic::Formula> generateSemantics(const program::SkipStatement* skipStatement);
+
+        std::vector<std::pair<std::string, std::string>> collectVariableTerms(std::vector<std::shared_ptr<const logic::ProblemItem>>& problemItems) const;
+        void collectVariableTerms(std::shared_ptr<const logic::Formula> f, std::vector<std::pair<std::string, std::string>>& s) const;
+        void collectVariableTerms(std::shared_ptr<const logic::Term> t, std::vector<std::pair<std::string, std::string>>& s) const;
     };
 }
 #endif

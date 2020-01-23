@@ -44,7 +44,7 @@ namespace logic {
         virtual ~ProblemItem() = default;
         
         const Type type;
-        const std::shared_ptr<const logic::Formula> formula;
+        std::shared_ptr<const logic::Formula> formula;
         const std::string name;
         const Visibility visibility;
         const std::vector<std::shared_ptr<const ProblemItem>> fromItems;

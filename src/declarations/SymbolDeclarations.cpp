@@ -51,6 +51,11 @@ std::shared_ptr<const logic::Symbol> iteratorSymbol(const program::WhileStatemen
     return logic::Signature::varSymbol("It" + whileStatement->location, logic::Sorts::natSort());
 }
 
+std::shared_ptr<const logic::Symbol> traceVarSymbol()
+{
+    return logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
+}
+
 std::shared_ptr<const logic::Symbol> trace1Symbol()
 {
     return logic::Signature::fetchOrAdd("t1", {}, logic::Sorts::traceSort());

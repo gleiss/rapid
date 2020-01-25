@@ -47,8 +47,7 @@ namespace analysis {
             auto axiomFormula = logic::Formulas::conjunction(conjunctsFunction);
             if(twoTraces)
             {
-                auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                axiomFormula = logic::Formulas::universal({tr}, axiomFormula);
+                axiomFormula = logic::Formulas::universal({traceVarSymbol()}, axiomFormula);
             }
             axioms.push_back(std::make_shared<logic::Axiom>(axiomFormula, "Semantics of function " + function->name, logic::ProblemItem::Visibility::Implicit));
         }

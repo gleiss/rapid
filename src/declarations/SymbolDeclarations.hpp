@@ -13,6 +13,7 @@ std::shared_ptr<const logic::Symbol> locationSymbolEndLocation(const program::Fu
 std::shared_ptr<const logic::Symbol> iteratorSymbol(const program::WhileStatement* whileStatement);
 std::shared_ptr<const logic::Symbol> lastIterationSymbol(const program::WhileStatement* whileStatement, bool twoTraces);
 
+std::shared_ptr<const logic::Symbol> traceVarSymbol();
 std::shared_ptr<const logic::Symbol> trace1Symbol();
 std::shared_ptr<const logic::Symbol> trace2Symbol();
 

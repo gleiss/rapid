@@ -20,6 +20,10 @@ namespace analysis {
     {
         return logic::Terms::func(trace2Symbol(), {});
     }
+    std::shared_ptr<const logic::LVariable> traceVar()
+    {
+        return logic::Terms::var(traceVarSymbol());
+    }
 
 # pragma mark - Methods for generating most used timepoint terms and symbols
     
@@ -30,7 +34,7 @@ namespace analysis {
         return logic::Terms::var(iteratorSymbol(whileStatement));
     }
     
-    std::shared_ptr<const logic::Term> lastIterationTermForLoop(const program::WhileStatement* whileStatement, std::shared_ptr<const logic::Term> trace, bool twoTraces)
+    std::shared_ptr<const logic::Term> lastIterationTermForLoop(const program::WhileStatement* whileStatement, bool twoTraces, std::shared_ptr<const logic::Term> trace)
     {
         assert(whileStatement != nullptr);
         assert(trace != nullptr);
@@ -252,9 +256,7 @@ namespace analysis {
         
         assert(!var->isArray);
         
-        auto trSymbol = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-        auto tr = logic::Terms::var(trSymbol);
-        return toTermFull(var, timePoint, tr);
+        return toTermFull(var, timePoint, traceVar());
     }
     
     std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const program::Variable> var, std::shared_ptr<const logic::Term> timePoint, std::shared_ptr<const logic::Term> position)
@@ -265,28 +267,15 @@ namespace analysis {
         
         assert(var->isArray);
         
-        auto trSymbol = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-        auto tr = logic::Terms::var(trSymbol);
-        return toTermFull(var, timePoint, position, tr);
+        return toTermFull(var, timePoint, position, traceVar());
     }
     std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const program::IntExpression> expr, std::shared_ptr<const logic::Term> timePoint)
     {
-        auto trSymbol = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-        auto tr = logic::Terms::var(trSymbol);
-        return toTerm(expr, timePoint, tr);
+        return toTerm(expr, timePoint, traceVar());
     }
     std::shared_ptr<const logic::Formula> toFormula(std::shared_ptr<const program::BoolExpression> expr, std::shared_ptr<const logic::Term> timePoint)
     {
-        auto trSymbol = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-        auto tr = logic::Terms::var(trSymbol);
-        return toFormula(expr, timePoint, tr);
-    }
-    
-    std::shared_ptr<const logic::Term> lastIterationTermForLoop(const program::WhileStatement* whileStatement, bool twoTraces)
-    {
-        auto trSymbol = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-        auto tr = logic::Terms::var(trSymbol);
-        return lastIterationTermForLoop(whileStatement, tr, twoTraces);
+        return toFormula(expr, timePoint, traceVar());
     }
 
     std::shared_ptr<const logic::Formula> varEqual(std::shared_ptr<const program::Variable> v, std::shared_ptr<const logic::Term> timePoint1, std::shared_ptr<const logic::Term> timePoint2)

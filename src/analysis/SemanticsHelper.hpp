@@ -14,12 +14,13 @@
 namespace analysis {
 
 # pragma mark - Methods for generating most used trace terms
+    std::shared_ptr<const logic::LVariable> traceVar();
     std::shared_ptr<const logic::Term> trace1Term();
     std::shared_ptr<const logic::Term> trace2Term();
     
 # pragma mark - Methods for generating most used timepoint terms and symbols
     std::shared_ptr<const logic::LVariable> iteratorTermForLoop(const program::WhileStatement* whileStatement);
-    std::shared_ptr<const logic::Term> lastIterationTermForLoop(const program::WhileStatement* whileStatement, std::shared_ptr<const logic::Term> trace, bool twoTraces);
+    std::shared_ptr<const logic::Term> lastIterationTermForLoop(const program::WhileStatement* whileStatement, bool twoTraces, std::shared_ptr<const logic::Term> trace = traceVar());
 
     std::shared_ptr<const logic::Term> timepointForNonLoopStatement(const program::Statement* statement);
     std::shared_ptr<const logic::Term> timepointForLoopStatement(const program::WhileStatement* whileStatement, std::shared_ptr<const logic::Term> innerIteration);
@@ -56,7 +57,6 @@ namespace analysis {
     std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const program::Variable> arrayVar, std::shared_ptr<const logic::Term> timePoint, std::shared_ptr<const logic::Term> position);
     std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const program::IntExpression> expr, std::shared_ptr<const logic::Term> timePoint);
     std::shared_ptr<const logic::Formula> toFormula(std::shared_ptr<const program::BoolExpression> expr, std::shared_ptr<const logic::Term> timePoint);
-    std::shared_ptr<const logic::Term> lastIterationTermForLoop(const program::WhileStatement* whileStatement, bool twoTraces);
 
 # pragma mark - Methods for generating most used formulas for describing changes of state
     /*

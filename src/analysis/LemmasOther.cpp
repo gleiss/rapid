@@ -30,8 +30,7 @@ namespace analysis {
 
         if (twoTraces)
         {
-            auto tr = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-            bareLemma = logic::Formulas::universal({tr}, bareLemma);
+            bareLemma = logic::Formulas::universal({traceVarSymbol()}, bareLemma);
         }
 
         auto name = "atLeastOneIteration-" + statement->location;
@@ -58,8 +57,8 @@ namespace analysis {
         auto lStartIt1 = timepointForLoopStatement(statement, it1);
         auto lStartIt2 = timepointForLoopStatement(statement, it2);
         
-        auto trSymbol = logic::Signature::varSymbol("tr",logic::Sorts::traceSort());
-        auto tr = logic::Terms::var(trSymbol);
+        auto trSymbol = traceVarSymbol();
+        auto tr = traceVar();
         auto tr3Symbol = logic::Signature::varSymbol("tr3", logic::Sorts::traceSort());
         auto tr3 = logic::Terms::var(tr3Symbol);
         

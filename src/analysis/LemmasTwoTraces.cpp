@@ -64,8 +64,8 @@ namespace analysis {
 
         auto itSymbol = iteratorSymbol(statement);
         auto it = iteratorTermForLoop(statement);
-        auto nT1 = lastIterationTermForLoop(statement, t1, true);
-        auto nT2 = lastIterationTermForLoop(statement, t2, true);
+        auto nT1 = lastIterationTermForLoop(statement, true, t1);
+        auto nT2 = lastIterationTermForLoop(statement, true, t2);
         
         auto lStartIt = timepointForLoopStatement(statement, it);
         auto lStartNT1 = timepointForLoopStatement(statement, nT1);

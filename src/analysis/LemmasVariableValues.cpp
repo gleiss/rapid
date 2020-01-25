@@ -70,8 +70,7 @@ namespace analysis {
                     }
                     if (twoTraces)
                     {
-                        auto trSymbol = logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
-                        freeVars.push_back(trSymbol);
+                        freeVars.push_back(traceVarSymbol());
                     }
 
                     auto [inductionAxBCDef, inductionAxICDef,inductionAxiomConDef, inductionAxiom] = inductionAxiom1(inductionAxiomName, inductionAxiomNameShort, inductionHypothesis, freeVars);
@@ -159,7 +158,6 @@ namespace analysis {
 
         auto posSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
         auto pos = logic::Terms::var(posSymbol);
-        auto trSymbol= logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
         
         auto activeVars = locationToActiveVars.at(statement->location);
         auto assignedVars = computeAssignedVars(statement);
@@ -196,7 +194,7 @@ namespace analysis {
                 }
                 if (twoTraces)
                 {
-                    freeVars.push_back(trSymbol);
+                    freeVars.push_back(traceVarSymbol());
                 }
 
                 auto [inductionAxBCDef, inductionAxICDef,inductionAxiomConDef, inductionAxiom] = logic::inductionAxiom1(inductionAxiomName, inductionAxiomNameShort, inductionHypothesis, freeVars);

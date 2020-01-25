@@ -29,6 +29,8 @@ namespace analysis {
         return v3;
     }
 
+    typedef std::unordered_map<std::shared_ptr<const program::Variable>, std::shared_ptr<const logic::FuncTerm>> VarValues;
+
     std::vector<std::shared_ptr<const logic::Axiom>> Semantics::generateSemantics()
     {
         // generate semantics compositionally
@@ -36,10 +38,10 @@ namespace analysis {
         for(const auto& function : program.functions)
         {
             std::vector<std::shared_ptr<const logic::Formula>> conjunctsFunction;
-
+            VarValues currVarValues;
             for (const auto& statement : function->statements)
             {
-                auto semantics = generateSemantics(statement.get());
+                auto semantics = generateSemantics(statement.get(), currVarValues);
                 conjunctsFunction.push_back(semantics);
             }
             auto axiomFormula = logic::Formulas::conjunction(conjunctsFunction);
@@ -54,32 +56,32 @@ namespace analysis {
         return axioms;
     }
     
-    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::Statement* statement)
+    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::Statement* statement, VarValues& currVarValues)
     {
         if (statement->type() == program::Statement::Type::IntAssignment)
         {
             auto castedStatement = static_cast<const program::IntAssignment*>(statement);
-            return generateSemantics(castedStatement);
+            return generateSemantics(castedStatement, currVarValues);
         }
         else if (statement->type() == program::Statement::Type::IfElse)
         {
             auto castedStatement = static_cast<const program::IfElse*>(statement);
-            return generateSemantics(castedStatement);
+            return generateSemantics(castedStatement, currVarValues);
         }
         else if (statement->type() == program::Statement::Type::WhileStatement)
         {
             auto castedStatement = static_cast<const program::WhileStatement*>(statement);
-            return generateSemantics(castedStatement);
+            return generateSemantics(castedStatement, currVarValues);
         }
         else
         {
             assert(statement->type() == program::Statement::Type::SkipStatement);
             auto castedStatement = static_cast<const program::SkipStatement*>(statement);
-            return generateSemantics(castedStatement);
+            return generateSemantics(castedStatement, currVarValues);
         }
     }
     
-    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::IntAssignment* intAssignment)
+    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::IntAssignment* intAssignment, VarValues& currVarValues)
     {
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts;
         
@@ -172,7 +174,7 @@ namespace analysis {
         }
     }
     
-    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::IfElse* ifElse)
+    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::IfElse* ifElse, VarValues& currVarValues)
     {
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts;
 
@@ -198,13 +200,13 @@ namespace analysis {
         // Part 2: collect all formulas describing semantics of branches and assert them conditionally
         for (const auto& statement : ifElse->ifStatements)
         {
-            auto semanticsOfStatement = generateSemantics(statement.get());
+            auto semanticsOfStatement = generateSemantics(statement.get(), currVarValues);
             auto implication = logic::Formulas::implication(condition, semanticsOfStatement, "Semantics of left branch");
             conjuncts.push_back(implication);
         }
         for (const auto& statement : ifElse->elseStatements)
         {
-            auto semanticsOfStatement = generateSemantics(statement.get());
+            auto semanticsOfStatement = generateSemantics(statement.get(), currVarValues);
             auto implication = logic::Formulas::implication(negatedCondition, semanticsOfStatement,  "Semantics of right branch");
             conjuncts.push_back(implication);
         }
@@ -212,7 +214,7 @@ namespace analysis {
         return logic::Formulas::conjunction(conjuncts, "Semantics of IfElse at location " + ifElse->location);
     }
     
-    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::WhileStatement* whileStatement)
+    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::WhileStatement* whileStatement, VarValues& currVarValues)
     {
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts;
 
@@ -243,7 +245,7 @@ namespace analysis {
         std::vector<std::shared_ptr<const logic::Formula>> conjunctsBody;
         for (const auto& statement : whileStatement->bodyStatements)
         {
-            auto conjunct = generateSemantics(statement.get());
+            auto conjunct = generateSemantics(statement.get(), currVarValues);
             conjunctsBody.push_back(conjunct);
         }
         auto bodySemantics = 
@@ -278,7 +280,7 @@ namespace analysis {
         return logic::Formulas::conjunction(conjuncts, "Loop at location " + whileStatement->location);
     }
     
-    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::SkipStatement* skipStatement)
+    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::SkipStatement* skipStatement, VarValues& currVarValues)
     {        
         auto l1 = startTimepointForStatement(skipStatement);
         auto l2 = endTimePointMap.at(skipStatement);

@@ -24,22 +24,26 @@ namespace analysis {
         program(program),
         endTimePointMap(AnalysisPreComputation::computeEndTimePointMap(program)),
         locationToActiveVars(locationToActiveVars),
+        persistentVariableTerms(collectVariableTerms(problemItems)),
         twoTraces(twoTraces) {}
         
         std::vector<std::shared_ptr<const logic::Axiom>> generateSemantics();
         
     private:
+
         const program::Program& program;
         const EndTimePointMap endTimePointMap;
         const std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars;
         
+        const std::vector<std::pair<std::string, std::string>> persistentVariableTerms;
         const bool twoTraces;
-        
-        std::shared_ptr<const logic::Formula> generateSemantics(const program::Statement* statement);
-        std::shared_ptr<const logic::Formula> generateSemantics(const program::IntAssignment* intAssignment);
-        std::shared_ptr<const logic::Formula> generateSemantics(const program::IfElse* ifElse);
-        std::shared_ptr<const logic::Formula> generateSemantics(const program::WhileStatement* whileStatement);
-        std::shared_ptr<const logic::Formula> generateSemantics(const program::SkipStatement* skipStatement);
+
+        typedef std::unordered_map<std::shared_ptr<const program::Variable>, std::shared_ptr<const logic::FuncTerm>> VarValues;
+        std::shared_ptr<const logic::Formula> generateSemantics(const program::Statement* statement, VarValues& currVarValues);
+        std::shared_ptr<const logic::Formula> generateSemantics(const program::IntAssignment* intAssignment, VarValues& currVarValues);
+        std::shared_ptr<const logic::Formula> generateSemantics(const program::IfElse* ifElse, VarValues& currVarValues);
+        std::shared_ptr<const logic::Formula> generateSemantics(const program::WhileStatement* whileStatement, VarValues& currVarValues);
+        std::shared_ptr<const logic::Formula> generateSemantics(const program::SkipStatement* skipStatement, VarValues& currVarValues);
 
         std::vector<std::pair<std::string, std::string>> collectVariableTerms(std::vector<std::shared_ptr<const logic::ProblemItem>>& problemItems) const;
         void collectVariableTerms(std::shared_ptr<const logic::Formula> f, std::vector<std::pair<std::string, std::string>>& s) const;

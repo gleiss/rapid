@@ -48,9 +48,6 @@ namespace logic {
         static unsigned freshId;
     };
     
-    bool compareLVarPointers(const LVariable* p1, const LVariable* p2);
-    bool eqLVarPointers(const LVariable* p1, const LVariable* p2);
-    
     class FuncTerm : public Term
     {
         friend class Terms;

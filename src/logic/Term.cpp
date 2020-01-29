@@ -58,14 +58,6 @@ namespace logic {
         }
     }
 
-    bool compareLVarPointers(const LVariable* p1, const LVariable* p2)
-    {
-        return p1->id < p2->id;
-    }
-    
-    bool eqLVarPointers(const LVariable* p1, const LVariable* p2) {
-        return p1->id == p2->id;
-    }
     
 # pragma mark - Terms
     

@@ -78,16 +78,6 @@ namespace std
 # pragma mark - Signature
 
 namespace logic {
-
-    struct SymbolPtrEquality
-    {
-        bool operator()(const std::unique_ptr<Symbol>& a, const std::unique_ptr<Symbol>& b) const {return *a == *b;}
-    };
-    
-    struct SymbolPtrHash
-    {
-        size_t operator()(const std::unique_ptr<Symbol>& ptr) const {return std::hash<Symbol>()(*ptr);}
-    };
     
     // We use Signature as a manager-class for Symbol-instances
     class Signature

@@ -14,6 +14,8 @@
 #include <utility>
 #include <vector>
 #include <cassert>
+#include <functional>
+#include <cstddef>
 
 #include "Expression.hpp"
 

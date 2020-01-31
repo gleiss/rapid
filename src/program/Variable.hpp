@@ -36,6 +36,21 @@ namespace program {
                                                              twoTraces  == rhs.twoTraces)); return (name == rhs.name); }
         bool operator!=(const Variable& rhs) const { return !operator==(rhs); }
     };
+}
+
+namespace std
+{
+    template<>
+    struct hash<program::Variable>
+    {
+        std::size_t operator()(const program::Variable& v) const noexcept
+        {
+            return std::hash<std::string>{}(v.name);
+        }
+    };
+}
+
+namespace program {
 
     // hack needed for bison: std::vector has no overload for ostream, but these overloads are needed for bison
     std::ostream& operator<<(std::ostream& ostr, const std::vector< std::shared_ptr<const program::Variable>>& e);

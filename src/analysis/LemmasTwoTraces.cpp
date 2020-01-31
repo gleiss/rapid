@@ -15,8 +15,8 @@ namespace analysis {
         auto t1 = trace1Term();
         auto t2 = trace2Term();
 
-        auto posSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
-        auto pos = logic::Terms::var(posSymbol);
+        auto posSymbol = posVarSymbol();
+        auto pos = posVar();
         
         // add lemma for each intVar and each intArrayVar
         for (const auto& v : locationToActiveVars.at(locationSymbolForStatement(statement)->name))
@@ -96,8 +96,8 @@ namespace analysis {
                 {
                     if (v->isArray)
                     {
-                        auto posSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
-                        auto pos = logic::Terms::var(posSymbol);
+                        auto posSymbol = posVarSymbol();
+                        auto pos = posVar();
                         conjuncts.push_back(
                             logic::Formulas::universal(
                                 {posSymbol},
@@ -141,8 +141,8 @@ namespace analysis {
             {
                 if (v->isArray)
                 {
-                    auto posSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
-                    auto pos = logic::Terms::var(posSymbol);
+                    auto posSymbol = posVarSymbol();
+                    auto pos = posVar();
                     premiseConjuncts.push_back(
                         logic::Formulas::universal(
                             {posSymbol},

@@ -126,16 +126,26 @@ namespace analysis {
                             // forall other active non-const int-variables: v(l2) = v(l1)
                             if (*var != *castedLhs->var)
                             {
-                                auto eq = logic::Formulas::equality(toTerm(var,l2), toTerm(var,l1));
+                                auto eq =
+                                    logic::Formulas::equality(
+                                        toTerm(var,l2),
+                                        toTerm(var,l1)
+                                    );
                                 conjuncts.push_back(eq);
                             }
                         }
                         else
                         {
                             // forall active non-const int-array-variables: forall p. v(l2,p) = v(l1,p)
-                            auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
-                            auto p = logic::Terms::var(pSymbol);
-                            auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::equality(toTerm(var,l2,p), toTerm(var,l1,p)));
+                            auto posSymbol = posVarSymbol();
+                            auto pos = posVar();
+                            auto conjunct =
+                                logic::Formulas::universal({posSymbol},
+                                    logic::Formulas::equality(
+                                        toTerm(var,l2,pos),
+                                        toTerm(var,l1,pos)
+                                    )
+                                );
                             conjuncts.push_back(conjunct);
                         }
                     }
@@ -162,13 +172,13 @@ namespace analysis {
                 auto eq1 = logic::Formulas::equality(eq1Lhs, eq1Rhs);
                 conjuncts.push_back(eq1);
 
-                // forall positions p. (p!=cached(e) => a(l2,p) = cached(a,p))
-                auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
-                auto p = logic::Terms::var(pSymbol);
+                // forall positions pos. (pos!=cached(e) => a(l2,pos) = cached(a,pos))
+                auto posSymbol = posVarSymbol();
+                auto pos = posVar();
 
-                auto premise = logic::Formulas::disequality(p, inliner.toCachedTerm(application->index));
-                auto eq2 = logic::Formulas::equality(toTerm(application->array, l2, p), inliner.toCachedTermFull(application->array, p));
-                auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::implication(premise, eq2));
+                auto premise = logic::Formulas::disequality(pos, inliner.toCachedTerm(application->index));
+                auto eq2 = logic::Formulas::equality(toTerm(application->array, l2, pos), inliner.toCachedTermFull(application->array, pos));
+                auto conjunct = logic::Formulas::universal({posSymbol}, logic::Formulas::implication(premise, eq2));
                 conjuncts.push_back(conjunct);
 
                 // set last assignment of a to l2
@@ -184,13 +194,13 @@ namespace analysis {
                 auto eq1 = logic::Formulas::equality(eq1Lhs, eq1Rhs);
                 conjuncts.push_back(eq1);
 
-                // forall positions p. (p!=e(l1) => a(l2,p) = a(l1,p))
-                auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
-                auto p = logic::Terms::var(pSymbol);
+                // forall positions pos. (pos!=e(l1) => a(l2,pos) = a(l1,pos))
+                auto posSymbol = posVarSymbol();
+                auto pos = posVar();
 
-                auto premise = logic::Formulas::disequality(p, toTerm(application->index,l1));
-                auto eq2 = logic::Formulas::equality(toTerm(application->array, l2, p), toTerm(application->array, l1, p));
-                auto conjunct = logic::Formulas::universal({pSymbol}, logic::Formulas::implication(premise, eq2));
+                auto premise = logic::Formulas::disequality(pos, toTerm(application->index,l1));
+                auto eq2 = logic::Formulas::equality(toTerm(application->array, l2, pos), toTerm(application->array, l1, pos));
+                auto conjunct = logic::Formulas::universal({posSymbol}, logic::Formulas::implication(premise, eq2));
                 conjuncts.push_back(conjunct);
 
                 for (const auto& var : activeVars)
@@ -209,16 +219,16 @@ namespace analysis {
                         }
                         else
                         {
-                            // forall other active non-const int-array-variables: forall p. v(l2,p) = v(l1,p)
+                            // forall other active non-const int-array-variables: forall pos. v(l2,pos) = v(l1,pos)
                             if (*var != *application->array)
                             {
-                                auto pSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
-                                auto p = logic::Terms::var(pSymbol);
+                                auto posSymbol = posVarSymbol();
+                                auto pos = posVar();
                                 auto conjunct =
-                                    logic::Formulas::universal({pSymbol},
+                                    logic::Formulas::universal({posSymbol},
                                         logic::Formulas::equality(
-                                            toTerm(var, l2, p),
-                                            toTerm(var, l1, p)
+                                            toTerm(var, l2, pos),
+                                            toTerm(var, l1, pos)
                                         )
                                     );
                                 conjuncts.push_back(conjunct);
@@ -342,8 +352,8 @@ namespace analysis {
                     assert(cachedArrayVarTimepointsLeft.find(var) != cachedArrayVarTimepointsLeft.end());
                     assert(cachedArrayVarTimepointsRight.find(var) != cachedArrayVarTimepointsRight.end());
 
-                    auto posSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
-                    auto pos = logic::Terms::var(posSymbol);
+                    auto posSymbol = posVarSymbol();
+                    auto pos = posVar();
                     auto varLEnd = toTerm(var,lEnd,pos);
 
                     // define the value of var at lEnd as the merge of values at the end of the two branches
@@ -435,8 +445,8 @@ namespace analysis {
         auto lBodyStartIt = startTimepointForStatement(whileStatement->bodyStatements.front().get());
         auto lEnd = endTimePointMap.at(whileStatement);
 
-        auto posSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
-        auto pos = logic::Terms::var(posSymbol);
+        auto posSymbol = posVarSymbol();
+        auto pos = posVar();
 
         auto activeVars = locationToActiveVars.at(lStart0->symbol->name);
 

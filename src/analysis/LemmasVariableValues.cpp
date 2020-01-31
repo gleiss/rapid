@@ -25,8 +25,8 @@ namespace analysis {
         auto lStartIt = timepointForLoopStatement(whileStatement, it);
         auto lStartSuccOfIt = timepointForLoopStatement(whileStatement, logic::Theory::natSucc(it));
         
-        auto posSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
-        auto pos = logic::Terms::var(posSymbol);
+        auto posSymbol = posVarSymbol();
+        auto pos = posVar();
         
         auto predicates = {
             std::make_pair(logic::Formulas::equality, std::string("eq")),
@@ -156,8 +156,8 @@ namespace analysis {
         auto lStartZero = timepointForLoopStatement(statement, logic::Theory::natZero());
         auto lStartN = timepointForLoopStatement(statement, n);
 
-        auto posSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
-        auto pos = logic::Terms::var(posSymbol);
+        auto posSymbol = posVarSymbol();
+        auto pos = posVar();
         
         auto activeVars = locationToActiveVars.at(statement->location);
         auto assignedVars = computeAssignedVars(statement);

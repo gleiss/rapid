@@ -56,6 +56,11 @@ std::shared_ptr<const logic::Symbol> traceVarSymbol()
     return logic::Signature::varSymbol("tr", logic::Sorts::traceSort());
 }
 
+std::shared_ptr<const logic::Symbol> posVarSymbol()
+{
+    return logic::Signature::varSymbol("pos", logic::Sorts::intSort());
+}
+
 std::shared_ptr<const logic::Symbol> trace1Symbol()
 {
     return logic::Signature::fetchOrAdd("t1", {}, logic::Sorts::traceSort());

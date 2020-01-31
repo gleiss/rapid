@@ -21,7 +21,7 @@ namespace analysis {
         auto lStartZero = timepointForLoopStatement(statement, logic::Theory::natZero());
         auto lStartN = timepointForLoopStatement(statement, n);
         
-        auto posSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
+        auto posSymbol = posVarSymbol();
         auto pos = logic::Terms::var(posSymbol);
         auto xSymbol = logic::Signature::varSymbol("xInt", logic::Sorts::intSort());
         auto x = logic::Terms::var(xSymbol);

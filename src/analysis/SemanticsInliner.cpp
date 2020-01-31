@@ -1,3 +1,4 @@
+#include "SymbolDeclarations.hpp"
 #include "SemanticsInliner.hpp"
 #include "SemanticsHelper.hpp"
 #include "Theory.hpp"
@@ -346,8 +347,8 @@ namespace analysis
                             auto cachedTimepoint = cachedArrayVarTimepoints[var];
 
                             // add formula
-                            auto posSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
-                            auto pos = logic::Terms::var(posSymbol);
+                            auto posSymbol = posVarSymbol();
+                            auto pos = posVar();
                             auto f = 
                                 logic::Formulas::universalSimp({posSymbol}, 
                                     logic::Formulas::equalitySimp(
@@ -427,8 +428,7 @@ namespace analysis
                         cachedArrayVarTimepoints[var] = startTimepoint;
                     }
 
-                    auto posSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
-                    auto pos = logic::Terms::var(posSymbol);
+                    auto pos = posVar();
                     auto f = 
                         logic::Formulas::equality(
                             toTermFull(var, iterationTimepoint, pos, traceVar()),

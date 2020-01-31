@@ -9,7 +9,17 @@
 #include "SymbolDeclarations.hpp"
 
 namespace analysis {
-    
+# pragma mark - Methods for generating most used variables
+
+    std::shared_ptr<const logic::LVariable> traceVar()
+    {
+        return logic::Terms::var(traceVarSymbol());
+    }
+    std::shared_ptr<const logic::LVariable> posVar()
+    {
+        return logic::Terms::var(posVarSymbol());
+    }
+
 # pragma mark - Methods for generating most used trace terms
     
     std::shared_ptr<const logic::Term> trace1Term()
@@ -19,10 +29,6 @@ namespace analysis {
     std::shared_ptr<const logic::Term> trace2Term()
     {
         return logic::Terms::func(trace2Symbol(), {});
-    }
-    std::shared_ptr<const logic::LVariable> traceVar()
-    {
-        return logic::Terms::var(traceVarSymbol());
     }
 
 # pragma mark - Methods for generating most used timepoint terms and symbols
@@ -290,8 +296,8 @@ namespace analysis {
         }
         else
         {
-            auto posSymbol = logic::Signature::varSymbol("pos", logic::Sorts::intSort());
-            auto pos = logic::Terms::var(posSymbol);
+            auto posSymbol = posVarSymbol();
+            auto pos = posVar();
             return
                 logic::Formulas::universal({posSymbol},
                     logic::Formulas::equality(

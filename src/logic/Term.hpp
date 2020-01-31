@@ -31,7 +31,10 @@ namespace logic {
         virtual std::string toSMTLIB() const = 0;
         virtual std::string prettyString() const = 0;
     };
-    
+
+    bool operator==(const Term& t1, const Term& t2);
+    bool operator!=(const Term& t1, const Term& t2);
+        
     class LVariable : public Term
     {
         friend class Terms;

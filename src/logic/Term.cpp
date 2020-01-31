@@ -11,7 +11,41 @@ namespace logic {
     std::ostream& operator<<(std::ostream& ostr, const std::vector<std::shared_ptr<const logic::Term>>& t){ostr << "not implemented"; return ostr;}
     std::ostream& operator<<(std::ostream& ostr, const std::vector<std::shared_ptr<const logic::LVariable>>& v){ostr << "not implemented"; return ostr;}
 
-  unsigned LVariable::freshId = 0;
+    unsigned LVariable::freshId = 0;
+
+    bool operator==(const Term& t1, const Term& t2)
+    {
+        if (t1.type() != t2.type())
+        {
+            return false;
+        }
+        if (t1.type() == Term::Type::Variable)
+        {
+            return *t1.symbol == *t2.symbol;
+        }
+        else
+        {
+            assert(t1.type() == Term::Type::FuncTerm);
+            auto f1 = static_cast<const FuncTerm&>(t1);
+            auto f2 = static_cast<const FuncTerm&>(t2);
+            if (*f1.symbol != *f2.symbol || f1.subterms.size() != f2.subterms.size())
+            {
+                return false;
+            }
+            for (unsigned i = 0; i < f1.subterms.size(); i++)
+            {
+                if (*f1.subterms[i] != *f2.subterms[i])
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+    bool operator!=(const Term& t1, const Term& t2)
+    {
+        return !(t1 == t2);
+    }
 
     std::string LVariable::toSMTLIB() const
     {
@@ -58,7 +92,7 @@ namespace logic {
         }
     }
 
-    
+
 # pragma mark - Terms
     
     std::shared_ptr<const LVariable> Terms::var(std::shared_ptr<const Symbol> symbol)

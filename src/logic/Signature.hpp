@@ -54,6 +54,7 @@ namespace logic {
         std::string declareSymbolColorSMTLIB() const;
         
         bool operator==(const Symbol &s) const {return name == s.name;}
+        bool operator!=(const Symbol &s) const {return !(name == s.name);}
     };
     
     // hack needed for bison: std::vector has no overload for ostream, but these overloads are needed for bison

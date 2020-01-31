@@ -33,9 +33,10 @@ namespace analysis
                                                              const std::shared_ptr<const logic::Term> nextTimepoint,
                                                              EndTimePointMap& endTimePointMap)
     {
-        // for an ifElse statement, just recurse
+        // for an ifElse statement, set endTimepoint and recurse
         if (statement->type() == program::Statement::Type::IfElse)
         {
+            endTimePointMap[statement] = nextTimepoint;
             auto castedStatement = static_cast<const program::IfElse*>(statement);
             addEndTimePointForIfElseStatement(castedStatement, nextTimepoint, endTimePointMap);
         }

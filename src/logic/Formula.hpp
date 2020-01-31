@@ -29,7 +29,9 @@ namespace logic {
             Existential,
             Universal,
             Implication,
-            Equivalence
+            Equivalence,
+            True,
+            False
         };
         virtual Type type() const = 0;
         
@@ -201,7 +203,30 @@ namespace logic {
         std::string toSMTLIB(unsigned indentation = 0) const override;
         std::string prettyString(unsigned indentation = 0) const override;
     };
+
+    class TrueFormula : public Formula
+    {
+        friend class Formulas;
+        
+    public:
+        TrueFormula(std::string label = "") : Formula(label) {}
+        
+        Type type() const override { return Formula::Type::True; }
+        std::string toSMTLIB(unsigned indentation = 0) const override;
+        std::string prettyString(unsigned indentation = 0) const override;
+    };
     
+    class FalseFormula : public Formula
+    {
+        friend class Formulas;
+        
+    public:
+        FalseFormula(std::string label = "") : Formula(label) {}
+        
+        Type type() const override { return Formula::Type::False; }
+        std::string toSMTLIB(unsigned indentation = 0) const override;
+        std::string prettyString(unsigned indentation = 0) const override;
+    };
     inline std::ostream& operator<<(std::ostream& ostr, const Formula& e) { ostr << e.toSMTLIB(); return ostr; }
     
 # pragma mark - Formulas
@@ -225,6 +250,9 @@ namespace logic {
         
         static std::shared_ptr<const Formula> existential(std::vector<std::shared_ptr<const Symbol>> vars, std::shared_ptr<const Formula> f, std::string label = "");
         static std::shared_ptr<const Formula> universal(std::vector<std::shared_ptr<const Symbol>> vars, std::shared_ptr<const Formula> f, std::string label = "");
+
+        static std::shared_ptr<const Formula> trueFormula(std::string label = "");
+        static std::shared_ptr<const Formula> falseFormula(std::string label = "");
     };
 }
 

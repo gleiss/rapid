@@ -157,6 +157,18 @@ namespace logic {
         return  str;
     }
 
+    std::string TrueFormula::toSMTLIB(unsigned indentation) const
+    {
+        std::string str = stringForLabel(indentation);
+        return str + std::string(indentation, ' ') + "true";
+    }
+
+    std::string FalseFormula::toSMTLIB(unsigned indentation) const
+    {
+        std::string str = stringForLabel(indentation);
+        return str + std::string(indentation, ' ') + "false";
+    }
+
     std::string PredicateFormula::prettyString(unsigned indentation) const
     {
         auto str = std::string(indentation, ' ');
@@ -245,6 +257,7 @@ namespace logic {
         
         return str;
     }
+
     std::string ImplicationFormula::prettyString(unsigned indentation) const
     {
         std::string str = std::string(indentation, ' ') + "=>\n";
@@ -252,12 +265,23 @@ namespace logic {
         str += f2->prettyString(indentation + 3);
         return  str;
     }
+
     std::string EquivalenceFormula::prettyString(unsigned indentation) const
     {
         std::string str = std::string(indentation, ' ') + "=\n";
         str += f1->prettyString(indentation + 3) + "\n";
         str += f2->prettyString(indentation + 3);
         return  str;
+    }
+
+    std::string TrueFormula::prettyString(unsigned indentation) const
+    {
+        return std::string(indentation, ' ') + "True";
+    }
+
+    std::string FalseFormula::prettyString(unsigned indentation) const
+    {
+        return std::string(indentation, ' ') + "False";
     }
     
 # pragma mark - Formulas
@@ -327,6 +351,15 @@ namespace logic {
         {
             return std::make_shared<const UniversalFormula>(std::move(vars), f, label);
         }
+    }
+
+    std::shared_ptr<const Formula> Formulas::trueFormula(std::string label)
+    {
+        return std::make_shared<const TrueFormula>(label);
+    }
+    std::shared_ptr<const Formula> Formulas::falseFormula(std::string label)
+    {
+        return std::make_shared<const FalseFormula>(label);
     }
 }
 

@@ -31,8 +31,11 @@ namespace analysis {
         ValueEvolutionLemmas valueEvolutionLemmas(program, locationToActiveVars, twoTraces);
         valueEvolutionLemmas.generate(items);
         
-        StaticAnalysisLemmas staticAnalysisLemmas(program, locationToActiveVars, twoTraces, programSemantics);
-        staticAnalysisLemmas.generate(items);
+        if (!util::Configuration::instance().inlineSemantics().getValue())
+        {
+            StaticAnalysisLemmas staticAnalysisLemmas(program, locationToActiveVars, twoTraces, programSemantics);
+            staticAnalysisLemmas.generate(items);
+        }
         
         // Lemmas for iterators
         IntermediateValueLemmas intermediateValueLemmas(program, locationToActiveVars, twoTraces);

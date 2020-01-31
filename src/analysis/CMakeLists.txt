@@ -1,6 +1,7 @@
 set(SPECTRE_ANALYSIS_SOURCES
     Semantics.cpp
     SemanticsHelper.cpp
+    SemanticsInliner.cpp
     AnalysisPreComputation.cpp
     TraceLemmas.cpp
     TheoryAxioms.cpp
@@ -13,6 +14,7 @@ set(SPECTRE_ANALYSIS_SOURCES
 set(SPECTRE_ANALYSIS_HEADERS
     Semantics.hpp
     SemanticsHelper.hpp
+    SemanticsInliner.hpp
     AnalysisPreComputation.hpp
     TraceLemmas.hpp
     TheoryAxioms.hpp

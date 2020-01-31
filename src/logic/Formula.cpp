@@ -416,7 +416,7 @@ namespace logic {
         }
         else if (conj.size() == 1)
         {
-            return copyWithLabel(conj.front(), label);
+            return (label == "") ? conj.front() : copyWithLabel(conj.front(), label);
         }
         
         return conjunction(conj, label);
@@ -443,7 +443,7 @@ namespace logic {
         }
         else if (disj.size() == 1)
         {
-            return copyWithLabel(disj.front(), label);
+            return (label == "") ? disj.front() : copyWithLabel(disj.front(), label);
         }
         
         return disjunction(disj, label);
@@ -457,7 +457,7 @@ namespace logic {
         }
         else if (f1->type() == Formula::Type::True)
         {
-            return copyWithLabel(f2, label);
+            return (label == "") ? f2 : copyWithLabel(f2, label);
         }
         else if (f2->type() == Formula::Type::False)
         {
@@ -471,7 +471,7 @@ namespace logic {
     {
         if (f1->type() == Formula::Type::True)
         {
-            return copyWithLabel(f2, label);
+            return (label == "") ? f2 : copyWithLabel(f2, label);
         }
         else if (f1->type() == Formula::Type::False)
         {
@@ -479,7 +479,7 @@ namespace logic {
         }
         else if (f2->type() == Formula::Type::True)
         {
-            return copyWithLabel(f1, label);
+            return (label == "") ? f1 : copyWithLabel(f1, label);
         }
         else if (f2->type() == Formula::Type::False)
         {

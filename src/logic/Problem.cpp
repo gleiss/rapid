@@ -13,7 +13,7 @@ namespace logic {
 
     void ReasoningTask::outputSMTLIBToDir(std::string dirPath, std::string preamble) const
     {
-        auto outfileName = dirPath + "/" + conjecture->name + ".smt2";
+        auto outfileName = dirPath + conjecture->name + ".smt2";
         if(std::ifstream(outfileName))
         {
             std::cout << "Error: The output-file " << outfileName << " already exists!" << std::endl;

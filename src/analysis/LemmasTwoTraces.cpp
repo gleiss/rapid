@@ -72,7 +72,6 @@ namespace analysis {
         auto lStartNT2 = timepointForLoopStatement(statement, nT2);
 
         std::unordered_set<std::shared_ptr<const program::Variable>> loopConditionVars;
-        std::cout << statement->condition->toString() << std::endl;
         computeVariablesContainedInLoopCondition(statement->condition, loopConditionVars);
 
         auto nameSuffix = "-" + statement->location;

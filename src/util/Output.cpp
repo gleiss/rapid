@@ -15,16 +15,7 @@ namespace util {
   int Output::_commentIndex = std::ios_base::xalloc();
 
   bool Output::initialize() {
-//    std::string path = util::Configuration::instance().outputFile().getValue();
-//    if (path == "") {
-      _stream = &std::cout;
-//    } else {
-//      _stream = new std::ofstream(path, std::ofstream::out);
-//      if (!*_stream) {
-//        std::cerr << "Unable to open file " << path << std::endl;
-//        return false;
-//      }
-//    }
+    _stream = &std::cout;
     return true;
   }
 

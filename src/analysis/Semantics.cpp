@@ -270,9 +270,6 @@ namespace analysis {
             for (const auto& statement : ifElse->ifStatements)
             {
                 auto semanticsOfStatement = generateSemantics(statement.get(), inlinerLeft);
-                
-                std::cout << "Left branch formula:\n" << semanticsOfStatement->label << "\n" << semanticsOfStatement->toSMTLIB(0);
-
                 conjunctsLeft.push_back(semanticsOfStatement);
             }
             for (const auto& statement : ifElse->elseStatements)

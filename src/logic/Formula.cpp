@@ -334,7 +334,7 @@ namespace logic {
     {
         if (vars.empty())
         {
-            return f; // TODO: return copy of f which has label
+            return copyWithLabel(f, label);
         }
         else
         {
@@ -345,7 +345,7 @@ namespace logic {
     {
         if (vars.empty())
         {
-            return f; // TODO: return copy of f which has label
+            return copyWithLabel(f, label);
         }
         else
         {
@@ -416,8 +416,7 @@ namespace logic {
         }
         else if (conj.size() == 1)
         {
-            // TODO: should return copy where the label 'label' is used!
-            return conj.front();
+            return copyWithLabel(conj.front(), label);
         }
         
         return conjunction(conj, label);
@@ -444,8 +443,7 @@ namespace logic {
         }
         else if (disj.size() == 1)
         {
-            // TODO: should return copy where the label 'label' is used!
-            return disj.front();
+            return copyWithLabel(disj.front(), label);
         }
         
         return disjunction(disj, label);
@@ -459,8 +457,7 @@ namespace logic {
         }
         else if (f1->type() == Formula::Type::True)
         {
-            // TODO: should return copy where the label 'label' is used!
-            return f2;
+            return copyWithLabel(f2, label);
         }
         else if (f2->type() == Formula::Type::False)
         {
@@ -474,8 +471,7 @@ namespace logic {
     {
         if (f1->type() == Formula::Type::True)
         {
-            // TODO: should return copy where the label 'label' is used!
-            return f2;
+            return copyWithLabel(f2, label);
         }
         else if (f1->type() == Formula::Type::False)
         {
@@ -483,8 +479,7 @@ namespace logic {
         }
         else if (f2->type() == Formula::Type::True)
         {
-            // TODO: should return copy where the label 'label' is used!
-            return f1;
+            return copyWithLabel(f1, label);
         }
         else if (f2->type() == Formula::Type::False)
         {
@@ -498,8 +493,7 @@ namespace logic {
     {
         if (f->type() == Formula::Type::True || f->type() == Formula::Type::False)
         {
-            // TODO: should return copy where the label 'label' is used!
-            return f;
+            return copyWithLabel(f, label);
         }
 
         return existential(vars, f, label);
@@ -508,8 +502,7 @@ namespace logic {
     {
         if (f->type() == Formula::Type::True || f->type() == Formula::Type::False)
         {
-            // TODO: should return copy where the label 'label' is used!
-            return f;
+            return copyWithLabel(f, label);
         }
 
         return universal(vars, f, label);

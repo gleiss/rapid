@@ -33,8 +33,6 @@ namespace logic {
         };
         virtual Type type() const = 0;
         
-        std::string declareSMTLIB(std::string decl, bool conjecture = false) const;
-        
         virtual std::string toSMTLIB(unsigned indentation = 0) const = 0;
         virtual std::string prettyString(unsigned indentation = 0) const = 0;
         

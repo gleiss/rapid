@@ -89,10 +89,10 @@ namespace util {
         
         Option* getOption(std::string name);
         
-        StringOption outputDir() { return _outputDir; }
-        BooleanOption generateBenchmark() { return _generateBenchmark; }
-        BooleanOption nativeNat() { return _nativeNat; }
-        BooleanOption inlineSemantics() { return _inlineSemantics; }
+        std::string outputDir() { return _outputDir.getValue(); }
+        bool generateBenchmark() { return _generateBenchmark.getValue(); }
+        bool nativeNat() { return _nativeNat.getValue(); }
+        bool inlineSemantics() { return _inlineSemantics.getValue(); }
 
         static Configuration instance() { return _instance; }
         

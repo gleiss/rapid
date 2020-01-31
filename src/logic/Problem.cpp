@@ -23,7 +23,7 @@ namespace logic {
         std::cout << "Generating reasoning task in " << outfileName << "\n";
         std::ofstream outfile (outfileName);
         
-        if(!util::Configuration::instance().generateBenchmark().getValue())
+        if(!util::Configuration::instance().generateBenchmark())
         {
             outfile << preamble;
         }
@@ -37,7 +37,7 @@ namespace logic {
         auto smtlibLogic = "UFDTLIA"; // uninterpreted functions, datatypes and linear integer arithmetic
         
         // if encoding is used as smtlib-benchmark, add meta information
-        if(util::Configuration::instance().generateBenchmark().getValue())
+        if(util::Configuration::instance().generateBenchmark())
         {
             ostr << "(set-info :smt-lib-version 2.6)\n";
             ostr << "(set-logic " << smtlibLogic << ")\n";
@@ -91,7 +91,7 @@ namespace logic {
         assert(conjecture != nullptr);
         
         // if benchmark is used as smtlib-benchmark, replace (assert-not F) by (assert (not F))
-        if(util::Configuration::instance().generateBenchmark().getValue())
+        if(util::Configuration::instance().generateBenchmark())
         {
             ostr
             << "\n; negated conjecture\n"

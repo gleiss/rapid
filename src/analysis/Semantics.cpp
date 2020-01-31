@@ -100,7 +100,7 @@ namespace analysis {
         {
             auto castedLhs = std::static_pointer_cast<const program::IntVariableAccess>(intAssignment->lhs);
             
-            if (util::Configuration::instance().inlineSemantics().getValue())
+            if (util::Configuration::instance().inlineSemantics())
             {
                 inliner.currTimepoint = l1;
                 auto f1 = inliner.handlePersistence(l1, locationToActiveVars.at(l1Name));
@@ -150,7 +150,7 @@ namespace analysis {
             assert(intAssignment->lhs->type() == program::IntExpression::Type::IntArrayApplication);
             auto application = std::static_pointer_cast<const program::IntArrayApplication>(intAssignment->lhs);
 
-            if (util::Configuration::instance().inlineSemantics().getValue())
+            if (util::Configuration::instance().inlineSemantics())
             {
                 inliner.currTimepoint = l1;
                 auto f1 = inliner.handlePersistence(l1, locationToActiveVars.at(l1Name));
@@ -240,7 +240,7 @@ namespace analysis {
         auto lLeftStart = startTimepointForStatement(ifElse->ifStatements.front().get());
         auto lRightStart = startTimepointForStatement(ifElse->elseStatements.front().get());
 
-        if (util::Configuration::instance().inlineSemantics().getValue())
+        if (util::Configuration::instance().inlineSemantics())
         {
             // Part 1: visit start-location
             inliner.currTimepoint = lStart;
@@ -440,7 +440,7 @@ namespace analysis {
 
         auto activeVars = locationToActiveVars.at(lStart0->symbol->name);
 
-        if (util::Configuration::instance().inlineSemantics().getValue())
+        if (util::Configuration::instance().inlineSemantics())
         {
             auto assignedVars = computeAssignedVars(whileStatement);
             // Part 0: custom persistence handling: handle all vars which are 1) active, 2) keep the same value throughout the loop, 3) non-const, and 4) persistent at the loop condition check
@@ -654,7 +654,7 @@ namespace analysis {
     {
         auto l1 = startTimepointForStatement(skipStatement);
 
-        if (util::Configuration::instance().inlineSemantics().getValue())
+        if (util::Configuration::instance().inlineSemantics())
         {
             inliner.currTimepoint = l1;
             return inliner.handlePersistence(l1, locationToActiveVars.at(l1->symbol->name));

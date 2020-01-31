@@ -31,7 +31,7 @@ namespace analysis {
         ValueEvolutionLemmas valueEvolutionLemmas(program, locationToActiveVars, twoTraces);
         valueEvolutionLemmas.generate(items);
         
-        if (!util::Configuration::instance().inlineSemantics().getValue())
+        if (!util::Configuration::instance().inlineSemantics())
         {
             StaticAnalysisLemmas staticAnalysisLemmas(program, locationToActiveVars, twoTraces, programSemantics);
             staticAnalysisLemmas.generate(items);

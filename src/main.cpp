@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
                 auto parserResult = parser::parse(inputFile);
                 
                 // setup outputDir
-                auto outputDir = util::Configuration::instance().outputDir().getValue();
+                auto outputDir = util::Configuration::instance().outputDir();
                 if (outputDir == "")
                 {
                     std::cout << "Error: dir parameter required" << std::endl;

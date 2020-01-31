@@ -104,7 +104,7 @@ namespace logic {
     
     std::shared_ptr<const Formula> Theory::natSub(std::shared_ptr<const Term> t1, std::shared_ptr<const Term> t2, std::string label)
     {
-        bool alreadyDeclared = util::Configuration::instance().nativeNat().getValue();
+        bool alreadyDeclared = util::Configuration::instance().nativeNat();
         return Formulas::predicate("Sub", {t1,t2}, label, alreadyDeclared);
     }
     

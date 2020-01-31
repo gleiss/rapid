@@ -37,7 +37,7 @@ namespace logic {
         }
         else if (s.toSMTLIB() == "Nat")
         {
-            if (util::Configuration::instance().nativeNat().getValue())
+            if (util::Configuration::instance().nativeNat())
             {
                 return "(declare-nat Nat zero s p Sub)\n";
             }

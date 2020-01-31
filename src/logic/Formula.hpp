@@ -253,6 +253,22 @@ namespace logic {
 
         static std::shared_ptr<const Formula> trueFormula(std::string label = "");
         static std::shared_ptr<const Formula> falseFormula(std::string label = "");
+
+        // variants of the above methods which additionally attempt to apply simplifications before generating the formulas
+        // the label 'label' will be set on the result of the simplifications
+        static std::shared_ptr<const Formula> equalitySimp(std::shared_ptr<const Term> left, std::shared_ptr<const Term> right, std::string label = "");
+        static std::shared_ptr<const Formula> disequalitySimp(std::shared_ptr<const Term> left, std::shared_ptr<const Term> right, std::string label = "");
+
+        static std::shared_ptr<const Formula> negationSimp(std::shared_ptr<const Formula> f, std::string label = "");
+
+        static std::shared_ptr<const Formula> conjunctionSimp(std::vector<std::shared_ptr<const Formula>> conj, std::string label = "");
+        static std::shared_ptr<const Formula> disjunctionSimp(std::vector<std::shared_ptr<const Formula>> disj, std::string label = "");
+        
+        static std::shared_ptr<const Formula> implicationSimp(std::shared_ptr<const Formula> f1, std::shared_ptr<const Formula> f2, std::string label = "");
+        static std::shared_ptr<const Formula> equivalenceSimp(std::shared_ptr<const Formula> f1, std::shared_ptr<const Formula> f2, std::string label = "");
+        
+        static std::shared_ptr<const Formula> existentialSimp(std::vector<std::shared_ptr<const Symbol>> vars, std::shared_ptr<const Formula> f, std::string label = "");
+        static std::shared_ptr<const Formula> universalSimp(std::vector<std::shared_ptr<const Symbol>> vars, std::shared_ptr<const Formula> f, std::string label = "");
     };
 }
 

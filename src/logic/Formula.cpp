@@ -361,5 +361,158 @@ namespace logic {
     {
         return std::make_shared<const FalseFormula>(label);
     }
+
+    std::shared_ptr<const Formula> Formulas::equalitySimp(std::shared_ptr<const Term> left, std::shared_ptr<const Term> right, std::string label)
+    {
+        if (*left == *right)
+        {
+            return trueFormula(label);
+        }
+        return equality(left, right, label);
+    }
+    
+    std::shared_ptr<const Formula> Formulas::disequalitySimp(std::shared_ptr<const Term> left, std::shared_ptr<const Term> right, std::string label)
+    {
+        if (*left == *right)
+        {
+            return falseFormula(label);
+        }
+        return disequality(left, right, label);
+    }
+    
+    std::shared_ptr<const Formula>  Formulas::negationSimp(std::shared_ptr<const Formula> f, std::string label)
+    {
+        if (f->type() == Formula::Type::True)
+        {
+            return falseFormula(label);
+        }
+        else if (f->type() == Formula::Type::False)
+        {
+            return trueFormula(label);
+        }
+        
+        return negation(f, label);
+    }
+    
+    std::shared_ptr<const Formula> Formulas::conjunctionSimp(std::vector<std::shared_ptr<const Formula>> conj, std::string label)
+    {
+        for (const auto& conjunct : conj)
+        {
+            if (conjunct->type() == Formula::Type::False)
+            {
+                return falseFormula(label);
+            }
+        }
+
+        auto isTrueFormula = [](std::shared_ptr<const logic::Formula> f) -> bool
+        {
+            return f->type() == Formula::Type::True;
+        };
+        conj.erase(std::remove_if(conj.begin(), conj.end(), isTrueFormula), conj.end());
+
+        if (conj.empty())
+        {
+            return trueFormula(label);
+        }
+        else if (conj.size() == 1)
+        {
+            // TODO: should return copy where the label 'label' is used!
+            return conj.front();
+        }
+        
+        return conjunction(conj, label);
+    }
+    std::shared_ptr<const Formula> Formulas::disjunctionSimp(std::vector<std::shared_ptr<const Formula>> disj, std::string label)
+    {
+        for (const auto& disjunct : disj)
+        {
+            if (disjunct->type() == Formula::Type::True)
+            {
+                return trueFormula(label);
+            }
+        }
+
+        auto isFalseFormula = [](std::shared_ptr<const logic::Formula> f) -> bool
+        {
+            return f->type() == Formula::Type::False;
+        };
+        disj.erase(std::remove_if(disj.begin(), disj.end(), isFalseFormula), disj.end());
+
+        if (disj.empty())
+        {
+            return falseFormula(label);
+        }
+        else if (disj.size() == 1)
+        {
+            // TODO: should return copy where the label 'label' is used!
+            return disj.front();
+        }
+        
+        return disjunction(disj, label);
+    }
+    
+    std::shared_ptr<const Formula> Formulas::implicationSimp(std::shared_ptr<const Formula> f1, std::shared_ptr<const Formula> f2, std::string label)
+    {
+        if (f1->type() == Formula::Type::False || f2->type() == Formula::Type::True)
+        {
+            return trueFormula(label);
+        }
+        else if (f1->type() == Formula::Type::True)
+        {
+            // TODO: should return copy where the label 'label' is used!
+            return f2;
+        }
+        else if (f2->type() == Formula::Type::False)
+        {
+            return negation(f1, label);
+        }
+        
+        return implication(f1, f2, label);
+    }
+
+    std::shared_ptr<const Formula> Formulas::equivalenceSimp(std::shared_ptr<const Formula> f1, std::shared_ptr<const Formula> f2, std::string label)
+    {
+        if (f1->type() == Formula::Type::True)
+        {
+            // TODO: should return copy where the label 'label' is used!
+            return f2;
+        }
+        else if (f1->type() == Formula::Type::False)
+        {
+            return negation(f2, label);
+        }
+        else if (f2->type() == Formula::Type::True)
+        {
+            // TODO: should return copy where the label 'label' is used!
+            return f1;
+        }
+        else if (f2->type() == Formula::Type::False)
+        {
+            return negation(f1, label);
+        }
+
+        return equivalence(f1, f2, label);
+    }
+    
+    std::shared_ptr<const Formula> Formulas::existentialSimp(std::vector<std::shared_ptr<const Symbol>> vars, std::shared_ptr<const Formula> f, std::string label)
+    {
+        if (f->type() == Formula::Type::True || f->type() == Formula::Type::False)
+        {
+            // TODO: should return copy where the label 'label' is used!
+            return f;
+        }
+
+        return existential(vars, f, label);
+    }
+    std::shared_ptr<const Formula> Formulas::universalSimp(std::vector<std::shared_ptr<const Symbol>> vars, std::shared_ptr<const Formula> f, std::string label)
+    {
+        if (f->type() == Formula::Type::True || f->type() == Formula::Type::False)
+        {
+            // TODO: should return copy where the label 'label' is used!
+            return f;
+        }
+
+        return universal(vars, f, label);
+    }
 }
 

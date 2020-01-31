@@ -514,5 +514,70 @@ namespace logic {
 
         return universal(vars, f, label);
     }
+
+    std::shared_ptr<const Formula> Formulas::copyWithLabel(std::shared_ptr<const Formula> f, std::string label)
+    {
+        switch (f->type())
+        {
+            case logic::Formula::Type::Predicate:
+            {
+                auto castedFormula = std::static_pointer_cast<const logic::PredicateFormula>(f);
+                return std::make_shared<const PredicateFormula>(castedFormula->symbol, castedFormula->subterms, label);
+            }
+            case logic::Formula::Type::Equality:
+            {
+                auto castedFormula = std::static_pointer_cast<const logic::EqualityFormula>(f);
+                return equality(castedFormula->left, castedFormula->right, label);
+            }
+            case logic::Formula::Type::Conjunction:
+            {
+                auto castedFormula = std::static_pointer_cast<const logic::ConjunctionFormula>(f);
+                return conjunction(castedFormula->conj, label);
+            }
+            case logic::Formula::Type::Disjunction:
+            {
+                auto castedFormula = std::static_pointer_cast<const logic::DisjunctionFormula>(f);
+                return disjunction(castedFormula->disj, label);
+            }
+            case logic::Formula::Type::Negation:
+            {
+                auto castedFormula = std::static_pointer_cast<const logic::NegationFormula>(f);
+                return negation(castedFormula->f, label);
+            }
+            case logic::Formula::Type::Existential:
+            {
+                auto castedFormula = std::static_pointer_cast<const logic::ExistentialFormula>(f);
+                return existential(castedFormula->vars, castedFormula->f, label);
+            }
+            case logic::Formula::Type::Universal:
+            {
+                auto castedFormula = std::static_pointer_cast<const logic::UniversalFormula>(f);
+                return universal(castedFormula->vars, castedFormula->f, label);
+            }
+            case logic::Formula::Type::Implication:
+            {
+                auto castedFormula = std::static_pointer_cast<const logic::ImplicationFormula>(f);
+                return implication(castedFormula->f1, castedFormula->f2, label);
+            }
+            case logic::Formula::Type::Equivalence:
+            {
+                auto castedFormula = std::static_pointer_cast<const logic::EquivalenceFormula>(f);
+                return equivalence(castedFormula->f1, castedFormula->f2, label);
+            }
+            case logic::Formula::Type::True:
+            {
+                return trueFormula(label);
+            }
+            case logic::Formula::Type::False:
+            {
+                return falseFormula(label);
+            }
+            default:
+            {
+                assert(false);
+                break;
+            }
+        }
+    }
 }
 

@@ -269,6 +269,9 @@ namespace logic {
         
         static std::shared_ptr<const Formula> existentialSimp(std::vector<std::shared_ptr<const Symbol>> vars, std::shared_ptr<const Formula> f, std::string label = "");
         static std::shared_ptr<const Formula> universalSimp(std::vector<std::shared_ptr<const Symbol>> vars, std::shared_ptr<const Formula> f, std::string label = "");
+
+    private:
+        static std::shared_ptr<const Formula> copyWithLabel(std::shared_ptr<const Formula> f, std::string label);
     };
 }
 

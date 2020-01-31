@@ -76,11 +76,13 @@ namespace util {
         _outputDir("-dir", ""),
         _generateBenchmark("generateBenchmark", false),
         _nativeNat("-nat", false),
+        _inlineSemantics("-inlineSemantics", true),
         _allOptions()
         {
             registerOption(&_outputDir);
             registerOption(&_generateBenchmark);
             registerOption(&_nativeNat);
+            registerOption(&_inlineSemantics);
         }
         
         bool setAllValues(int argc, char *argv[]);
@@ -90,6 +92,7 @@ namespace util {
         StringOption outputDir() { return _outputDir; }
         BooleanOption generateBenchmark() { return _generateBenchmark; }
         BooleanOption nativeNat() { return _nativeNat; }
+        BooleanOption inlineSemantics() { return _inlineSemantics; }
 
         static Configuration instance() { return _instance; }
         
@@ -97,6 +100,7 @@ namespace util {
         StringOption _outputDir;
         BooleanOption _generateBenchmark;
         BooleanOption _nativeNat;
+        BooleanOption _inlineSemantics;
 
         std::map<std::string, Option*> _allOptions;
         

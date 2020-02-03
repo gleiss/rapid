@@ -9,13 +9,13 @@
 #include "SemanticsHelper.hpp"
 
 namespace analysis {
-    
+
     void ValueEvolutionLemmas::generateOutputFor(const program::WhileStatement* whileStatement,
                                                                   std::vector<std::shared_ptr<const logic::ProblemItem>>& items)
     {
         auto boundLSymbol = logic::Signature::varSymbol("boundL", logic::Sorts::natSort());
         auto boundRSymbol = logic::Signature::varSymbol("boundR", logic::Sorts::natSort());
-        
+
         auto boundL = logic::Terms::var(boundLSymbol);
         auto boundR = logic::Terms::var(boundRSymbol);
         auto it = iteratorTermForLoop(whileStatement);
@@ -24,16 +24,16 @@ namespace analysis {
         auto lStartboundR = timepointForLoopStatement(whileStatement, boundR);
         auto lStartIt = timepointForLoopStatement(whileStatement, it);
         auto lStartSuccOfIt = timepointForLoopStatement(whileStatement, logic::Theory::natSucc(it));
-        
+
         auto posSymbol = posVarSymbol();
         auto pos = posVar();
-        
+
         auto predicates = {
             std::make_pair(logic::Formulas::equality, std::string("eq")),
             std::make_pair(logic::Theory::intLessEqual, std::string("leq")),
             std::make_pair(logic::Theory::intGreaterEqual, std::string("geq"))
         };
-        
+
         // add lemma for each intVar and each intArrayVar, for each variant
         for (const auto& v : locationToActiveVars.at(locationSymbolForStatement(whileStatement)->name))
         {
@@ -92,23 +92,27 @@ namespace analysis {
 
                     // Part 2A: Add definition for premise:
                     auto premise = logic::Formulas::predicate("Prem" + nameShort, args);
-                    // forall it. (boundL<=it<boundR => v(l(it1,...,itk,it)    ) C v(l(it1,...,itk,s(it))    )), where C in {=,<=,>=} or
-                    // forall it. (boundL<=it<boundR => v(l(it1,...,itk,it),pos) C v(l(it1,...,itk,s(it)),pos)), where C in {=,<=,>=}
+                    // forall it. (( boundL<=it<boundR and IH(it) ) => IH(s(it)) ), where C in {=,<=,>=}
                     auto premiseFormula =
                         logic::Formulas::universal({it->symbol},
                             logic::Formulas::implication(
                                 logic::Formulas::conjunction({
                                     logic::Theory::natSubEq(boundL, it),
-                                    logic::Theory::natSub(it, boundR)
+                                    logic::Theory::natSub(it, boundR),
+                                    predicateFunctor(
+                                        v->isArray ? toTerm(v, lStartBoundL, pos) : toTerm(v,lStartBoundL),
+                                        v->isArray ? toTerm(v,lStartIt, pos) : toTerm(v,lStartIt),
+                                        ""
+                                    )
                                 }),
                                 predicateFunctor(
-                                    v->isArray ? toTerm(v,lStartIt, pos) : toTerm(v,lStartIt),
+                                    v->isArray ? toTerm(v, lStartBoundL, pos) : toTerm(v,lStartBoundL),
                                     v->isArray ? toTerm(v,lStartSuccOfIt, pos) : toTerm(v,lStartSuccOfIt),
                                     ""
                                 )
                             )
                         );
-                    auto premiseDef = 
+                    auto premiseDef =
                         std::make_shared<logic::Definition>(
                             logic::Formulas::universal(argSymbols,
                                 logic::Formulas::equivalence(
@@ -116,7 +120,7 @@ namespace analysis {
                                     premiseFormula
                                 )
                             ),
-                            "Premise for " + name, 
+                            "Premise for " + name,
                             logic::ProblemItem::Visibility::Implicit
                         );
                     items.push_back(premiseDef);
@@ -145,7 +149,7 @@ namespace analysis {
             }
         }
     }
- 
+
     void StaticAnalysisLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::ProblemItem>>& items)
     {
         auto itSymbol = iteratorSymbol(statement);
@@ -158,10 +162,10 @@ namespace analysis {
 
         auto posSymbol = posVarSymbol();
         auto pos = posVar();
-        
+
         auto activeVars = locationToActiveVars.at(statement->location);
         auto assignedVars = computeAssignedVars(statement);
-        
+
         // for each active var, which is not constant but not assigned to in any statement of the loop,
         // add a lemma asserting that var is the same in each iteration as in the first iteration.
         for (const auto& v : activeVars)
@@ -206,7 +210,7 @@ namespace analysis {
                 // PART 2: Add trace lemma
                 auto argSymbols = freeVars;
                 argSymbols.push_back(itSymbol);
-                
+
                 // forall enclosing iterators. {forall pos.} forall it. (it<=n => IH(it))
                 auto lemma =
                     logic::Formulas::universal(argSymbols,
@@ -221,16 +225,16 @@ namespace analysis {
                 {
                     fromItems.push_back(item);
                 }
-                
+
                 items.push_back(std::make_shared<logic::Lemma>(lemma, name, logic::ProblemItem::Visibility::Implicit, fromItems));
             }
         }
     }
-    
+
     std::unordered_set<std::shared_ptr<const program::Variable>> StaticAnalysisLemmas::computeAssignedVars(const program::Statement* statement)
     {
         std::unordered_set<std::shared_ptr<const program::Variable>> assignedVars;
-        
+
         switch (statement->type())
         {
             case program::Statement::Type::IntAssignment:

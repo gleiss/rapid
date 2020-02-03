@@ -43,11 +43,14 @@ namespace analysis {
                 auto semantics = generateSemantics(statement.get(), inliner);
                 conjunctsFunction.push_back(semantics);
             }
-            // handle persistence of last statement of the function
-            auto lEnd = endTimePointMap.at(function->statements.back().get());
-            inliner.currTimepoint = lEnd;
-            auto f = inliner.handlePersistence(lEnd, locationToActiveVars.at(lEnd->symbol->name), "Define referenced terms denoting variable values at " + lEnd->symbol->name);
-            conjunctsFunction.push_back(f);
+            if (util::Configuration::instance().inlineSemantics())
+            {
+                // handle persistence of last statement of the function
+                auto lEnd = endTimePointMap.at(function->statements.back().get());
+                inliner.currTimepoint = lEnd;
+                auto f = inliner.handlePersistence(lEnd, locationToActiveVars.at(lEnd->symbol->name), "Define referenced terms denoting variable values at " + lEnd->symbol->name);
+                conjunctsFunction.push_back(f);
+            }
 
             auto axiomFormula = logic::Formulas::conjunctionSimp(conjunctsFunction);
             if(twoTraces)

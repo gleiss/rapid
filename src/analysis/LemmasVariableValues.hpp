@@ -33,11 +33,11 @@ namespace analysis {
      * - Prem(boundL, boundR) :=
      *   forall it.
      *      =>
-     *         boundL<=it<boundR
-     *         v(l(it)) C v(l(s(it)))
-     *
-     * Soundness: This lemma is equivalent to the following lemma 1A (by inlining the definitions. The first precondition always holds for reflexive C and
-     * the second precondition can be simplified for transitive C):
+     *         and
+     *            boundL<=it<boundR
+     *            v(l(boundL)) C (l(it))
+     *         v(l(boundL)) C (l(s(it)))
+     * Soundness: This lemma is equivalent to the following lemma 1A (by inlining the definitions. The second precondition can be simplified for transitive C):
      * forall boundL,boundR.
      *    =>
      *       and

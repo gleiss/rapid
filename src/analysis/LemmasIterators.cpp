@@ -81,41 +81,47 @@ namespace analysis {
                         freeVars2.push_back(logic::Terms::var(symbol));
                     }
 
-                    // PART 2A: Add definition for strongly-dense
-                    auto stronglyDense = logic::Formulas::predicate("StronglyDense-" + nameShort, freeVars1);
-                    // StronglyDense_v: forall it. (it<n => v(l(s(it)))=v(l(it))+1)         , or
-                    //                  forall it. (it<n => v(l(s(it)),pos)=v(l(it),pos)+1)
-                    auto stronglyDenseFormula =
+                    // PART 2A: Add definition for dense
+                    auto dense = logic::Formulas::predicate("Dense-" + nameShort, freeVars1);
+                    // Dense_v: forall it. (it<n => ( v(l(s(it))    )=v(l(it)    ) or v(l(s(it))    )=v(l(it)    )+1 ) )         , or
+                    //          forall it. (it<n => ( v(l(s(it)),pos)=v(l(it),pos) or v(l(s(it)),pos)=v(l(it),pos)+1 ) )
+                    auto denseFormula =
                         logic::Formulas::universal({itSymbol},
                             logic::Formulas::implication(
                                 logic::Theory::natSub(it, n),
-                                logic::Formulas::equality(
-                                    v->isArray ? toTerm(v,lStartSuccOfIt,pos) : toTerm(v,lStartSuccOfIt),
-                                    logic::Theory::intAddition(
-                                        v->isArray ?  toTerm(v,lStartIt,pos) : toTerm(v,lStartIt),
-                                        logic::Theory::intConstant(1)
+                                logic::Formulas::disjunction({
+                                    logic::Formulas::equality(
+                                        v->isArray ? toTerm(v,lStartSuccOfIt,pos) : toTerm(v,lStartSuccOfIt),
+                                        v->isArray ? toTerm(v,lStartIt,pos) : toTerm(v,lStartIt)
+                                    ),
+                                    logic::Formulas::equality(
+                                        v->isArray ? toTerm(v,lStartSuccOfIt,pos) : toTerm(v,lStartSuccOfIt),
+                                        logic::Theory::intAddition(
+                                            v->isArray ?  toTerm(v,lStartIt,pos) : toTerm(v,lStartIt),
+                                            logic::Theory::intConstant(1)
+                                        )
                                     )
-                                )
+                                })
                             )
                         );
-                    auto stronglyDenseDef =
+                    auto denseDef =
                         std::make_shared<logic::Definition>(
                             logic::Formulas::universal(freeVarSymbols1,
                                 logic::Formulas::equivalence(
-                                    stronglyDense,
-                                    stronglyDenseFormula
+                                    dense,
+                                    denseFormula
                                 )
                             ), 
-                            "StronglyDense for " + name,
+                            "Dense for " + name,
                             logic::ProblemItem::Visibility::Implicit
                         );
 
-                    items.push_back(stronglyDenseDef);
+                    items.push_back(denseDef);
 
                     // PART 2B: Add definition for premise
                     auto premise = logic::Formulas::predicate("Prem-" + nameShort, freeVars2);
-                    // Premise: v(l(zero))<=x     & x<v(l(n))     & StronglyDense_v         , or
-                    //          v(l(zero),pos)<=x & x<v(l(n),pos) & StronglyDense_v
+                    // Premise: v(l(zero))<=x     & x<v(l(n))     & Dense_v         , or
+                    //          v(l(zero),pos)<=x & x<v(l(n),pos) & Dense_v
                     auto premiseFormula =
                         logic::Formulas::conjunction({
                             logic::Theory::intLessEqual(
@@ -126,7 +132,7 @@ namespace analysis {
                                 x,
                                 v->isArray ? toTerm(v,lStartN,pos) : toTerm(v,lStartN)
                             ),
-                            stronglyDense
+                            dense
                         });
                     auto premiseDef =
                         std::make_shared<logic::Definition>(
@@ -161,7 +167,7 @@ namespace analysis {
                         logic::Formulas::universal(freeVarSymbols2,
                             logic::Formulas::implication(premise,conclusion)
                         );
-                    std::vector<std::shared_ptr<const logic::ProblemItem>> fromItems = {inductionAxBCDef, inductionAxICDef, inductionAxiomConDef, inductionAxiom, stronglyDenseDef, premiseDef};
+                    std::vector<std::shared_ptr<const logic::ProblemItem>> fromItems = {inductionAxBCDef, inductionAxICDef, inductionAxiomConDef, inductionAxiom, denseDef, premiseDef};
                     items.push_back(std::make_shared<logic::Lemma>(lemma, name, logic::ProblemItem::Visibility::Implicit, fromItems));
                 }
             }

@@ -24,7 +24,7 @@ namespace analysis {
     
     /*
      * LEMMA 1:
-     * If the (iterator-) variable v is strongly-dense, and the value x is between the value of v at the beginning and at the end of the loop, then there is a timepoint in the loop,
+     * If the (iterator-) variable v is dense, and the value x is between the value of v at the beginning and at the end of the loop, then there is a timepoint in the loop,
      * where v has value x. The value x usually denotes some position in an array.
      * One can see this lemma as a discrete version of the Intermediate Value Theorem for continuous functions.
      * (added for both non-array- and array variables. we ignore array positions and enclosing iterators in this description)
@@ -41,12 +41,14 @@ namespace analysis {
      *   and
      *      v(l(zero))<=x
      *      x<v(l(n))
-     *      StronglyDense_v
-     * - StronglyDense_v :=
+     *      Dense_v
+     * - Dense_v :=
      *   forall it.
      *      =>
      *         it<n
-     *         v(l(s(it)))=v(l(it))+1
+     *         or
+     *            v(l(s(it)))=v(l(it))
+     *            v(l(s(it)))=v(l(it))+1
      *
      * Soundness: The lemma is equivalent (by using modus tollens and inlining definitions) to the following lemma 1A:
      * forall x.
@@ -56,7 +58,9 @@ namespace analysis {
      *          forall it.
      *             =>
      *                it<n
-     *                v(l(s(it)))=v(l(it))+1
+     *                or
+     *                   v(l(s(it)))=v(l(it))
+     *                   v(l(s(it)))=v(l(it))+1
      *          forall it2.
      *             =>
      *                it2<n

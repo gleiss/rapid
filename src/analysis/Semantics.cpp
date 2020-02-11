@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 #include <cassert>
+#include <unordered_set>
 
 #include "Sort.hpp"
 #include "Term.hpp"
@@ -452,7 +453,7 @@ namespace analysis {
 
         if (util::Configuration::instance().inlineSemantics())
         {
-            auto assignedVars = computeAssignedVars(whileStatement);
+            auto assignedVars = AnalysisPreComputation::computeAssignedVars(whileStatement);
             // Part 0: custom persistence handling: handle all vars which are 1) active, 2) keep the same value throughout the loop, 3) non-const, and 4) persistent at the loop condition check
             // note: condition 3) is a requirement since otherwise the defining formulas could be unsound. Condition 4) does not lead to incompleteness of the formalization, since the value of variables, which change their value in the loop, will be defined afterwards anyway.
             std::vector<std::shared_ptr<const program::Variable>> vars;
@@ -677,63 +678,5 @@ namespace analysis {
             auto eq = logic::Formulas::equality(l1, l2, "Ignore any skip statement");
             return eq;
         }
-    }
-
-    std::unordered_set<std::shared_ptr<const program::Variable>> Semantics::computeAssignedVars(const program::Statement* statement)
-    {
-        std::unordered_set<std::shared_ptr<const program::Variable>> assignedVars;
-
-        switch (statement->type())
-        {
-            case program::Statement::Type::IntAssignment:
-            {
-                auto castedStatement = static_cast<const program::IntAssignment*>(statement);
-                // add variable on lhs to assignedVars, independently from whether those vars are simple ones or arrays.
-                if (castedStatement->lhs->type() == program::IntExpression::Type::IntVariableAccess)
-                {
-                    auto access = static_cast<const program::IntVariableAccess*>(castedStatement->lhs.get());
-                    assignedVars.insert(access->var);
-                }
-                else
-                {
-                    assert(castedStatement->lhs->type() == program::IntExpression::Type::IntArrayApplication);
-                    auto arrayAccess = static_cast<const program::IntArrayApplication*>(castedStatement->lhs.get());
-                    assignedVars.insert(arrayAccess->array);
-                }
-                break;
-            }
-            case program::Statement::Type::IfElse:
-            {
-                auto castedStatement = static_cast<const program::IfElse*>(statement);
-                // collect assignedVars from both branches
-                for (const auto& statement : castedStatement->ifStatements)
-                {
-                    auto res = computeAssignedVars(statement.get());
-                    assignedVars.insert(res.begin(), res.end());
-                }
-                for (const auto& statement : castedStatement->elseStatements)
-                {
-                    auto res = computeAssignedVars(statement.get());
-                    assignedVars.insert(res.begin(), res.end());
-                }
-                break;
-            }
-            case program::Statement::Type::WhileStatement:
-            {
-                auto castedStatement = static_cast<const program::WhileStatement*>(statement);
-                // collect assignedVars from body
-                for (const auto& statement : castedStatement->bodyStatements)
-                {
-                    auto res = computeAssignedVars(statement.get());
-                    assignedVars.insert(res.begin(), res.end());
-                }
-                break;
-            }
-            case program::Statement::Type::SkipStatement:
-            {
-                break;
-            }
-        }
-        return assignedVars;
     }
 }

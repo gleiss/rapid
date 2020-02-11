@@ -99,4 +99,62 @@ namespace analysis
         auto nextTimepointForStatement = timepointForLoopStatement(whileStatement, logic::Theory::natSucc(iteratorTermForLoop(whileStatement)));
         addEndTimePointForStatement(lastStatement, nextTimepointForStatement, endTimePointMap);
     }
+
+    std::unordered_set<std::shared_ptr<const program::Variable>> AnalysisPreComputation::computeAssignedVars(const program::Statement* statement)
+    {
+        std::unordered_set<std::shared_ptr<const program::Variable>> assignedVars;
+
+        switch (statement->type())
+        {
+            case program::Statement::Type::IntAssignment:
+            {
+                auto castedStatement = static_cast<const program::IntAssignment*>(statement);
+                // add variable on lhs to assignedVars, independently from whether those vars are simple ones or arrays.
+                if (castedStatement->lhs->type() == program::IntExpression::Type::IntVariableAccess)
+                {
+                    auto access = static_cast<const program::IntVariableAccess*>(castedStatement->lhs.get());
+                    assignedVars.insert(access->var);
+                }
+                else
+                {
+                    assert(castedStatement->lhs->type() == program::IntExpression::Type::IntArrayApplication);
+                    auto arrayAccess = static_cast<const program::IntArrayApplication*>(castedStatement->lhs.get());
+                    assignedVars.insert(arrayAccess->array);
+                }
+                break;
+            }
+            case program::Statement::Type::IfElse:
+            {
+                auto castedStatement = static_cast<const program::IfElse*>(statement);
+                // collect assignedVars from both branches
+                for (const auto& statement : castedStatement->ifStatements)
+                {
+                    auto res = computeAssignedVars(statement.get());
+                    assignedVars.insert(res.begin(), res.end());
+                }
+                for (const auto& statement : castedStatement->elseStatements)
+                {
+                    auto res = computeAssignedVars(statement.get());
+                    assignedVars.insert(res.begin(), res.end());
+                }
+                break;
+            }
+            case program::Statement::Type::WhileStatement:
+            {
+                auto castedStatement = static_cast<const program::WhileStatement*>(statement);
+                // collect assignedVars from body
+                for (const auto& statement : castedStatement->bodyStatements)
+                {
+                    auto res = computeAssignedVars(statement.get());
+                    assignedVars.insert(res.begin(), res.end());
+                }
+                break;
+            }
+            case program::Statement::Type::SkipStatement:
+            {
+                break;
+            }
+        }
+        return assignedVars;
+    }
 }

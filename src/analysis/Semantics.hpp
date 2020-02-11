@@ -3,7 +3,6 @@
 
 #include <memory>
 #include <string>
-#include <unordered_set>
 #include <unordered_map>
 #include <vector>
 
@@ -44,8 +43,6 @@ namespace analysis {
         std::shared_ptr<const logic::Formula> generateSemantics(const program::IfElse* ifElse, SemanticsInliner& inliner);
         std::shared_ptr<const logic::Formula> generateSemantics(const program::WhileStatement* whileStatement, SemanticsInliner& inliner);
         std::shared_ptr<const logic::Formula> generateSemantics(const program::SkipStatement* skipStatement, SemanticsInliner& inliner);
-
-        std::unordered_set<std::shared_ptr<const program::Variable>> computeAssignedVars(const program::Statement* statement);
     };
 }
 #endif

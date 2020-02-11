@@ -7,6 +7,7 @@
 #include "Theory.hpp"
 #include "SymbolDeclarations.hpp"
 #include "SemanticsHelper.hpp"
+#include "AnalysisPreComputation.hpp"
 
 namespace analysis {
 
@@ -34,10 +35,12 @@ namespace analysis {
             std::make_pair(logic::Theory::intGreaterEqual, std::string("geq"))
         };
 
+        auto assignedVars = AnalysisPreComputation::computeAssignedVars(whileStatement);
+
         // add lemma for each intVar and each intArrayVar, for each variant
         for (const auto& v : locationToActiveVars.at(locationSymbolForStatement(whileStatement)->name))
         {
-            if (!v->isConstant)
+            if (!(v->isConstant) && assignedVars.find(v) != assignedVars.end())
             {
                 for (const auto predicate : predicates)
                 {
@@ -170,7 +173,7 @@ namespace analysis {
         // add a lemma asserting that var is the same in each iteration as in the first iteration.
         for (const auto& v : activeVars)
         {
-            if (!v->isConstant && assignedVars.count(v) == 0)
+            if (!v->isConstant && assignedVars.find(v) == assignedVars.end())
             {
                 auto nameSuffix = "-" + v->name + "-" + statement->location;
                 auto name = "value-static" + nameSuffix;

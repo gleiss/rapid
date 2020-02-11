@@ -4,6 +4,7 @@
 #include "Theory.hpp"
 #include "SymbolDeclarations.hpp"
 #include "SemanticsHelper.hpp"
+#include "AnalysisPreComputation.hpp"
 
 namespace analysis {
     
@@ -26,10 +27,12 @@ namespace analysis {
         auto xSymbol = logic::Signature::varSymbol("xInt", logic::Sorts::intSort());
         auto x = logic::Terms::var(xSymbol);
         
+        auto assignedVars = AnalysisPreComputation::computeAssignedVars(statement);
+
         // add lemma for each intVar and each intArrayVar
         for (const auto& v : locationToActiveVars.at(locationSymbolForStatement(statement)->name))
         {
-            if (!v->isConstant)
+            if (!v->isConstant && assignedVars.find(v) != assignedVars.end())
             {
                 if (!v->isArray) // We assume that loop counters are not array elements and therefore only add iterator-lemmas for non-array-vars
                 {
@@ -189,10 +192,12 @@ namespace analysis {
         auto lStartIt1 = timepointForLoopStatement(statement, it1);
         auto lStartIt2 = timepointForLoopStatement(statement, it2);
         
+        auto assignedVars = AnalysisPreComputation::computeAssignedVars(statement);
+
         // add lemma for each intVar
         for (const auto& v : locationToActiveVars.at(locationSymbolForStatement(statement)->name))
         {
-            if (!v->isConstant)
+            if (!v->isConstant && assignedVars.find(v) != assignedVars.end())
             {
                 if (!v->isArray) // We assume that loop counters are not array elements and therefore only add iterator-lemmas for non-array-vars
                 {

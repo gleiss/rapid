@@ -7,6 +7,7 @@
 #include "Theory.hpp"
 #include "SymbolDeclarations.hpp"
 #include "SemanticsHelper.hpp"
+#include "AnalysisPreComputation.hpp"
 
 namespace analysis {
     
@@ -18,10 +19,12 @@ namespace analysis {
         auto posSymbol = posVarSymbol();
         auto pos = posVar();
         
+        auto assignedVars = AnalysisPreComputation::computeAssignedVars(statement);
+
         // add lemma for each intVar and each intArrayVar
         for (const auto& v : locationToActiveVars.at(locationSymbolForStatement(statement)->name))
         {
-            if (!v->isConstant)
+            if (!v->isConstant && assignedVars.find(v) != assignedVars.end())
             {
                 // Note: We use the induction axiom directly as lemma, so the lemma trivially holds and we don't need to prove it.
                 auto inductionAxiomName = "traces-eq-preservation-" + v->name + "-" + statement->location;

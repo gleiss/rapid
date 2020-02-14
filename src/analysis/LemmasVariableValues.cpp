@@ -129,16 +129,11 @@ namespace analysis {
                     items.push_back(premiseDef);
 
                     // Part 2B: Define lemma:
-                    //forall it. (boundL<=it<=boundR => IH(it))
+                    //boundL<=boundR => IH(boundR)
                     auto conclusionFormula =
-                        logic::Formulas::universal({it->symbol},
-                            logic::Formulas::implication(
-                                logic::Formulas::conjunction({
-                                    logic::Theory::natSubEq(boundL, it),
-                                    logic::Theory::natSubEq(it, boundR)
-                                }),
-                                inductionHypothesis(it)
-                            )
+                        logic::Formulas::implication(
+                            logic::Theory::natSubEq(boundL, boundR),
+                            inductionHypothesis(boundR)
                         );
                     // forall enclosingIterators: forall boundL,boundR. (Premise => Conclusion) or
                     // forall enclosingIterators: forall boundL,boundR. forall pos. (Premise => Conclusion)

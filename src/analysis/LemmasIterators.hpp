@@ -36,6 +36,7 @@ namespace analysis {
      *          and
      *             it2<n
      *             v(l(it2))=x
+     *             v(l(s(it2)))=v(l(it2))+1
      * where:
      * - Prem(x) :=
      *   and
@@ -63,7 +64,9 @@ namespace analysis {
      *                   v(l(s(it)))=v(l(it))+1
      *          forall it2.
      *             =>
-     *                it2<n
+     *                and
+     *                   it2<n
+     *                   v(l(s(it2)))=v(l(it2))+1
      *                v(l(it2))!=x
      *       v(l(n))<=x
      * Lemma 1A follows from the following lemma 1B:

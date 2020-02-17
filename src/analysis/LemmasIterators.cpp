@@ -19,6 +19,7 @@ namespace analysis {
         auto lStartIt = timepointForLoopStatement(statement, it);
         auto lStartIt2 = timepointForLoopStatement(statement, it2);
         auto lStartSuccOfIt = timepointForLoopStatement(statement, logic::Theory::natSucc(it));
+        auto lStartSuccOfIt2 = timepointForLoopStatement(statement, logic::Theory::natSucc(it2));
         auto lStartZero = timepointForLoopStatement(statement, logic::Theory::natZero());
         auto lStartN = timepointForLoopStatement(statement, n);
         
@@ -152,16 +153,23 @@ namespace analysis {
                     items.push_back(premiseDef);
 
                     // PART 2C: Add lemma
-                    // Conclusion: exists it2. (v(l(it2))=x     & it2<n) or
-                    //             exists it2. (v(l(it2),pos)=x & it2<n)
+                    // Conclusion: exists it2. (it2<n & v(l(it2)    )=x & v(l(s(it2))    )=v(l(it2)    )+1) or
+                    //             exists it2. (it2<n & v(l(it2),pos)=x & v(l(s(it2)),pos)=v(l(it2),pos)+1)
                     auto conclusion =
                         logic::Formulas::existential({it2Symbol},
                             logic::Formulas::conjunction({
+                                logic::Theory::natSub(it2,n),
                                 logic::Formulas::equality(
                                     v->isArray ? toTerm(v,lStartIt2,pos) : toTerm(v,lStartIt2),
                                     x
                                 ),
-                                logic::Theory::natSub(it2,n)
+                                logic::Formulas::equality(
+                                    v->isArray ? toTerm(v,lStartSuccOfIt2,pos) : toTerm(v,lStartSuccOfIt2),
+                                    logic::Theory::intAddition(
+                                        v->isArray ? toTerm(v,lStartIt2,pos) : toTerm(v,lStartIt2),
+                                        logic::Theory::intConstant(1)
+                                    )
+                                ),
                             })
                         );
                     // forall enclosingIterators. forall x. (premise => conclusion) or

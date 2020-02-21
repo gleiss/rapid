@@ -23,28 +23,33 @@ namespace logic {
         friend class Signature;
         
     private:
-        Symbol(std::string name, const Sort* rngSort, bool noDeclaration) :
+        Symbol(std::string name, const Sort* rngSort, bool isLemmaPredicate, bool noDeclaration) :
         name(name),
         argSorts(),
         rngSort(rngSort),
+        isLemmaPredicate(isLemmaPredicate),
         noDeclaration(noDeclaration)
         {
             assert(!name.empty());
+            assert(!isLemmaPredicate || isPredicateSymbol());
         }
 
-        Symbol(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration) :
+        Symbol(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool isLemmaPredicate, bool noDeclaration) :
         name(name),
         argSorts(std::move(argSorts)),
         rngSort(rngSort),
+        isLemmaPredicate(isLemmaPredicate),
         noDeclaration(noDeclaration)
         {
             assert(!name.empty());
+            assert(!isLemmaPredicate || isPredicateSymbol());
         }
      
     public:
         const std::string name;
         const std::vector<const Sort*> argSorts;
         const Sort* rngSort;
+        const bool isLemmaPredicate; // lemma predicates will be annotated in the smtlib-output, so that Vampire can treat them differently
         const bool noDeclaration; // true iff the symbol needs no declaration in smtlib (i.e. true only for interpreted symbols and variables)
 
         bool isPredicateSymbol() const { return rngSort == Sorts::boolSort(); }
@@ -89,7 +94,7 @@ namespace logic {
         // construct new symbols
         static std::shared_ptr<const Symbol> add(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration=false);
         static std::shared_ptr<const Symbol> fetch(std::string name);
-        static std::shared_ptr<const Symbol> fetchOrAdd(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration=false);
+        static std::shared_ptr<const Symbol> fetchOrAdd(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool isLemmaPredicate=false, bool noDeclaration=false);
 
         // check that variable doesn't use name which already occurs in Signature
         // return Symbol without adding it to Signature

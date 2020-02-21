@@ -146,9 +146,9 @@ namespace logic {
             args2.push_back(Terms::var(varSymbol));
         }
 
-        auto baseCase = Formulas::predicate("BC-" + shortName, args1);
-        auto inductiveCase = Formulas::predicate("IC-" + shortName, args2);
-        auto conclusion = Formulas::predicate("Con-" + shortName, args2);
+        auto baseCase = Formulas::lemmaPredicate("BC-" + shortName, args1);
+        auto inductiveCase = Formulas::lemmaPredicate("IC-" + shortName, args2);
+        auto conclusion = Formulas::lemmaPredicate("Con-" + shortName, args2);
         
         auto baseCaseDef =
             Formulas::universal(argSymbols1,
@@ -231,9 +231,9 @@ namespace logic {
             freeVars.push_back(Terms::var(varSymbol));
         }
 
-        auto baseCase = Formulas::predicate("BC-" + shortName, freeVars);
-        auto inductiveCase = Formulas::predicate("IC-" + shortName, freeVars);
-        auto conclusion = Formulas::predicate("Con-" + shortName, freeVars);
+        auto baseCase = Formulas::lemmaPredicate("BC-" + shortName, freeVars);
+        auto inductiveCase = Formulas::lemmaPredicate("IC-" + shortName, freeVars);
+        auto conclusion = Formulas::lemmaPredicate("Con-" + shortName, freeVars);
 
         auto baseCaseDef =
             Formulas::universal(freeVarSymbols,

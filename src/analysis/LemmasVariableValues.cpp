@@ -94,7 +94,7 @@ namespace analysis {
                     }
 
                     // Part 2A: Add definition for premise:
-                    auto premise = logic::Formulas::predicate("Prem" + nameShort, args);
+                    auto premise = logic::Formulas::lemmaPredicate("Prem" + nameShort, args);
                     // forall it. (( boundL<=it<boundR and IH(it) ) => IH(s(it)) ), where C in {=,<=,>=}
                     auto premiseFormula =
                         logic::Formulas::universal({it->symbol},

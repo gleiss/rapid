@@ -77,12 +77,14 @@ namespace util {
         _generateBenchmark("generateBenchmark", false),
         _nativeNat("-nat", false),
         _inlineSemantics("-inlineSemantics", true),
+        _lemmaPredicates("-lemmaPredicates", false),
         _allOptions()
         {
             registerOption(&_outputDir);
             registerOption(&_generateBenchmark);
             registerOption(&_nativeNat);
             registerOption(&_inlineSemantics);
+            registerOption(&_lemmaPredicates);
         }
         
         bool setAllValues(int argc, char *argv[]);
@@ -93,6 +95,7 @@ namespace util {
         bool generateBenchmark() { return _generateBenchmark.getValue(); }
         bool nativeNat() { return _nativeNat.getValue(); }
         bool inlineSemantics() { return _inlineSemantics.getValue(); }
+        bool lemmaPredicates() { return _lemmaPredicates.getValue(); }
 
         static Configuration instance() { return _instance; }
         
@@ -101,6 +104,7 @@ namespace util {
         BooleanOption _generateBenchmark;
         BooleanOption _nativeNat;
         BooleanOption _inlineSemantics;
+        BooleanOption _lemmaPredicates;
 
         std::map<std::string, Option*> _allOptions;
         

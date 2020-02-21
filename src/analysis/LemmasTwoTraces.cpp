@@ -179,7 +179,7 @@ namespace analysis {
             freeVars.push_back(logic::Terms::var(symbol));
         }
 
-        auto inductiveCase = logic::Formulas::predicate("IC-" + nameShort, freeVars);
+        auto inductiveCase = logic::Formulas::lemmaPredicate("IC-" + nameShort, freeVars);
 
         // forall it.
         //    =>

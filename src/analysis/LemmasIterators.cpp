@@ -86,7 +86,7 @@ namespace analysis {
                     }
 
                     // PART 2A: Add definition for dense
-                    auto dense = logic::Formulas::predicate("Dense-" + nameShort, freeVars1);
+                    auto dense = logic::Formulas::lemmaPredicate("Dense-" + nameShort, freeVars1);
                     // Dense_v: forall it. (it<n => ( v(l(s(it))    )=v(l(it)    ) or v(l(s(it))    )=v(l(it)    )+1 ) )         , or
                     //          forall it. (it<n => ( v(l(s(it)),pos)=v(l(it),pos) or v(l(s(it)),pos)=v(l(it),pos)+1 ) )
                     auto denseFormula =
@@ -123,7 +123,7 @@ namespace analysis {
                     items.push_back(denseDef);
 
                     // PART 2B: Add definition for premise
-                    auto premise = logic::Formulas::predicate("Prem-" + nameShort, freeVars2);
+                    auto premise = logic::Formulas::lemmaPredicate("Prem-" + nameShort, freeVars2);
                     // Premise: v(l(zero))<=x     & x<v(l(n))     & Dense_v         , or
                     //          v(l(zero),pos)<=x & x<v(l(n),pos) & Dense_v
                     auto premiseFormula =
@@ -246,7 +246,7 @@ namespace analysis {
                     {
                         freeVars.push_back(logic::Terms::var(symbol));
                     }
-                    auto stronglyDense = logic::Formulas::predicate("StronglyDense-" + nameShort, freeVars);
+                    auto stronglyDense = logic::Formulas::lemmaPredicate("StronglyDense-" + nameShort, freeVars);
 
                     // StronglyDense_v: forall it. (it<n => v(l(s(it)))=v(l(it))+1)
                     auto stronglyDenseFormula =

@@ -236,6 +236,7 @@ namespace logic {
     {
     public:
         static std::shared_ptr<const Formula> predicate(std::string name, std::vector<std::shared_ptr<const Term>> subterms, std::string label = "", bool noDeclaration=false);
+        static std::shared_ptr<const Formula> lemmaPredicate(std::string name, std::vector<std::shared_ptr<const Term>> subterms, std::string label = "");
         
         static std::shared_ptr<const Formula> equality(std::shared_ptr<const Term> left, std::shared_ptr<const Term> right, std::string label = "");
         static std::shared_ptr<const Formula> disequality(std::shared_ptr<const Term> left, std::shared_ptr<const Term> right, std::string label = "");

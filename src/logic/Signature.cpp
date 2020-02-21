@@ -31,13 +31,14 @@ namespace logic {
                 ret += "(assert (forall ((it Nat)) (Sub zero (s it))))\n";
                 return ret;
             }
-            if (argSorts.size() == 0)
+            if (argSorts.size() == 0 && !(isLemmaPredicate && util::Configuration::instance().lemmaPredicates()))
             {
                 return "(declare-const " + toSMTLIB() + " " + rngSort->toSMTLIB() + ")\n";
             }
             else
             {
-                std::string res = "(declare-fun " + toSMTLIB() + " (";
+                std::string res = (isLemmaPredicate && util::Configuration::instance().lemmaPredicates()) ? "(declare-lemma-predicate " : "(declare-fun ";
+                res += toSMTLIB() + " (";
                 for (int i=0; i < argSorts.size(); ++i)
                 {
                     res += argSorts[i]->toSMTLIB() + (i+1 == argSorts.size() ? "" : " ");
@@ -87,7 +88,7 @@ namespace logic {
         // there must be no symbol with name name already added
         assert(_signature.count(name) == 0);
         
-        auto pair = _signature.insert(std::make_pair(name,std::unique_ptr<Symbol>(new Symbol(name, argSorts, rngSort, noDeclaration))));
+        auto pair = _signature.insert(std::make_pair(name,std::unique_ptr<Symbol>(new Symbol(name, argSorts, rngSort, false, noDeclaration))));
         assert(pair.second); // must succeed since we checked that no such symbols existed before the insertion
 
         auto symbol = pair.first->second;
@@ -103,16 +104,16 @@ namespace logic {
         return it->second;
     }
     
-    std::shared_ptr<const Symbol> Signature::fetchOrAdd(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool noDeclaration)
+    std::shared_ptr<const Symbol> Signature::fetchOrAdd(std::string name, std::vector<const Sort*> argSorts, const Sort* rngSort, bool isLemmaPredicate, bool noDeclaration)
     {
-        auto pair = _signature.insert(std::make_pair(name, std::shared_ptr<Symbol>(new Symbol(name, argSorts, rngSort, noDeclaration))));
+        auto pair = _signature.insert(std::make_pair(name, std::shared_ptr<Symbol>(new Symbol(name, argSorts, rngSort, isLemmaPredicate, noDeclaration))));
         auto symbol = pair.first->second;
 
         if (pair.second)
         {
             _signatureOrderedByInsertion.push_back(symbol);
         }
-        // if a symbol with the name already exist, make sure it has the same sorts
+        // if a symbol with the name already exist, make sure it has the same sorts and attributes
         else
         {
             assert(argSorts.size() == symbol->argSorts.size());
@@ -121,6 +122,7 @@ namespace logic {
                 assert(argSorts[i] == symbol->argSorts[i]);
             }
             assert(rngSort = symbol->rngSort);
+            assert(isLemmaPredicate == symbol->isLemmaPredicate);
             assert(noDeclaration == symbol->noDeclaration);
         }
         return symbol;
@@ -131,7 +133,7 @@ namespace logic {
         // there must be no symbol with name name already added
         assert(_signature.count(name) == 0);
         
-        return std::shared_ptr<Symbol>(new Symbol(name, rngSort, true));
+        return std::shared_ptr<Symbol>(new Symbol(name, rngSort, false, true));
     }
 
 }

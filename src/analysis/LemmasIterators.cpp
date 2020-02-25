@@ -37,9 +37,9 @@ namespace analysis {
             {
                 if (!v->isArray) // We assume that loop counters are not array elements and therefore only add iterator-lemmas for non-array-vars
                 {
-                    auto nameSuffix = "-" + v->name + "-" + statement->location;
-                    auto name = "iterator-intermediateValue" + nameSuffix;
-                    auto nameShort = "Intermed" + nameSuffix;
+                    auto nameSuffix = v->name + "-" + statement->location;
+                    auto name = "iterator-intermediateValue-" + nameSuffix;
+                    auto nameShort = "Intermed-" + nameSuffix;
                     auto inductionAxiomName = "induction-axiom-" + name;
                     auto inductionAxiomNameShort = "Ax-" + nameShort;
 
@@ -86,7 +86,7 @@ namespace analysis {
                     }
 
                     // PART 2A: Add definition for dense
-                    auto dense = logic::Formulas::lemmaPredicate("Dense-" + nameShort, freeVars1);
+                    auto dense = logic::Formulas::lemmaPredicate("Dense-" + nameSuffix, freeVars1);
                     // Dense_v: forall it. (it<n => ( v(l(s(it))    )=v(l(it)    ) or v(l(s(it))    )=v(l(it)    )+1 ) )         , or
                     //          forall it. (it<n => ( v(l(s(it)),pos)=v(l(it),pos) or v(l(s(it)),pos)=v(l(it),pos)+1 ) )
                     auto denseFormula =
@@ -116,7 +116,7 @@ namespace analysis {
                                     denseFormula
                                 )
                             ), 
-                            "Dense for " + name,
+                            "Dense for " + nameSuffix,
                             logic::ProblemItem::Visibility::Implicit
                         );
 
@@ -198,6 +198,7 @@ namespace analysis {
         auto lStartIt = timepointForLoopStatement(statement, it);
         auto lStartSuccOfIt = timepointForLoopStatement(statement, logic::Theory::natSucc(it));
         auto lStartIt1 = timepointForLoopStatement(statement, it1);
+        auto lStartSuccOfIt1 = timepointForLoopStatement(statement, logic::Theory::natSucc(it1));
         auto lStartIt2 = timepointForLoopStatement(statement, it2);
         
         auto assignedVars = AnalysisPreComputation::computeAssignedVars(statement);
@@ -209,9 +210,9 @@ namespace analysis {
             {
                 if (!v->isArray) // We assume that loop counters are not array elements and therefore only add iterator-lemmas for non-array-vars
                 {
-                    auto nameSuffix = "-" + v->name + "-" + statement->location;
-                    auto name = "iterator-injectivity" + nameSuffix;
-                    auto nameShort = "Injec" + nameSuffix;
+                    auto nameSuffix = v->name + "-" + statement->location;
+                    auto name = "iterator-injectivity-" + nameSuffix;
+                    auto nameShort = "Injec-" + nameSuffix;
                     auto inductionAxiomName = "induction-axiom-" + name;
                     auto inductionAxiomNameShort = "Ax-" + nameShort;
 
@@ -246,45 +247,30 @@ namespace analysis {
                     {
                         freeVars.push_back(logic::Terms::var(symbol));
                     }
-                    auto stronglyDense = logic::Formulas::lemmaPredicate("StronglyDense-" + nameShort, freeVars);
-
-                    // StronglyDense_v: forall it. (it<n => v(l(s(it)))=v(l(it))+1)
-                    auto stronglyDenseFormula =
-                        logic::Formulas::universal({itSymbol},
-                            logic::Formulas::implication(
-                                logic::Theory::natSub(it, n),
-                                logic::Formulas::equality(
-                                    toTerm(v,lStartSuccOfIt),
-                                    logic::Theory::intAddition(
-                                        toTerm(v,lStartIt),
-                                        logic::Theory::intConstant(1)
-                                    )
-                                )
-                            )
-                        );
-                    auto stronglyDenseDef =
-                        std::make_shared<logic::Definition>(
-                            logic::Formulas::universal(freeVarSymbols,
-                                logic::Formulas::equivalence(
-                                    stronglyDense,
-                                    stronglyDenseFormula
-                                )
-                            ),
-                            "StronglyDense for " + name,
-                            logic::ProblemItem::Visibility::Implicit
-                        );
-
-                    items.push_back(stronglyDenseDef);
+                    auto dense = logic::Formulas::lemmaPredicate("Dense-" + nameSuffix, freeVars);
+                    // TODO: refactor, currently depends on the following facts
+                    // - the dense-definition is generated as part of the intermediate-value lemma
+                    // - the intermediate-value-lemma is generated before the corresponding injectivity-lemma is generated
+                    // - the name of the definition matches the name used here.
+                    auto denseDefName = "Dense for " + nameSuffix;
 
                     /* Premise:
                      *    and
-                     *       StronglyDense_v
+                     *       Dense_v
+                     *       v(l(s(it1))) = v(l(it1)) + 1
                      *       it1<it2
                      *       it2<=n
                      */
                     auto premise =
                         logic::Formulas::conjunction({
-                            stronglyDense,
+                            dense,
+                            logic::Formulas::equality(
+                                toTerm(v, lStartSuccOfIt1),
+                                logic::Theory::intAddition(
+                                    toTerm(v, lStartIt1),
+                                    logic::Theory::intConstant(1)
+                                )
+                            ),
                             logic::Theory::natSub(it1,it2),
                             logic::Theory::natSubEq(it2,n),
                         });
@@ -304,7 +290,7 @@ namespace analysis {
                             )
                         );
 
-                    std::vector<std::string> fromItems = {inductionAxBCDef->name, inductionAxICDef->name, inductionAxiomConDef->name, inductionAxiom->name, stronglyDenseDef->name};
+                    std::vector<std::string> fromItems = {inductionAxBCDef->name, inductionAxICDef->name, inductionAxiomConDef->name, inductionAxiom->name, denseDefName};
                     items.push_back(std::make_shared<logic::Lemma>(lemma, name, logic::ProblemItem::Visibility::Implicit, fromItems));
                 }
             }

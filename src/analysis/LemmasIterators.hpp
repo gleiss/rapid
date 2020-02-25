@@ -110,16 +110,19 @@ namespace analysis {
      * LEMMA 2:
      * =>
      *    and
-     *       StronglyDense_v
+     *       Dense_v
+     *       v(l(s(it1)))=v(l(it1))+1
      *       it1<it2
      *       it2<=n
      *    v(l(it1))!=v(l(it2))
      * where:
-     * - StronglyDense_v :=
+     * - Dense_v :=
      *   forall it.
      *      =>
      *         it<n
-     *         v(l(s(it)))=v(l(it))+1
+     *         or
+     *            v(l(s(it)))=v(l(it))
+     *            v(l(s(it)))=v(l(it))+1
      *
      * Soundness:
      * This lemma uses the following instance of the standard induction axiom

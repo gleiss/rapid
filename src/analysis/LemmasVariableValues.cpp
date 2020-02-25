@@ -141,7 +141,7 @@ namespace analysis {
                         logic::Formulas::universal(argSymbols,
                             logic::Formulas::implication(premise, conclusionFormula)
                         );
-                    std::vector<std::shared_ptr<const logic::ProblemItem>> fromItems = {inductionAxBCDef, inductionAxICDef, inductionAxiomConDef, inductionAxiom, premiseDef};
+                    std::vector<std::string> fromItems = {inductionAxBCDef->name, inductionAxICDef->name, inductionAxiomConDef->name, inductionAxiom->name, premiseDef->name};
                     items.push_back(std::make_shared<logic::Lemma>(lemma, name, logic::ProblemItem::Visibility::Implicit, fromItems));
                 }
             }
@@ -218,10 +218,10 @@ namespace analysis {
                         )
                     );
 
-                std::vector<std::shared_ptr<const logic::ProblemItem>> fromItems = {inductionAxBCDef, inductionAxICDef, inductionAxiomConDef, inductionAxiom};
+                std::vector<std::string> fromItems = {inductionAxBCDef->name, inductionAxICDef->name, inductionAxiomConDef->name, inductionAxiom->name};
                 for (auto& item : programSemantics)
                 {
-                    fromItems.push_back(item);
+                    fromItems.push_back(item->name);
                 }
 
                 items.push_back(std::make_shared<logic::Lemma>(lemma, name, logic::ProblemItem::Visibility::Implicit, fromItems));

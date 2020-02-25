@@ -230,10 +230,10 @@ namespace analysis {
                     logic::Formulas::equality(nT1,nT2)
                 )
             );
-        std::vector<std::shared_ptr<const logic::ProblemItem>> fromItems = {inductionAxBCDef, inductionAxICDef, inductionAxiomConDef, inductionAxiom, inductiveCaseDef};
+        std::vector<std::string> fromItems = {inductionAxBCDef->name, inductionAxICDef->name, inductionAxiomConDef->name, inductionAxiom->name, inductiveCaseDef->name};
         for (auto& item : programSemantics)
         {
-            fromItems.push_back(item);
+            fromItems.push_back(item->name);
         }
         items.push_back(std::make_shared<logic::Lemma>(lemma, name, logic::ProblemItem::Visibility::Implicit, fromItems));
     }

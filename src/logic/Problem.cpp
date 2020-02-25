@@ -151,7 +151,7 @@ namespace logic {
                     else 
                     {
                         // explicit mode: collect all axioms, which are either visible for explicit mode or occur in fromItems
-                        if (curr->visibility == ProblemItem::Visibility::All || std::find(item->fromItems.begin(), item->fromItems.end(), curr) != item->fromItems.end())
+                        if (curr->visibility == ProblemItem::Visibility::All || std::find(item->fromItems.begin(), item->fromItems.end(), curr->name) != item->fromItems.end())
                         {
                             if ((curr->type == ProblemItem::Type::Axiom || curr->type == ProblemItem::Type::Definition))
                             {

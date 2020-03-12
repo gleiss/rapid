@@ -16,10 +16,9 @@ func main()
 	}
 }
 
-(conjecture
-	(=>
-		(<= 0 blength)
-		(= (alength main_end) blength)
+(axiom
+	(forall ((it Nat))
+		(<= (alength (l11 it)) (i (l11 it)))
 	)
 )
 

@@ -5,12 +5,10 @@ func main()
 
 	const Int length;
 
-	Int current;
-
 	Int i = 0;
 	while(i < length)
 	{
-		current = a[i];
+		Int current = a[i];
 		a[i] = b[i];
 		b[i] = current;
 		i = i + 1;
@@ -25,10 +23,11 @@ func main()
 				(<= 0 pos)
 				(< pos length)
 			)
-			(= (a main_end pos) (b l10 pos))
+			(= (a main_end pos) (b l8 pos))
 		)
 	)
 )
+
 (conjecture
 	(forall ((pos Int))
 		(=>
@@ -37,7 +36,7 @@ func main()
 				(<= 0 pos)
 				(< pos length)
 			)
-			(= (b main_end pos) (a l10 pos))
+			(= (b main_end pos) (a l8 pos))
 		)
 	)
 )

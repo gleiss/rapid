@@ -99,7 +99,7 @@ YY_DECL;
   LEMMA         "lemma"
   CONJECTURE    "conjecture"
   CONST         "const"
-  TWOTRACES     "(two-traces)"
+  SETTRACES     "set-traces"
 ;
 %token <std::string> PROGRAM_ID "program identifier"
 %token <std::string> SMTLIB_ID "smtlib identifier"
@@ -159,15 +159,23 @@ problem:
     context.problemItems = $3;
   }
 |
-  TWOTRACES
+  LPAR SETTRACES INTEGER RPAR
   {
+    if ($3 < 1)
+    {
+      error(@3, "number of traces has to be greater than or equal to 1");
+    }
+    if ($3 != 2)
+    {
+      error(@3, "not supported yet");
+    }
     context.twoTraces = true;
     logic::Theory::declareTheories();
     declareSymbolsForTraces();
   }
   program smtlib_problemitem_list 
   {
-        context.problemItems = $4;
+        context.problemItems = $7;
   }
 ;
 

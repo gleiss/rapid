@@ -1,7 +1,7 @@
 // The program represents RSA exponentiation. The variables i and blenght are of low confidentiality.
 // The property expresses non-interference: if variables of low confidentiality have the same value initially, they should have the same value at the end of the program
 // In this case, the property should hold
-(two-traces)
+(set-traces 2)
 func main()
 {
 	const Int blength;

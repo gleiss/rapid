@@ -1,5 +1,5 @@
 
-(two-traces)
+(set-traces 2)
 
 func main()
 {

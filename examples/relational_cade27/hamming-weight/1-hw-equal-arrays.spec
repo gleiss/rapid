@@ -1,6 +1,6 @@
 // Variation 1: The Hamming weight of two identical arrays is the same.
 
-(two-traces)
+(set-traces 2)
 func main()
 {
 	const Int alength;

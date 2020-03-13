@@ -1,6 +1,6 @@
 // Variation 2: The Hamming weight of two identical arrays + 2 elements which have values swapped in their respective traces is identical
 
-(two-traces)
+(set-traces 2)
 func main()
 {
 	const Int alength;

@@ -1,7 +1,7 @@
 // we only have the inequality at the end, so if we would only do forward propagation,
 // then we need to propagate equalities over the second loop, which is potentially
 // simpler than propagating inequalities.
-(two-traces)
+(set-traces 2)
 func main()
 {
   const Int[] a;

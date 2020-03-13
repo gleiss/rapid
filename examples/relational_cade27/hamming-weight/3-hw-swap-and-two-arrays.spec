@@ -1,6 +1,6 @@
 // Variation 3: Example 2 is extended by adding the Hamming weight of an another array b (identical in both traces). 
 
-(two-traces)
+(set-traces 2)
 func main()
 {
 	const Int alength;

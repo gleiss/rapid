@@ -1,7 +1,7 @@
 // if the array is the same in both runs,
 // and if z differs at most by k in both runs,
 // then the sum of the array-elements and of z differs at most by k.
-(two-traces)
+(set-traces 2)
 func main()
 {
   const Int[] a;

@@ -1,6 +1,6 @@
 // Variation 4: The fact that the array elements at index x and y
 // are swapped in the two traces is expressed in the conjecture's precondition.
-(two-traces)
+(set-traces 2)
 func main()
 {
 	const Int alength;

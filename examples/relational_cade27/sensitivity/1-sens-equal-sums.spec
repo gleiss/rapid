@@ -1,6 +1,6 @@
 // simplest version: if the array is the same in both runs, then summing all elements gives the same result in both runs
 
-(two-traces)
+(set-traces 2)
 func main()
 {
   const Int[] a;

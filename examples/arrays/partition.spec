@@ -1,3 +1,12 @@
+// Properties
+// 1) each element in b is greater or equal 0
+// 2) each element in c is smaller than 0
+// 3) each element in b is a copy of some element in a
+// 4) each element in c is a copy of some element in a
+// 5) for each element in a, which is greater or equal 0, there exists a copy of that element in b
+// 6) for each element in a, which is smaller than 0, there exists a copy of that element in c
+// 7) for each element in a, there exists a copy of that element either in b or in c.
+
 func main()
 {
   const Int[] a;
@@ -11,17 +20,17 @@ func main()
 	Int i = 0;
 	while(i < alength)
 	{
-    if(a[i] >= 0)
-    {
-      b[blength] = a[i];
-      blength = blength + 1;
-    }
-    else
-    {
-      c[clength] = a[i];
-      clength = clength + 1;
-    }
-    i = i + 1;
+      if(a[i] >= 0)
+      {
+        b[blength] = a[i];
+        blength = blength + 1;
+      }
+      else
+      {
+        c[clength] = a[i];
+        clength = clength + 1;
+      }
+      i = i + 1;
 	}
 }
 
@@ -57,15 +66,41 @@ func main()
       (and
         (<= 0 alength)
         (<= 0 pos)
+        (< pos (blength main_end))
+      )
+      (exists ((pos2 Int))
+        (= (b main_end pos) (a pos2))
+      )
+    )
+  )
+)
+
+(conjecture
+  (forall ((pos Int))
+    (=>
+      (and
+        (<= 0 alength)
+        (<= 0 pos)
+        (< pos (clength main_end))
+      )
+      (exists ((pos2 Int))
+        (= (c main_end pos) (a pos2))
+      )
+    )
+  )
+)
+
+(conjecture
+  (forall ((pos Int))
+    (=>
+      (and
+        (<= 0 alength)
+        (<= 0 pos)
         (< pos alength)
         (<= 0 (a pos))
       )
       (exists ((pos2 Int))
-        (and
-          (<= 0 pos2)
-          (< pos2 (blength main_end))
-          (= (b main_end pos) (a pos))
-        )
+        (= (b main_end pos2) (a pos))
       )
     )
   )
@@ -81,13 +116,28 @@ func main()
         (< (a pos) 0)
       )
       (exists ((pos2 Int))
-        (and
-          (<= 0 pos2)
-          (< pos2 (clength main_end))
-          (= (c main_end pos) (a pos))
-        )
+        (= (c main_end pos2) (a pos))
       )
     )
   )
 )
 
+(conjecture
+  (forall ((pos Int))
+    (=>
+      (and
+        (<= 0 alength)
+        (<= 0 pos)
+        (< pos alength)
+      )
+      (or
+        (exists ((pos2 Int))
+          (= (b main_end pos2) (a pos))
+        )
+        (exists ((pos2 Int))
+          (= (c main_end pos2) (a pos))
+        )
+      )
+    )
+  )
+)

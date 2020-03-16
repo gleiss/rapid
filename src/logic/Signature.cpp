@@ -116,7 +116,11 @@ namespace logic {
         // if a symbol with the name already exist, make sure it has the same sorts and attributes
         else
         {
-            assert(argSorts.size() == symbol->argSorts.size());
+            if (argSorts.size() != symbol->argSorts.size())
+            {
+                std::cout << "User error: symbol " << symbol->name << " requires " << symbol->argSorts.size() << " arguments, but " << argSorts.size() << " arguments where given" << std::endl;
+                assert(false);
+            }
             for (int i=0; i < argSorts.size(); ++i)
             {
                 assert(argSorts[i] == symbol->argSorts[i]);

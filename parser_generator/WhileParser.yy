@@ -165,10 +165,7 @@ problem:
     {
       error(@3, "number of traces has to be greater than or equal to 1");
     }
-    if ($3 != 2)
-    {
-      error(@3, "not supported yet");
-    }
+
     context.numberOfTraces = (unsigned) $3;
     logic::Theory::declareTheories();
     declareSymbolsForTraces(context.numberOfTraces);

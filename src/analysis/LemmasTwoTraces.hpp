@@ -13,6 +13,7 @@ namespace analysis {
     
     /*
      * We use the lemmas in this header to cover the inductive reasoning which relates values and timepoints of two execution-traces.
+     * Each of these lemmas is added for any pair (t1,t2) of (different) traces.
      */
     
     /*

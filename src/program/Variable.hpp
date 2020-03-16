@@ -24,18 +24,18 @@ namespace program {
     class Variable
     {
     public:
-        Variable(std::string name, bool isConstant, bool isArray, bool twoTraces) : name(name), isConstant(isConstant), isArray(isArray), twoTraces(twoTraces) {}
+        Variable(std::string name, bool isConstant, bool isArray, int numberOfTraces) : name(name), isConstant(isConstant), isArray(isArray), numberOfTraces(numberOfTraces) {}
 
         const std::string name;
         const bool isConstant;
         const bool isArray;
-        const bool twoTraces;
+        const int numberOfTraces;
 
         // sanity-assertion: if two variables have the same name, they agree on all other properties.
         bool operator==(const Variable& rhs) const { assert( !(name == rhs.name) ||
                                                             (isConstant == rhs.isConstant &&
                                                              isArray    == rhs.isArray &&
-                                                             twoTraces  == rhs.twoTraces)); return (name == rhs.name); }
+                                                             numberOfTraces  == rhs.numberOfTraces)); return (name == rhs.name); }
         bool operator!=(const Variable& rhs) const { return !operator==(rhs); }
     };
 }

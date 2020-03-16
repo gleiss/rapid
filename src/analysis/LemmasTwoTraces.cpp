@@ -59,7 +59,7 @@ namespace analysis {
 
     void NEqualLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::ProblemItem>>& items)
     {
-        assert(twoTraces);
+        assert(numberOfTraces > 1);
         
 
         auto t1 = trace1Term();

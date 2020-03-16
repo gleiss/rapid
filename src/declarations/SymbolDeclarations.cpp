@@ -32,14 +32,14 @@ std::shared_ptr<const logic::Symbol> locationSymbolEndLocation(const program::Fu
     return locationSymbol(function->name + "_end", 0);
 }
 
-std::shared_ptr<const logic::Symbol> lastIterationSymbol(const program::WhileStatement* statement, bool twoTraces)
+std::shared_ptr<const logic::Symbol> lastIterationSymbol(const program::WhileStatement* statement, int numberOfTraces)
 {
     std::vector<const logic::Sort*> argumentSorts;
     for (unsigned i=0; i < statement->enclosingLoops->size(); ++i)
     {
         argumentSorts.push_back(logic::Sorts::natSort());
     }
-    if (twoTraces)
+    if (numberOfTraces > 1)
     {
         argumentSorts.push_back(logic::Sorts::traceSort());
     }
@@ -81,7 +81,7 @@ void declareSymbolForProgramVar(const program::Variable* var)
     {
         argSorts.push_back(logic::Sorts::intSort());
     }
-    if(var->twoTraces)
+    if(var->numberOfTraces > 1)
     {
         argSorts.push_back(logic::Sorts::traceSort());
     }
@@ -97,19 +97,19 @@ void declareSymbolsForTraces()
 }
 
 // symbols get declared by constructing them once
-void declareSymbolsForFunction(const program::Function* function, bool twoTraces)
+void declareSymbolsForFunction(const program::Function* function, int numberOfTraces)
 {
     // recurse on statements
     for (const auto& statement : function->statements)
     {
-        declareSymbolsForStatements(statement.get(), twoTraces);
+        declareSymbolsForStatements(statement.get(), numberOfTraces);
     }
     
     // declare end-location of function
     locationSymbolEndLocation(function);
 }
 
-void declareSymbolsForStatements(const program::Statement* statement, bool twoTraces)
+void declareSymbolsForStatements(const program::Statement* statement, int numberOfTraces)
 {
     // declare main location symbol
     locationSymbolForStatement(statement);
@@ -121,11 +121,11 @@ void declareSymbolsForStatements(const program::Statement* statement, bool twoTr
         // recurse
         for (const auto& statementInBranch : castedStatement->ifStatements)
         {
-            declareSymbolsForStatements(statementInBranch.get(), twoTraces);
+            declareSymbolsForStatements(statementInBranch.get(), numberOfTraces);
         }
         for (const auto& statementInBranch : castedStatement->elseStatements)
         {
-            declareSymbolsForStatements(statementInBranch.get(), twoTraces);
+            declareSymbolsForStatements(statementInBranch.get(), numberOfTraces);
         }
     }
     else if (statement->type() == program::Statement::Type::WhileStatement)
@@ -133,12 +133,12 @@ void declareSymbolsForStatements(const program::Statement* statement, bool twoTr
         auto castedStatement = static_cast<const program::WhileStatement*>(statement);
         
         // declare last iteration-symbol
-        lastIterationSymbol(castedStatement, twoTraces);
+        lastIterationSymbol(castedStatement, numberOfTraces);
         
         // recurse
         for (const auto& bodyStatement : castedStatement->bodyStatements)
         {
-            declareSymbolsForStatements(bodyStatement.get(), twoTraces);
+            declareSymbolsForStatements(bodyStatement.get(), numberOfTraces);
         }
     }
 }

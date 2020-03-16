@@ -21,12 +21,12 @@ namespace analysis {
         Semantics(const program::Program& program,
                   std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars,
                   std::vector<std::shared_ptr<const logic::ProblemItem>>& problemItems,
-                  bool twoTraces) :
+                  int numberOfTraces) :
         program(program),
         endTimePointMap(AnalysisPreComputation::computeEndTimePointMap(program)),
         locationToActiveVars(locationToActiveVars),
         problemItems(problemItems),
-        twoTraces(twoTraces) {}
+        numberOfTraces(numberOfTraces) {}
         
         std::vector<std::shared_ptr<const logic::Axiom>> generateSemantics();
         
@@ -36,7 +36,7 @@ namespace analysis {
         const EndTimePointMap endTimePointMap;
         const std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars;
         std::vector<std::shared_ptr<const logic::ProblemItem>>& problemItems;
-        const bool twoTraces;
+        const int numberOfTraces;
 
         std::shared_ptr<const logic::Formula> generateSemantics(const program::Statement* statement, SemanticsInliner& inliner);
         std::shared_ptr<const logic::Formula> generateSemantics(const program::IntAssignment* intAssignment, SemanticsInliner& inliner);

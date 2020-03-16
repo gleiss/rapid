@@ -65,11 +65,11 @@ int main(int argc, char *argv[])
                     problemItems.push_back(axiom);
                 }
 
-                analysis::Semantics s(*parserResult.program, parserResult.locationToActiveVars, parserResult.problemItems, parserResult.twoTraces);
+                analysis::Semantics s(*parserResult.program, parserResult.locationToActiveVars, parserResult.problemItems, parserResult.numberOfTraces);
                 auto semantics = s.generateSemantics();
                 problemItems.insert(problemItems.end(), semantics.begin(), semantics.end());
 
-                auto traceLemmas = analysis::generateTraceLemmas(*parserResult.program, parserResult.locationToActiveVars, parserResult.twoTraces, semantics);
+                auto traceLemmas = analysis::generateTraceLemmas(*parserResult.program, parserResult.locationToActiveVars, parserResult.numberOfTraces, semantics);
                 problemItems.insert(problemItems.end(), traceLemmas.begin(), traceLemmas.end());
                 
 

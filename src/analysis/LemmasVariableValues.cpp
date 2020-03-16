@@ -71,7 +71,7 @@ namespace analysis {
                     {
                         freeVars.push_back(posSymbol);
                     }
-                    if (twoTraces)
+                    if (numberOfTraces > 1)
                     {
                         freeVars.push_back(traceVarSymbol());
                     }
@@ -152,7 +152,7 @@ namespace analysis {
     {
         auto itSymbol = iteratorSymbol(statement);
         auto it = iteratorTermForLoop(statement);
-        auto n = lastIterationTermForLoop(statement, twoTraces);
+        auto n = lastIterationTermForLoop(statement, numberOfTraces);
 
         auto lStartIt = timepointForLoopStatement(statement, it);
         auto lStartZero = timepointForLoopStatement(statement, logic::Theory::natZero());
@@ -194,7 +194,7 @@ namespace analysis {
                 {
                     freeVars.push_back(posSymbol);
                 }
-                if (twoTraces)
+                if (numberOfTraces > 1)
                 {
                     freeVars.push_back(traceVarSymbol());
                 }

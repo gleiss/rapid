@@ -22,7 +22,7 @@ namespace parser
     class WhileParsingContext
     {
     public:
-        WhileParsingContext() : inputFile(""), errorFlag(false), program(nullptr), problemItems(), locationToActiveVars(), twoTraces(false), numberOfAxioms(0), numberOfLemmas(0), numberOfConjectures(0), quantifiedVarsDeclarations(), quantifiedVarsStack(), programVarsDeclarations(), programVarsStack() {}
+        WhileParsingContext() : inputFile(""), errorFlag(false), program(nullptr), problemItems(), locationToActiveVars(), numberOfTraces(1), numberOfAxioms(0), numberOfLemmas(0), numberOfConjectures(0), quantifiedVarsDeclarations(), quantifiedVarsStack(), programVarsDeclarations(), programVarsStack() {}
         
         // input
         std::string inputFile;
@@ -32,7 +32,7 @@ namespace parser
         std::unique_ptr<const program::Program> program;
         std::vector<std::shared_ptr<const logic::ProblemItem>> problemItems;
         std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars;
-        bool twoTraces;
+        int numberOfTraces;
         int numberOfAxioms;
         int numberOfLemmas;
         int numberOfConjectures;

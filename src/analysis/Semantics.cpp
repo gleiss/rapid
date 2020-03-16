@@ -54,7 +54,7 @@ namespace analysis {
             }
 
             auto axiomFormula = logic::Formulas::conjunctionSimp(conjunctsFunction);
-            if(twoTraces)
+            if(numberOfTraces > 1)
             {
                 axiomFormula = logic::Formulas::universal({traceVarSymbol()}, axiomFormula);
             }
@@ -437,7 +437,7 @@ namespace analysis {
 
         auto itSymbol = iteratorSymbol(whileStatement);
         auto it = logic::Terms::var(itSymbol);
-        auto n = lastIterationTermForLoop(whileStatement, twoTraces);
+        auto n = lastIterationTermForLoop(whileStatement, numberOfTraces);
 
         auto lStart0 = timepointForLoopStatement(whileStatement, logic::Theory::natZero());
         auto lStartIt = timepointForLoopStatement(whileStatement, it);

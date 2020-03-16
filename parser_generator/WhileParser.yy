@@ -169,7 +169,7 @@ problem:
     {
       error(@3, "not supported yet");
     }
-    context.twoTraces = true;
+    context.numberOfTraces = $3;
     logic::Theory::declareTheories();
     declareSymbolsForTraces();
   }
@@ -374,9 +374,13 @@ SMTLIB_ID
   }
   auto symbol = context.fetch($2); 
 
-  if(symbol->argSorts.size() != $3.size())
+  if($3.size() < symbol->argSorts.size())
   {
       error(@3, "Not enough arguments for term " + symbol->name);
+  }
+  if($3.size() > symbol->argSorts.size())
+  {
+      error(@3, "Too many arguments for term " + symbol->name);
   }
   for (int i=0; i < symbol->argSorts.size(); ++i)
   {
@@ -460,7 +464,7 @@ function:
     $$ = function;
 
     // declare symbols for loops (needs to be done here, since it depends on enclosingLoops)
-    declareSymbolsForFunction(function.get(), context.twoTraces);
+    declareSymbolsForFunction(function.get(), context.numberOfTraces);
   }
 ;
 
@@ -587,7 +591,7 @@ var_definition_head:
     {
       error(@1, "Program variables can't have type " + $1);
     }
-    $$ = std::shared_ptr<const program::Variable>(new program::Variable($2, false, false, context.twoTraces));
+    $$ = std::shared_ptr<const program::Variable>(new program::Variable($2, false, false, context.numberOfTraces));
   }
 | CONST TYPE PROGRAM_ID
   {
@@ -599,7 +603,7 @@ var_definition_head:
     {
       error(@2, "Program variables can't have type " + $2);
     }
-    $$ = std::shared_ptr<const program::Variable>(new program::Variable($3, true, false, context.twoTraces));
+    $$ = std::shared_ptr<const program::Variable>(new program::Variable($3, true, false, context.numberOfTraces));
   }
 | TYPE LBRA RBRA PROGRAM_ID
   {
@@ -611,7 +615,7 @@ var_definition_head:
     {
       error(@1, "Program variables can't have type " + $1);
     }
-    $$ = std::shared_ptr<const program::Variable>(new program::Variable($4, false, true, context.twoTraces));
+    $$ = std::shared_ptr<const program::Variable>(new program::Variable($4, false, true, context.numberOfTraces));
   }
 | CONST TYPE LBRA RBRA PROGRAM_ID
   {
@@ -623,7 +627,7 @@ var_definition_head:
     {
       error(@2, "Program variables can't have type " + $2);
     }
-    $$ = std::shared_ptr<const program::Variable>(new program::Variable($5, true, true, context.twoTraces));
+    $$ = std::shared_ptr<const program::Variable>(new program::Variable($5, true, true, context.numberOfTraces));
   }
 ;
 

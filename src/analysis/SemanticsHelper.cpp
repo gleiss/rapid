@@ -40,18 +40,18 @@ namespace analysis {
         return logic::Terms::var(iteratorSymbol(whileStatement));
     }
     
-    std::shared_ptr<const logic::Term> lastIterationTermForLoop(const program::WhileStatement* whileStatement, bool twoTraces, std::shared_ptr<const logic::Term> trace)
+    std::shared_ptr<const logic::Term> lastIterationTermForLoop(const program::WhileStatement* whileStatement, int numberOfTraces, std::shared_ptr<const logic::Term> trace)
     {
         assert(whileStatement != nullptr);
         assert(trace != nullptr);
 
-        auto symbol = lastIterationSymbol(whileStatement, twoTraces);
+        auto symbol = lastIterationSymbol(whileStatement, numberOfTraces);
         std::vector<std::shared_ptr<const logic::Term>> subterms;
         for (const auto& loop : *whileStatement->enclosingLoops)
         {
             subterms.push_back(iteratorTermForLoop(loop));
         }
-        if (twoTraces)
+        if (numberOfTraces > 1)
         {
             subterms.push_back(trace);
         }
@@ -129,7 +129,7 @@ namespace analysis {
             assert(timePoint != nullptr);
             arguments.push_back(timePoint);
         }
-        if (var->twoTraces)
+        if (var->numberOfTraces > 1)
         {
             arguments.push_back(trace);
         }
@@ -155,7 +155,7 @@ namespace analysis {
         
         arguments.push_back(position);
         
-        if (var->twoTraces)
+        if (var->numberOfTraces > 1)
         {
             arguments.push_back(trace);
         }

@@ -13,7 +13,7 @@ namespace analysis {
     {
         auto itSymbol = iteratorSymbol(statement);
         auto it = iteratorTermForLoop(statement);
-        auto n = lastIterationTermForLoop(statement, twoTraces);
+        auto n = lastIterationTermForLoop(statement, numberOfTraces);
         
         auto lStartZero = timepointForLoopStatement(statement, logic::Theory::natZero());
         
@@ -28,7 +28,7 @@ namespace analysis {
                 )
             );
 
-        if (twoTraces)
+        if (numberOfTraces > 1)
         {
             bareLemma = logic::Formulas::universal({traceVarSymbol()}, bareLemma);
         }
@@ -39,7 +39,7 @@ namespace analysis {
     
     void OrderingSynchronizationLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::ProblemItem>>& items)
     {
-        assert(twoTraces);
+        assert(numberOfTraces > 1);
         
         auto t1 = trace1Term();
         auto t2 = trace2Term();

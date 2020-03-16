@@ -14,7 +14,7 @@ namespace analysis {
         auto it = iteratorTermForLoop(statement);
         auto it2Symbol = logic::Signature::varSymbol("it", logic::Sorts::natSort());
         auto it2 = logic::Terms::var(it2Symbol);
-        auto n = lastIterationTermForLoop(statement, twoTraces);
+        auto n = lastIterationTermForLoop(statement, numberOfTraces);
         
         auto lStartIt = timepointForLoopStatement(statement, it);
         auto lStartIt2 = timepointForLoopStatement(statement, it2);
@@ -60,7 +60,7 @@ namespace analysis {
                     {
                         freeVarSymbols1.push_back(posSymbol);
                     }
-                    if (twoTraces)
+                    if (numberOfTraces > 1)
                     {
                         freeVarSymbols1.push_back(traceVarSymbol());
                     }
@@ -193,7 +193,7 @@ namespace analysis {
         auto it1 = logic::Terms::var(it1Symbol);
         auto it2Symbol = logic::Signature::varSymbol("it2", logic::Sorts::natSort());
         auto it2 = logic::Terms::var(it2Symbol);
-        auto n = lastIterationTermForLoop(statement, twoTraces);
+        auto n = lastIterationTermForLoop(statement, numberOfTraces);
         
         auto lStartIt = timepointForLoopStatement(statement, it);
         auto lStartSuccOfIt = timepointForLoopStatement(statement, logic::Theory::natSucc(it));
@@ -217,7 +217,7 @@ namespace analysis {
                     auto inductionAxiomNameShort = "Ax-" + nameShort;
 
                     auto freeVarSymbols = enclosingIteratorsSymbols(statement);
-                    if (twoTraces)
+                    if (numberOfTraces > 1)
                     {
                         freeVarSymbols.push_back(traceVarSymbol());
                     }

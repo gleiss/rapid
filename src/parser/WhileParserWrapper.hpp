@@ -29,12 +29,12 @@ namespace parser
         WhileParserResult(std::unique_ptr<const program::Program> program,
                           std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars,
                           std::vector<std::shared_ptr<const logic::ProblemItem>> problemItems,
-                          bool twoTraces) : program(std::move(program)), locationToActiveVars(locationToActiveVars), problemItems(std::move(problemItems)), twoTraces(twoTraces) {}
+                          int numberOfTraces) : program(std::move(program)), locationToActiveVars(locationToActiveVars), problemItems(std::move(problemItems)), numberOfTraces(numberOfTraces) {}
         
         std::unique_ptr<const program::Program> program;
         std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars;
         std::vector<std::shared_ptr<const logic::ProblemItem>> problemItems;
-        bool twoTraces;
+        int numberOfTraces;
         ;
     };
     
@@ -77,7 +77,7 @@ namespace parser
         
         assert(context.program);
         
-        return WhileParserResult(std::move(context.program), std::move(context.locationToActiveVars), std::move(context.problemItems), context.twoTraces);
+        return WhileParserResult(std::move(context.program), std::move(context.locationToActiveVars), std::move(context.problemItems), context.numberOfTraces);
     }
 }
 

@@ -11,7 +11,7 @@ std::shared_ptr<const logic::Symbol> locationSymbolForStatement(const program::S
 std::shared_ptr<const logic::Symbol> locationSymbolEndLocation(const program::Function* function);
 
 std::shared_ptr<const logic::Symbol> iteratorSymbol(const program::WhileStatement* whileStatement);
-std::shared_ptr<const logic::Symbol> lastIterationSymbol(const program::WhileStatement* whileStatement, int numberOfTraces);
+std::shared_ptr<const logic::Symbol> lastIterationSymbol(const program::WhileStatement* whileStatement, unsigned numberOfTraces);
 
 std::shared_ptr<const logic::Symbol> traceVarSymbol();
 std::shared_ptr<const logic::Symbol> posVarSymbol();
@@ -28,9 +28,9 @@ std::shared_ptr<const logic::Symbol> trace2Symbol();
  */
 void declareSymbolForProgramVar(const program::Variable* var);
 void declareSymbolsForTraces();
-void declareSymbolsForFunction(const program::Function* function, int numberOfTraces);
+void declareSymbolsForFunction(const program::Function* function, unsigned numberOfTraces);
 // helper method for declareSymbolsForFunction
-void declareSymbolsForStatements(const program::Statement* statement, int numberOfTraces);
+void declareSymbolsForStatements(const program::Statement* statement, unsigned numberOfTraces);
 
 
 #endif

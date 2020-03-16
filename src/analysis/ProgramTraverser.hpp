@@ -26,7 +26,7 @@ namespace analysis
     public:
         ProgramTraverser(const program::Program& program,
                          std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars,
-                         int numberOfTraces) :
+                         unsigned numberOfTraces) :
         program(program),
         locationToActiveVars(locationToActiveVars),
         numberOfTraces(numberOfTraces) {}
@@ -36,7 +36,7 @@ namespace analysis
     protected:
         const program::Program& program;
         const std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars;
-        const int numberOfTraces;
+        const unsigned numberOfTraces;
         
     private:
         void visitStatement(const program::Statement* statement, OutputType& output);

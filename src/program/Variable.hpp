@@ -24,12 +24,12 @@ namespace program {
     class Variable
     {
     public:
-        Variable(std::string name, bool isConstant, bool isArray, int numberOfTraces) : name(name), isConstant(isConstant), isArray(isArray), numberOfTraces(numberOfTraces) {}
+        Variable(std::string name, bool isConstant, bool isArray, unsigned numberOfTraces) : name(name), isConstant(isConstant), isArray(isArray), numberOfTraces(numberOfTraces) {}
 
         const std::string name;
         const bool isConstant;
         const bool isArray;
-        const int numberOfTraces;
+        const unsigned numberOfTraces;
 
         // sanity-assertion: if two variables have the same name, they agree on all other properties.
         bool operator==(const Variable& rhs) const { assert( !(name == rhs.name) ||

@@ -151,7 +151,7 @@ namespace analysis {
         StaticAnalysisLemmas(
             const program::Program& program,
             std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars,
-            int numberOfTraces,
+            unsigned numberOfTraces,
             std::vector<std::shared_ptr<const logic::Axiom>> programSemantics) : 
             ProgramTraverser<std::vector<std::shared_ptr<const logic::ProblemItem>>>(program, locationToActiveVars, numberOfTraces), programSemantics(programSemantics) {}
         

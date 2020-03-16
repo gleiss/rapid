@@ -169,7 +169,7 @@ problem:
     {
       error(@3, "not supported yet");
     }
-    context.numberOfTraces = $3;
+    context.numberOfTraces = (unsigned) $3;
     logic::Theory::declareTheories();
     declareSymbolsForTraces();
   }

@@ -32,7 +32,7 @@ std::shared_ptr<const logic::Symbol> locationSymbolEndLocation(const program::Fu
     return locationSymbol(function->name + "_end", 0);
 }
 
-std::shared_ptr<const logic::Symbol> lastIterationSymbol(const program::WhileStatement* statement, int numberOfTraces)
+std::shared_ptr<const logic::Symbol> lastIterationSymbol(const program::WhileStatement* statement, unsigned numberOfTraces)
 {
     std::vector<const logic::Sort*> argumentSorts;
     for (unsigned i=0; i < statement->enclosingLoops->size(); ++i)
@@ -97,7 +97,7 @@ void declareSymbolsForTraces()
 }
 
 // symbols get declared by constructing them once
-void declareSymbolsForFunction(const program::Function* function, int numberOfTraces)
+void declareSymbolsForFunction(const program::Function* function, unsigned numberOfTraces)
 {
     // recurse on statements
     for (const auto& statement : function->statements)
@@ -109,7 +109,7 @@ void declareSymbolsForFunction(const program::Function* function, int numberOfTr
     locationSymbolEndLocation(function);
 }
 
-void declareSymbolsForStatements(const program::Statement* statement, int numberOfTraces)
+void declareSymbolsForStatements(const program::Statement* statement, unsigned numberOfTraces)
 {
     // declare main location symbol
     locationSymbolForStatement(statement);

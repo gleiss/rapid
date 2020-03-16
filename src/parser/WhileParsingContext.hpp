@@ -32,7 +32,7 @@ namespace parser
         std::unique_ptr<const program::Program> program;
         std::vector<std::shared_ptr<const logic::ProblemItem>> problemItems;
         std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars;
-        int numberOfTraces;
+        unsigned numberOfTraces;
         int numberOfAxioms;
         int numberOfLemmas;
         int numberOfConjectures;

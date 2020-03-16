@@ -29,12 +29,12 @@ namespace parser
         WhileParserResult(std::unique_ptr<const program::Program> program,
                           std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars,
                           std::vector<std::shared_ptr<const logic::ProblemItem>> problemItems,
-                          int numberOfTraces) : program(std::move(program)), locationToActiveVars(locationToActiveVars), problemItems(std::move(problemItems)), numberOfTraces(numberOfTraces) {}
+                          unsigned numberOfTraces) : program(std::move(program)), locationToActiveVars(locationToActiveVars), problemItems(std::move(problemItems)), numberOfTraces(numberOfTraces) {}
         
         std::unique_ptr<const program::Program> program;
         std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars;
         std::vector<std::shared_ptr<const logic::ProblemItem>> problemItems;
-        int numberOfTraces;
+        unsigned numberOfTraces;
         ;
     };
     

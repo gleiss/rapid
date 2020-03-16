@@ -40,7 +40,7 @@ namespace analysis {
         return logic::Terms::var(iteratorSymbol(whileStatement));
     }
     
-    std::shared_ptr<const logic::Term> lastIterationTermForLoop(const program::WhileStatement* whileStatement, int numberOfTraces, std::shared_ptr<const logic::Term> trace)
+    std::shared_ptr<const logic::Term> lastIterationTermForLoop(const program::WhileStatement* whileStatement, unsigned numberOfTraces, std::shared_ptr<const logic::Term> trace)
     {
         assert(whileStatement != nullptr);
         assert(trace != nullptr);

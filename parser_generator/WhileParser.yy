@@ -171,7 +171,7 @@ problem:
     }
     context.numberOfTraces = (unsigned) $3;
     logic::Theory::declareTheories();
-    declareSymbolsForTraces();
+    declareSymbolsForTraces(context.numberOfTraces);
   }
   program smtlib_problemitem_list 
   {

@@ -61,13 +61,10 @@ std::shared_ptr<const logic::Symbol> posVarSymbol()
     return logic::Signature::varSymbol("pos", logic::Sorts::intSort());
 }
 
-std::shared_ptr<const logic::Symbol> trace1Symbol()
+std::shared_ptr<const logic::Symbol> traceSymbol(unsigned traceNumber)
 {
-    return logic::Signature::fetchOrAdd("t1", {}, logic::Sorts::traceSort());
-}
-std::shared_ptr<const logic::Symbol> trace2Symbol()
-{
-    return logic::Signature::fetchOrAdd("t2", {}, logic::Sorts::traceSort());
+    std::string traceName = "t" + std::to_string(traceNumber);
+    return logic::Signature::fetchOrAdd(traceName, {}, logic::Sorts::traceSort());
 }
 
 void declareSymbolForProgramVar(const program::Variable* var)
@@ -89,11 +86,14 @@ void declareSymbolForProgramVar(const program::Variable* var)
     logic::Signature::add(var->name, argSorts, logic::Sorts::intSort());
 }
 
-void declareSymbolsForTraces()
+void declareSymbolsForTraces(unsigned numberOfTraces)
 {
     // declare trace symbols
-    trace1Symbol();
-    trace2Symbol();
+    // note: we number traces starting from 1
+    for (unsigned i = 1; i < numberOfTraces + 1; i++)
+    {
+        traceSymbol(i);
+    }
 }
 
 // symbols get declared by constructing them once

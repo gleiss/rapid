@@ -41,8 +41,8 @@ namespace analysis {
     {
         assert(numberOfTraces > 1);
         
-        auto t1 = trace1Term();
-        auto t2 = trace2Term();
+        auto t1 = traceTerm(1);
+        auto t2 = traceTerm(2);
         
         auto iSymbol = iteratorSymbol(statement);
         auto it = iteratorTermForLoop(statement);

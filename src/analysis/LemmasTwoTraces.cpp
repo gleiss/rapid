@@ -13,8 +13,8 @@ namespace analysis {
     
     void EqualityPreservationTracesLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::ProblemItem>>& items)
     {
-        auto t1 = trace1Term();
-        auto t2 = trace2Term();
+        auto t1 = traceTerm(1);
+        auto t2 = traceTerm(2);
 
         auto posSymbol = posVarSymbol();
         auto pos = posVar();
@@ -62,8 +62,8 @@ namespace analysis {
         assert(numberOfTraces > 1);
         
 
-        auto t1 = trace1Term();
-        auto t2 = trace2Term();
+        auto t1 = traceTerm(1);
+        auto t2 = traceTerm(2);
 
         auto itSymbol = iteratorSymbol(statement);
         auto it = iteratorTermForLoop(statement);

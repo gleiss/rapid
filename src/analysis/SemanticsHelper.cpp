@@ -22,13 +22,9 @@ namespace analysis {
 
 # pragma mark - Methods for generating most used trace terms
     
-    std::shared_ptr<const logic::Term> trace1Term()
+    std::shared_ptr<const logic::Term> traceTerm(unsigned traceNumber)
     {
-        return logic::Terms::func(trace1Symbol(), {});
-    }
-    std::shared_ptr<const logic::Term> trace2Term()
-    {
-        return logic::Terms::func(trace2Symbol(), {});
+        return logic::Terms::func(traceSymbol(traceNumber), {});
     }
 
 # pragma mark - Methods for generating most used timepoint terms and symbols

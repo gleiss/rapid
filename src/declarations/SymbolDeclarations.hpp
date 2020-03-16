@@ -16,8 +16,7 @@ std::shared_ptr<const logic::Symbol> lastIterationSymbol(const program::WhileSta
 std::shared_ptr<const logic::Symbol> traceVarSymbol();
 std::shared_ptr<const logic::Symbol> posVarSymbol();
 
-std::shared_ptr<const logic::Symbol> trace1Symbol();
-std::shared_ptr<const logic::Symbol> trace2Symbol();
+std::shared_ptr<const logic::Symbol> traceSymbol(unsigned traceNumber);
 
 /*
  * The parser needs to declare itself the symbols corresponding to variables, locations, last-loop-iterations and (if enabled) traces,
@@ -27,7 +26,7 @@ std::shared_ptr<const logic::Symbol> trace2Symbol();
  * and all other symbols are declared per function whenever the function-parsing is finished.
  */
 void declareSymbolForProgramVar(const program::Variable* var);
-void declareSymbolsForTraces();
+void declareSymbolsForTraces(unsigned numberOfTraces);
 void declareSymbolsForFunction(const program::Function* function, unsigned numberOfTraces);
 // helper method for declareSymbolsForFunction
 void declareSymbolsForStatements(const program::Statement* statement, unsigned numberOfTraces);

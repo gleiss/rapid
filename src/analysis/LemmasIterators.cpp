@@ -14,7 +14,7 @@ namespace analysis {
         auto it = iteratorTermForLoop(statement);
         auto it2Symbol = logic::Signature::varSymbol("it", logic::Sorts::natSort());
         auto it2 = logic::Terms::var(it2Symbol);
-        auto n = lastIterationTermForLoop(statement, numberOfTraces);
+        auto n = lastIterationTermForLoop(statement, numberOfTraces, traceVar());
         
         auto lStartIt = timepointForLoopStatement(statement, it);
         auto lStartIt2 = timepointForLoopStatement(statement, it2);
@@ -193,7 +193,7 @@ namespace analysis {
         auto it1 = logic::Terms::var(it1Symbol);
         auto it2Symbol = logic::Signature::varSymbol("it2", logic::Sorts::natSort());
         auto it2 = logic::Terms::var(it2Symbol);
-        auto n = lastIterationTermForLoop(statement, numberOfTraces);
+        auto n = lastIterationTermForLoop(statement, numberOfTraces, traceVar());
         
         auto lStartIt = timepointForLoopStatement(statement, it);
         auto lStartSuccOfIt = timepointForLoopStatement(statement, logic::Theory::natSucc(it));

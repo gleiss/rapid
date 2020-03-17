@@ -437,7 +437,7 @@ namespace analysis {
 
         auto itSymbol = iteratorSymbol(whileStatement);
         auto it = logic::Terms::var(itSymbol);
-        auto n = lastIterationTermForLoop(whileStatement, numberOfTraces);
+        auto n = lastIterationTermForLoop(whileStatement, numberOfTraces, traceVar());
 
         auto lStart0 = timepointForLoopStatement(whileStatement, logic::Theory::natZero());
         auto lStartIt = timepointForLoopStatement(whileStatement, it);

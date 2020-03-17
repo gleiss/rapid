@@ -13,7 +13,7 @@ namespace analysis {
     {
         auto itSymbol = iteratorSymbol(statement);
         auto it = iteratorTermForLoop(statement);
-        auto n = lastIterationTermForLoop(statement, numberOfTraces);
+        auto n = lastIterationTermForLoop(statement, numberOfTraces, traceVar());
         
         auto lStartZero = timepointForLoopStatement(statement, logic::Theory::natZero());
         

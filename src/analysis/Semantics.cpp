@@ -37,59 +37,73 @@ namespace analysis {
         std::vector<std::shared_ptr<const logic::Axiom>> axioms;
         for(const auto& function : program.functions)
         {
-            SemanticsInliner inliner(problemItems, traceVar());
             std::vector<std::shared_ptr<const logic::Formula>> conjunctsFunction;
-            for (const auto& statement : function->statements)
+
+            for (unsigned traceNumber = 1; traceNumber < numberOfTraces+1; traceNumber++)
             {
-                auto semantics = generateSemantics(statement.get(), inliner);
-                conjunctsFunction.push_back(semantics);
-            }
-            if (util::Configuration::instance().inlineSemantics())
-            {
-                // handle persistence of last statement of the function
-                auto lEnd = endTimePointMap.at(function->statements.back().get());
-                inliner.currTimepoint = lEnd;
-                auto f = inliner.handlePersistence(lEnd, locationToActiveVars.at(lEnd->symbol->name), "Define referenced terms denoting variable values at " + lEnd->symbol->name);
-                conjunctsFunction.push_back(f);
+                std::vector<std::shared_ptr<const logic::Formula>> conjunctsTrace;
+
+                auto trace = traceTerm(traceNumber);
+
+                SemanticsInliner inliner(problemItems, trace);
+                for (const auto& statement : function->statements)
+                {
+                    auto semantics = generateSemantics(statement.get(), inliner, trace);
+                    conjunctsTrace.push_back(semantics);
+                }
+                if (util::Configuration::instance().inlineSemantics())
+                {
+                    // handle persistence of last statement of the function
+                    auto lEnd = endTimePointMap.at(function->statements.back().get());
+                    inliner.currTimepoint = lEnd;
+                    auto f = inliner.handlePersistence(lEnd, locationToActiveVars.at(lEnd->symbol->name), "Define referenced terms denoting variable values at " + lEnd->symbol->name);
+                    conjunctsTrace.push_back(f);
+                }
+
+                if (numberOfTraces > 1)
+                {
+                    conjunctsFunction.push_back(logic::Formulas::conjunctionSimp(conjunctsTrace, "Semantics of trace " + trace->symbol->name));
+                }
+                else
+                {
+                    // if there is only one trace, don't group semantics by trace but use semantics directly
+                    conjunctsFunction = conjunctsTrace;
+                }
             }
 
             auto axiomFormula = logic::Formulas::conjunctionSimp(conjunctsFunction);
-            if(numberOfTraces > 1)
-            {
-                axiomFormula = logic::Formulas::universal({traceVarSymbol()}, axiomFormula);
-            }
             axioms.push_back(std::make_shared<logic::Axiom>(axiomFormula, "Semantics of function " + function->name, logic::ProblemItem::Visibility::Implicit));
         }
 
         return axioms;
     }
     
-    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::Statement* statement, SemanticsInliner& inliner)
+    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::Statement* statement, SemanticsInliner& inliner, std::shared_ptr<const logic::Term> trace)
     {
         if (statement->type() == program::Statement::Type::IntAssignment)
         {
             auto castedStatement = static_cast<const program::IntAssignment*>(statement);
-            return generateSemantics(castedStatement, inliner);
+            return generateSemantics(castedStatement, inliner, trace);
         }
         else if (statement->type() == program::Statement::Type::IfElse)
         {
             auto castedStatement = static_cast<const program::IfElse*>(statement);
-            return generateSemantics(castedStatement, inliner);
+            return generateSemantics(castedStatement, inliner, trace);
         }
         else if (statement->type() == program::Statement::Type::WhileStatement)
         {
             auto castedStatement = static_cast<const program::WhileStatement*>(statement);
-            return generateSemantics(castedStatement, inliner);
+            return generateSemantics(castedStatement, inliner, trace);
         }
         else
         {
             assert(statement->type() == program::Statement::Type::SkipStatement);
             auto castedStatement = static_cast<const program::SkipStatement*>(statement);
-            return generateSemantics(castedStatement, inliner);
+            return generateSemantics(castedStatement, inliner, trace);
         }
     }
     
-    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::IntAssignment* intAssignment, SemanticsInliner& inliner)
+    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::IntAssignment* intAssignment, SemanticsInliner& inliner, std::shared_ptr<const logic::Term> trace)
     {
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts;
         
@@ -118,7 +132,7 @@ namespace analysis {
             else
             {
                 // lhs(l2) = rhs(l1)
-                auto eq = logic::Formulas::equality(toTerm(castedLhs,l2,traceVar()), toTerm(intAssignment->rhs,l1,traceVar()));
+                auto eq = logic::Formulas::equality(toTerm(castedLhs,l2,trace), toTerm(intAssignment->rhs,l1,trace));
                 conjuncts.push_back(eq);
 
                 for (const auto& var : activeVars)
@@ -132,8 +146,8 @@ namespace analysis {
                             {
                                 auto eq =
                                     logic::Formulas::equality(
-                                        toTerm(var,l2,traceVar()),
-                                        toTerm(var,l1,traceVar())
+                                        toTerm(var,l2,trace),
+                                        toTerm(var,l1,trace)
                                     );
                                 conjuncts.push_back(eq);
                             }
@@ -146,8 +160,8 @@ namespace analysis {
                             auto conjunct =
                                 logic::Formulas::universal({posSymbol},
                                     logic::Formulas::equality(
-                                        toTerm(var,l2,pos,traceVar()),
-                                        toTerm(var,l1,pos,traceVar())
+                                        toTerm(var,l2,pos,trace),
+                                        toTerm(var,l1,pos,trace)
                                     )
                                 );
                             conjuncts.push_back(conjunct);
@@ -171,7 +185,7 @@ namespace analysis {
                 conjuncts.push_back(f1);
 
                 // a(l2, cached(e)) = cached(rhs)
-                auto eq1Lhs = toTerm(application->array,l2,inliner.toCachedTerm(application->index),traceVar());
+                auto eq1Lhs = toTerm(application->array,l2,inliner.toCachedTerm(application->index),trace);
                 auto eq1Rhs = inliner.toCachedTerm(intAssignment->rhs);
                 auto eq1 = logic::Formulas::equality(eq1Lhs, eq1Rhs);
                 conjuncts.push_back(eq1);
@@ -181,7 +195,7 @@ namespace analysis {
                 auto pos = posVar();
 
                 auto premise = logic::Formulas::disequality(pos, inliner.toCachedTerm(application->index));
-                auto eq2 = logic::Formulas::equality(toTerm(application->array,l2,pos,traceVar()), inliner.toCachedTermFull(application->array,pos));
+                auto eq2 = logic::Formulas::equality(toTerm(application->array,l2,pos,trace), inliner.toCachedTermFull(application->array,pos));
                 auto conjunct = logic::Formulas::universal({posSymbol}, logic::Formulas::implication(premise, eq2));
                 conjuncts.push_back(conjunct);
 
@@ -193,8 +207,8 @@ namespace analysis {
             else
             {
                 // a(l2, e(l1)) = rhs(l1)
-                auto eq1Lhs = toTerm(application->array,l2,toTerm(application->index,l1,traceVar()),traceVar());
-                auto eq1Rhs = toTerm(intAssignment->rhs,l1,traceVar());
+                auto eq1Lhs = toTerm(application->array,l2,toTerm(application->index,l1,trace),trace);
+                auto eq1Rhs = toTerm(intAssignment->rhs,l1,trace);
                 auto eq1 = logic::Formulas::equality(eq1Lhs, eq1Rhs);
                 conjuncts.push_back(eq1);
 
@@ -202,8 +216,8 @@ namespace analysis {
                 auto posSymbol = posVarSymbol();
                 auto pos = posVar();
 
-                auto premise = logic::Formulas::disequality(pos, toTerm(application->index,l1,traceVar()));
-                auto eq2 = logic::Formulas::equality(toTerm(application->array, l2, pos,traceVar()), toTerm(application->array,l1,pos,traceVar()));
+                auto premise = logic::Formulas::disequality(pos, toTerm(application->index,l1,trace));
+                auto eq2 = logic::Formulas::equality(toTerm(application->array, l2, pos,trace), toTerm(application->array,l1,pos,trace));
                 auto conjunct = logic::Formulas::universal({posSymbol}, logic::Formulas::implication(premise, eq2));
                 conjuncts.push_back(conjunct);
 
@@ -216,8 +230,8 @@ namespace analysis {
                             // forall active non-const int-variables: v(l2) = v(l1)
                             auto eq =
                                 logic::Formulas::equality(
-                                    toTerm(var,l2,traceVar()),
-                                    toTerm(var,l1,traceVar())
+                                    toTerm(var,l2,trace),
+                                    toTerm(var,l1,trace)
                                 );
                             conjuncts.push_back(eq);
                         }
@@ -231,8 +245,8 @@ namespace analysis {
                                 auto conjunct =
                                     logic::Formulas::universal({posSymbol},
                                         logic::Formulas::equality(
-                                            toTerm(var,l2,pos,traceVar()),
-                                            toTerm(var,l1,pos,traceVar())
+                                            toTerm(var,l2,pos,trace),
+                                            toTerm(var,l1,pos,trace)
                                         )
                                     );
                                 conjuncts.push_back(conjunct);
@@ -245,7 +259,7 @@ namespace analysis {
         }
     }
     
-    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::IfElse* ifElse, SemanticsInliner& inliner)
+    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::IfElse* ifElse, SemanticsInliner& inliner, std::shared_ptr<const logic::Term> trace)
     {
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts;
 
@@ -273,12 +287,12 @@ namespace analysis {
 
             for (const auto& statement : ifElse->ifStatements)
             {
-                auto semanticsOfStatement = generateSemantics(statement.get(), inlinerLeft);
+                auto semanticsOfStatement = generateSemantics(statement.get(), inlinerLeft, trace);
                 conjunctsLeft.push_back(semanticsOfStatement);
             }
             for (const auto& statement : ifElse->elseStatements)
             {
-                auto semanticsOfStatement = generateSemantics(statement.get(), inlinerRight);
+                auto semanticsOfStatement = generateSemantics(statement.get(), inlinerRight, trace);
                 conjunctsRight.push_back(semanticsOfStatement);
             }
 
@@ -328,7 +342,7 @@ namespace analysis {
             {
                 if (!var->isArray)
                 {
-                    auto varLEnd = toTerm(var,lEnd,traceVar());
+                    auto varLEnd = toTerm(var,lEnd,trace);
 
                     // define the value of var at lEnd as the merge of values at the end of the two branches
                     conjunctsLeft.push_back(
@@ -355,7 +369,7 @@ namespace analysis {
 
                     auto posSymbol = posVarSymbol();
                     auto pos = posVar();
-                    auto varLEnd = toTerm(var,lEnd,pos,traceVar());
+                    auto varLEnd = toTerm(var,lEnd,pos,trace);
 
                     // define the value of var at lEnd as the merge of values at the end of the two branches
                     conjunctsLeft.push_back(
@@ -400,15 +414,15 @@ namespace analysis {
         }
         else
         {
-            auto condition = toFormula(ifElse->condition, lStart, traceVar());
+            auto condition = toFormula(ifElse->condition, lStart, trace);
             auto negatedCondition = logic::Formulas::negation(condition);
 
             // Part 1: values at the beginning of any branch are the same as at the beginning of the ifElse-statement
             // don't need to take the intersection with active vars at lLeftStart/lRightStart, since the active vars at lStart are always a subset of those at lLeftStart/lRightStart
             auto activeVars = locationToActiveVars.at(lStart->symbol->name);
 
-            auto implicationIfBranch = logic::Formulas::implication(condition, allVarEqual(activeVars,lLeftStart,lStart, traceVar()), "Jumping into the left branch doesn't change the variable values");
-            auto implicationElseBranch = logic::Formulas::implication(negatedCondition, allVarEqual(activeVars,lRightStart,lStart, traceVar()), "Jumping into the right branch doesn't change the variable values");
+            auto implicationIfBranch = logic::Formulas::implication(condition, allVarEqual(activeVars,lLeftStart,lStart, trace), "Jumping into the left branch doesn't change the variable values");
+            auto implicationElseBranch = logic::Formulas::implication(negatedCondition, allVarEqual(activeVars,lRightStart,lStart, trace), "Jumping into the right branch doesn't change the variable values");
 
             conjuncts.push_back(implicationIfBranch);
             conjuncts.push_back(implicationElseBranch);
@@ -416,13 +430,13 @@ namespace analysis {
             // Part 2: collect all formulas describing semantics of branches and assert them conditionally
             for (const auto& statement : ifElse->ifStatements)
             {
-                auto semanticsOfStatement = generateSemantics(statement.get(), inliner);
+                auto semanticsOfStatement = generateSemantics(statement.get(), inliner, trace);
                 auto implication = logic::Formulas::implication(condition, semanticsOfStatement, "Semantics of left branch");
                 conjuncts.push_back(implication);
             }
             for (const auto& statement : ifElse->elseStatements)
             {
-                auto semanticsOfStatement = generateSemantics(statement.get(), inliner);
+                auto semanticsOfStatement = generateSemantics(statement.get(), inliner, trace);
                 auto implication = logic::Formulas::implication(negatedCondition, semanticsOfStatement,  "Semantics of right branch");
                 conjuncts.push_back(implication);
             }
@@ -431,13 +445,13 @@ namespace analysis {
         }
     }
 
-    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::WhileStatement* whileStatement, SemanticsInliner& inliner)
+    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::WhileStatement* whileStatement, SemanticsInliner& inliner, std::shared_ptr<const logic::Term> trace)
     {
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts;
 
         auto itSymbol = iteratorSymbol(whileStatement);
         auto it = logic::Terms::var(itSymbol);
-        auto n = lastIterationTermForLoop(whileStatement, numberOfTraces, traceVar());
+        auto n = lastIterationTermForLoop(whileStatement, numberOfTraces, trace);
 
         auto lStart0 = timepointForLoopStatement(whileStatement, logic::Theory::natZero());
         auto lStartIt = timepointForLoopStatement(whileStatement, it);
@@ -485,7 +499,7 @@ namespace analysis {
                 {
                     conjPart1.push_back(
                         logic::Formulas::equalitySimp(
-                            toTerm(var, lStart0,traceVar()),
+                            toTerm(var, lStart0,trace),
                             inliner.toCachedTermFull(var)
                         )
                     );
@@ -495,7 +509,7 @@ namespace analysis {
                     conjPart1.push_back(
                         logic::Formulas::universalSimp({posSymbol},
                             logic::Formulas::equalitySimp(
-                                toTerm(var,lStart0,pos,traceVar()),
+                                toTerm(var,lStart0,pos,trace),
                                 inliner.toCachedTermFull(var, pos)
                             )
                         )
@@ -517,7 +531,7 @@ namespace analysis {
                 if (!var->isArray)
                 {
                     assert(!var->isConstant);
-                    auto result = inliner.setIntVarValue(var,toTerm(var,lStartIt,traceVar()));
+                    auto result = inliner.setIntVarValue(var,toTerm(var,lStartIt,trace));
                 }
                 else
                 {
@@ -541,7 +555,7 @@ namespace analysis {
             std::vector<std::shared_ptr<const logic::Formula>> conjunctsBody;
             for (const auto& statement : whileStatement->bodyStatements)
             {
-                auto semanticsOfStatement = generateSemantics(statement.get(), inliner);
+                auto semanticsOfStatement = generateSemantics(statement.get(), inliner, trace);
                 conjunctsBody.push_back(semanticsOfStatement);
             }
 
@@ -552,7 +566,7 @@ namespace analysis {
                 {
                     conjunctsBody.push_back(
                         logic::Formulas::equalitySimp(
-                            toTerm(var,lStartSuccOfIt,traceVar()),
+                            toTerm(var,lStartSuccOfIt,trace),
                             inliner.toCachedTermFull(var),
                             "Define value of variable " + var->name + " at beginning of next iteration"
                         )
@@ -563,7 +577,7 @@ namespace analysis {
                     conjunctsBody.push_back(
                         logic::Formulas::universalSimp({posSymbol},
                             logic::Formulas::equalitySimp(
-                                toTerm(var,lStartSuccOfIt,pos,traceVar()),
+                                toTerm(var,lStartSuccOfIt,pos,trace),
                                 inliner.toCachedTermFull(var, pos)
                             ),
                             "Define value of array variable " + var->name + " at beginning of next iteration"
@@ -589,7 +603,7 @@ namespace analysis {
                 if (!var->isArray)
                 {
                     assert(!var->isConstant);
-                    auto result = inliner.setIntVarValue(var, toTerm(var,lStartN,traceVar()));
+                    auto result = inliner.setIntVarValue(var, toTerm(var,lStartN,trace));
                 }
                 else
                 {
@@ -615,7 +629,7 @@ namespace analysis {
                 logic::Formulas::universal({itSymbol},
                     logic::Formulas::implication(
                         logic::Theory::natSub(it,n),
-                        allVarEqual(activeVars,lBodyStartIt,lStartIt, traceVar())
+                        allVarEqual(activeVars,lBodyStartIt,lStartIt, trace)
                     ),
                     "Jumping into the loop body doesn't change the variable values"
                 );
@@ -625,7 +639,7 @@ namespace analysis {
             std::vector<std::shared_ptr<const logic::Formula>> conjunctsBody;
             for (const auto& statement : whileStatement->bodyStatements)
             {
-                auto conjunct = generateSemantics(statement.get(), inliner);
+                auto conjunct = generateSemantics(statement.get(), inliner, trace);
                 conjunctsBody.push_back(conjunct);
             }
             auto bodySemantics =
@@ -644,24 +658,24 @@ namespace analysis {
                 logic::Formulas::universal({itSymbol},
                     logic::Formulas::implication(
                         logic::Theory::natSub(it, n),
-                        toFormula(whileStatement->condition, lStartIt, traceVar())),
+                        toFormula(whileStatement->condition, lStartIt, trace)),
                     "The loop-condition holds always before the last iteration"
                 );
             conjuncts.push_back(universal);
 
             // loop condition doesn't hold at n
-            auto negConditionAtN = logic::Formulas::negation(toFormula(whileStatement->condition, lStartN, traceVar()), "The loop-condition doesn't hold in the last iteration");
+            auto negConditionAtN = logic::Formulas::negation(toFormula(whileStatement->condition, lStartN, trace), "The loop-condition doesn't hold in the last iteration");
             conjuncts.push_back(negConditionAtN);
 
             // Part 4: The values after the while-loop are the values from the timepoint with location lStart and iteration n
-            auto part4 = allVarEqual(activeVars,lEnd,lStartN, traceVar(), "The values after the while-loop are the values from the last iteration");
+            auto part4 = allVarEqual(activeVars,lEnd,lStartN, trace, "The values after the while-loop are the values from the last iteration");
             conjuncts.push_back(part4);
 
             return logic::Formulas::conjunction(conjuncts, "Loop at location " + whileStatement->location);
         }
     }
 
-    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::SkipStatement* skipStatement, SemanticsInliner& inliner)
+    std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::SkipStatement* skipStatement, SemanticsInliner& inliner, std::shared_ptr<const logic::Term> trace)
     {
         auto l1 = startTimepointForStatement(skipStatement);
 

@@ -38,11 +38,11 @@ namespace analysis {
         std::vector<std::shared_ptr<const logic::ProblemItem>>& problemItems;
         const unsigned numberOfTraces;
 
-        std::shared_ptr<const logic::Formula> generateSemantics(const program::Statement* statement, SemanticsInliner& inliner);
-        std::shared_ptr<const logic::Formula> generateSemantics(const program::IntAssignment* intAssignment, SemanticsInliner& inliner);
-        std::shared_ptr<const logic::Formula> generateSemantics(const program::IfElse* ifElse, SemanticsInliner& inliner);
-        std::shared_ptr<const logic::Formula> generateSemantics(const program::WhileStatement* whileStatement, SemanticsInliner& inliner);
-        std::shared_ptr<const logic::Formula> generateSemantics(const program::SkipStatement* skipStatement, SemanticsInliner& inliner);
+        std::shared_ptr<const logic::Formula> generateSemantics(const program::Statement* statement, SemanticsInliner& inliner, std::shared_ptr<const logic::Term> trace);
+        std::shared_ptr<const logic::Formula> generateSemantics(const program::IntAssignment* intAssignment, SemanticsInliner& inliner, std::shared_ptr<const logic::Term> trace);
+        std::shared_ptr<const logic::Formula> generateSemantics(const program::IfElse* ifElse, SemanticsInliner& inliner, std::shared_ptr<const logic::Term> trace);
+        std::shared_ptr<const logic::Formula> generateSemantics(const program::WhileStatement* whileStatement, SemanticsInliner& inliner, std::shared_ptr<const logic::Term> trace);
+        std::shared_ptr<const logic::Formula> generateSemantics(const program::SkipStatement* skipStatement, SemanticsInliner& inliner, std::shared_ptr<const logic::Term> trace);
     };
 }
 #endif

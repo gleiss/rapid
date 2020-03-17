@@ -51,15 +51,6 @@ namespace analysis {
      */
     std::shared_ptr<const logic::Formula> toFormula(std::shared_ptr<const program::BoolExpression> expr, std::shared_ptr<const logic::Term> timePoint, std::shared_ptr<const logic::Term> trace);
 
-    /*
-     * convenience methods which call the corresponding methods with a logical variable tr of Sort Trace as argument for trace.
-     * the main use case of these methods is that we don't need to add the tr-variable everywhere in the semantics.
-     */
-    std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const program::Variable> var, std::shared_ptr<const logic::Term> timePoint);
-    std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const program::Variable> arrayVar, std::shared_ptr<const logic::Term> timePoint, std::shared_ptr<const logic::Term> position);
-    std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const program::IntExpression> expr, std::shared_ptr<const logic::Term> timePoint);
-    std::shared_ptr<const logic::Formula> toFormula(std::shared_ptr<const program::BoolExpression> expr, std::shared_ptr<const logic::Term> timePoint);
-
 # pragma mark - Methods for generating most used formulas for describing changes of state
     /*
      * generate a formula asserting that the values of variable v at timepoint1 and timepoint2 are the same.

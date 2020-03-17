@@ -250,35 +250,6 @@ namespace analysis {
             }
         }
     }
-    
-    std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const program::Variable> var, std::shared_ptr<const logic::Term> timePoint)
-    {
-        assert(var != nullptr);
-        assert(timePoint != nullptr);
-        
-        assert(!var->isArray);
-        
-        return toTermFull(var, timePoint, traceVar());
-    }
-    
-    std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const program::Variable> var, std::shared_ptr<const logic::Term> timePoint, std::shared_ptr<const logic::Term> position)
-    {
-        assert(var != nullptr);
-        assert(timePoint != nullptr);
-        assert(position != nullptr);
-        
-        assert(var->isArray);
-        
-        return toTermFull(var, timePoint, position, traceVar());
-    }
-    std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const program::IntExpression> expr, std::shared_ptr<const logic::Term> timePoint)
-    {
-        return toTerm(expr, timePoint, traceVar());
-    }
-    std::shared_ptr<const logic::Formula> toFormula(std::shared_ptr<const program::BoolExpression> expr, std::shared_ptr<const logic::Term> timePoint)
-    {
-        return toFormula(expr, timePoint, traceVar());
-    }
 
     std::shared_ptr<const logic::Formula> varEqual(std::shared_ptr<const program::Variable> v, std::shared_ptr<const logic::Term> timePoint1, std::shared_ptr<const logic::Term> timePoint2)
     {
@@ -286,8 +257,8 @@ namespace analysis {
         {
             return
                 logic::Formulas::equality(
-                    toTerm(v,timePoint1),
-                    toTerm(v,timePoint2)
+                    toTermFull(v,timePoint1,traceVar()),
+                    toTermFull(v,timePoint2,traceVar())
                 );
         }
         else
@@ -297,8 +268,8 @@ namespace analysis {
             return
                 logic::Formulas::universal({posSymbol},
                     logic::Formulas::equality(
-                        toTerm(v,timePoint1,pos),
-                        toTerm(v,timePoint2,pos)
+                        toTermFull(v,timePoint1,pos,traceVar()),
+                        toTermFull(v,timePoint2,pos,traceVar())
                     )
                 );
         }

@@ -47,102 +47,103 @@ namespace analysis {
                     auto predicateFunctor = predicate.first;
                     auto predicateString = predicate.second;
 
-                    auto nameSuffix = "-" + predicateString + "-" + v->name + "-" + whileStatement->location;
-                    auto name = "value-evolution" + nameSuffix;
-                    auto nameShort = "Evol" + nameSuffix;
-                    auto inductionAxiomName = "induction-axiom-" + name;
-                    auto inductionAxiomNameShort = "Ax" + nameShort;
-
-                    // PART 1: Add induction-axiom
-                    // IH(it): v(l(it1,...,itk,boundL)    ) C v(l(it1,...,itk,it)    ), where C in {=,<=,>=} or
-                    //         v(l(it1,...,itk,boundL),pos) C v(l(it1,...,itk,it),pos), where C in {=,<=,>=}
-                    auto inductionHypothesis = [&](std::shared_ptr<const logic::Term> arg)
+                    for (unsigned traceNumber = 1; traceNumber < numberOfTraces+1; traceNumber++)
                     {
-                        auto lStartArg = timepointForLoopStatement(whileStatement, arg);
-                        return predicateFunctor(
-                            v->isArray ? toTerm(v, lStartBoundL, pos, traceVar()) : toTerm(v,lStartBoundL,traceVar()),
-                            v->isArray ? toTerm(v, lStartArg, pos, traceVar()) : toTerm(v,lStartArg, traceVar()),
-                            ""
-                        );
-                    };
+                        auto trace = traceTerm(traceNumber);
 
-                    auto freeVars = enclosingIteratorsSymbols(whileStatement);
-                    if (v->isArray)
-                    {
-                        freeVars.push_back(posSymbol);
-                    }
-                    if (numberOfTraces > 1)
-                    {
-                        freeVars.push_back(traceVarSymbol());
-                    }
+                        auto nameSuffix = "-" + predicateString + "-" + v->name + "-" + whileStatement->location + (numberOfTraces > 1 ? ("-" + trace->symbol->name) : "");
+                        auto name = "value-evolution" + nameSuffix;
+                        auto nameShort = "Evol" + nameSuffix;
+                        auto inductionAxiomName = "induction-axiom-" + name;
+                        auto inductionAxiomNameShort = "Ax" + nameShort;
 
-                    auto [inductionAxBCDef, inductionAxICDef,inductionAxiomConDef, inductionAxiom] = inductionAxiom1(inductionAxiomName, inductionAxiomNameShort, inductionHypothesis, freeVars);
-                    items.push_back(inductionAxBCDef);
-                    items.push_back(inductionAxICDef);
-                    items.push_back(inductionAxiomConDef);
-                    items.push_back(inductionAxiom);
+                        // PART 1: Add induction-axiom
+                        // IH(it): v(l(it1,...,itk,boundL)    ) C v(l(it1,...,itk,it)    ), where C in {=,<=,>=} or
+                        //         v(l(it1,...,itk,boundL),pos) C v(l(it1,...,itk,it),pos), where C in {=,<=,>=}
+                        auto inductionHypothesis = [&](std::shared_ptr<const logic::Term> arg)
+                        {
+                            auto lStartArg = timepointForLoopStatement(whileStatement, arg);
+                            return predicateFunctor(
+                                v->isArray ? toTerm(v, lStartBoundL, pos, trace) : toTerm(v,lStartBoundL,trace),
+                                v->isArray ? toTerm(v, lStartArg, pos, trace) : toTerm(v,lStartArg, trace),
+                                ""
+                            );
+                        };
 
-                    // PART 2: Add trace lemma
-                    auto argSymbols = freeVars;
-                    argSymbols.push_back(boundLSymbol);
-                    argSymbols.push_back(boundRSymbol);
+                        auto freeVars = enclosingIteratorsSymbols(whileStatement);
+                        if (v->isArray)
+                        {
+                            freeVars.push_back(posSymbol);
+                        }
 
-                    std::vector<std::shared_ptr<const logic::Term>> args = {};
-                    for (const auto& symbol : argSymbols)
-                    {
-                        args.push_back(logic::Terms::var(symbol));
-                    }
+                        auto [inductionAxBCDef, inductionAxICDef,inductionAxiomConDef, inductionAxiom] = inductionAxiom1(inductionAxiomName, inductionAxiomNameShort, inductionHypothesis, freeVars);
+                        items.push_back(inductionAxBCDef);
+                        items.push_back(inductionAxICDef);
+                        items.push_back(inductionAxiomConDef);
+                        items.push_back(inductionAxiom);
 
-                    // Part 2A: Add definition for premise:
-                    auto premise = logic::Formulas::lemmaPredicate("Prem" + nameShort, args);
-                    // forall it. (( boundL<=it<boundR and IH(it) ) => IH(s(it)) ), where C in {=,<=,>=}
-                    auto premiseFormula =
-                        logic::Formulas::universal({it->symbol},
-                            logic::Formulas::implication(
-                                logic::Formulas::conjunction({
-                                    logic::Theory::natSubEq(boundL, it),
-                                    logic::Theory::natSub(it, boundR),
+                        // PART 2: Add trace lemma
+                        auto argSymbols = freeVars;
+                        argSymbols.push_back(boundLSymbol);
+                        argSymbols.push_back(boundRSymbol);
+
+                        std::vector<std::shared_ptr<const logic::Term>> args = {};
+                        for (const auto& symbol : argSymbols)
+                        {
+                            args.push_back(logic::Terms::var(symbol));
+                        }
+
+                        // Part 2A: Add definition for premise:
+                        auto premise = logic::Formulas::lemmaPredicate("Prem" + nameShort, args);
+                        // forall it. (( boundL<=it<boundR and IH(it) ) => IH(s(it)) ), where C in {=,<=,>=}
+                        auto premiseFormula =
+                            logic::Formulas::universal({it->symbol},
+                                logic::Formulas::implication(
+                                    logic::Formulas::conjunction({
+                                        logic::Theory::natSubEq(boundL, it),
+                                        logic::Theory::natSub(it, boundR),
+                                        predicateFunctor(
+                                            v->isArray ? toTerm(v,lStartBoundL,pos,trace) : toTerm(v,lStartBoundL,trace),
+                                            v->isArray ? toTerm(v,lStartIt,pos,trace) : toTerm(v,lStartIt,trace),
+                                            ""
+                                        )
+                                    }),
                                     predicateFunctor(
-                                        v->isArray ? toTerm(v,lStartBoundL,pos,traceVar()) : toTerm(v,lStartBoundL,traceVar()),
-                                        v->isArray ? toTerm(v,lStartIt,pos,traceVar()) : toTerm(v,lStartIt,traceVar()),
+                                        v->isArray ? toTerm(v,lStartBoundL,pos,trace) : toTerm(v,lStartBoundL,trace),
+                                        v->isArray ? toTerm(v,lStartSuccOfIt,pos,trace) : toTerm(v,lStartSuccOfIt,trace),
                                         ""
                                     )
-                                }),
-                                predicateFunctor(
-                                    v->isArray ? toTerm(v,lStartBoundL,pos,traceVar()) : toTerm(v,lStartBoundL,traceVar()),
-                                    v->isArray ? toTerm(v,lStartSuccOfIt,pos,traceVar()) : toTerm(v,lStartSuccOfIt,traceVar()),
-                                    ""
                                 )
-                            )
-                        );
-                    auto premiseDef =
-                        std::make_shared<logic::Definition>(
-                            logic::Formulas::universal(argSymbols,
-                                logic::Formulas::equivalence(
-                                    premise,
-                                    premiseFormula
-                                )
-                            ),
-                            "Premise for " + name,
-                            logic::ProblemItem::Visibility::Implicit
-                        );
-                    items.push_back(premiseDef);
+                            );
+                        auto premiseDef =
+                            std::make_shared<logic::Definition>(
+                                logic::Formulas::universal(argSymbols,
+                                    logic::Formulas::equivalence(
+                                        premise,
+                                        premiseFormula
+                                    )
+                                ),
+                                "Premise for " + name,
+                                logic::ProblemItem::Visibility::Implicit
+                            );
+                        items.push_back(premiseDef);
 
-                    // Part 2B: Define lemma:
-                    //boundL<=boundR => IH(boundR)
-                    auto conclusionFormula =
-                        logic::Formulas::implication(
-                            logic::Theory::natSubEq(boundL, boundR),
-                            inductionHypothesis(boundR)
-                        );
-                    // forall enclosingIterators: forall boundL,boundR. (Premise => Conclusion) or
-                    // forall enclosingIterators: forall boundL,boundR. forall pos. (Premise => Conclusion)
-                    auto lemma =
-                        logic::Formulas::universal(argSymbols,
-                            logic::Formulas::implication(premise, conclusionFormula)
-                        );
-                    std::vector<std::string> fromItems = {inductionAxBCDef->name, inductionAxICDef->name, inductionAxiomConDef->name, inductionAxiom->name, premiseDef->name};
-                    items.push_back(std::make_shared<logic::Lemma>(lemma, name, logic::ProblemItem::Visibility::Implicit, fromItems));
+                        // Part 2B: Define lemma:
+                        //boundL<=boundR => IH(boundR)
+                        auto conclusionFormula =
+                            logic::Formulas::implication(
+                                logic::Theory::natSubEq(boundL, boundR),
+                                inductionHypothesis(boundR)
+                            );
+                        // forall enclosingIterators: forall boundL,boundR. (Premise => Conclusion) or
+                        // forall enclosingIterators: forall boundL,boundR. forall pos. (Premise => Conclusion)
+                        auto lemma =
+                            logic::Formulas::universal(argSymbols,
+                                logic::Formulas::implication(premise, conclusionFormula)
+                            );
+                        std::vector<std::string> fromItems = {inductionAxBCDef->name, inductionAxICDef->name, inductionAxiomConDef->name, inductionAxiom->name, premiseDef->name};
+                        items.push_back(std::make_shared<logic::Lemma>(lemma, name, logic::ProblemItem::Visibility::Implicit, fromItems));
+                    }
                 }
             }
         }
@@ -152,11 +153,9 @@ namespace analysis {
     {
         auto itSymbol = iteratorSymbol(statement);
         auto it = iteratorTermForLoop(statement);
-        auto n = lastIterationTermForLoop(statement, numberOfTraces, traceVar());
 
         auto lStartIt = timepointForLoopStatement(statement, it);
         auto lStartZero = timepointForLoopStatement(statement, logic::Theory::natZero());
-        auto lStartN = timepointForLoopStatement(statement, n);
 
         auto posSymbol = posVarSymbol();
         auto pos = posVar();
@@ -170,61 +169,66 @@ namespace analysis {
         {
             if (!v->isConstant && assignedVars.find(v) == assignedVars.end())
             {
-                auto nameSuffix = "-" + v->name + "-" + statement->location;
-                auto name = "value-static" + nameSuffix;
-                auto nameShort = "Static" + nameSuffix;
-                auto inductionAxiomName = "induction-axiom-" + name;
-                auto inductionAxiomNameShort = "Ax" + nameShort;
-
-                // IH(it): v(l(it1,...,itk,zero)    ) = v(l(it1,...,itk,it)    ) or
-                //         v(l(it1,...,itk,zero),pos) = v(l(it1,...,itk,it),pos)
-                auto inductionHypothesis = [&](std::shared_ptr<const logic::Term> arg)
+                for (unsigned traceNumber = 1; traceNumber < numberOfTraces+1; traceNumber++)
                 {
-                    auto lStartArg = timepointForLoopStatement(statement, arg);
-                    return
-                    logic::Formulas::equality(
-                                              v->isArray ? toTerm(v,lStartZero,pos,traceVar()) : toTerm(v,lStartZero,traceVar()),
-                                              v->isArray ? toTerm(v,lStartArg,pos,traceVar()) : toTerm(v,lStartArg,traceVar())
-                                              );
-                };
+                    auto trace = traceTerm(traceNumber);
 
-                // PART 1: Add induction-axiom
-                auto freeVars = enclosingIteratorsSymbols(statement);
-                if (v->isArray)
-                {
-                    freeVars.push_back(posSymbol);
+                    auto n = lastIterationTermForLoop(statement, numberOfTraces, trace);
+                    auto lStartN = timepointForLoopStatement(statement, n);
+
+                    auto nameSuffix = "-" + v->name + "-" + statement->location + (numberOfTraces > 1 ? ("-" + trace->symbol->name) : "");
+                    auto name = "value-static" + nameSuffix;
+                    auto nameShort = "Static" + nameSuffix;
+                    auto inductionAxiomName = "induction-axiom-" + name;
+                    auto inductionAxiomNameShort = "Ax" + nameShort;
+
+                    // IH(it): v(l(it1,...,itk,zero)    ) = v(l(it1,...,itk,it)    ) or
+                    //         v(l(it1,...,itk,zero),pos) = v(l(it1,...,itk,it),pos)
+                    auto inductionHypothesis = [&](std::shared_ptr<const logic::Term> arg)
+                    {
+                        auto lStartArg = timepointForLoopStatement(statement, arg);
+                        return
+                            logic::Formulas::equality(
+                                v->isArray ? toTerm(v,lStartZero,pos,trace) : toTerm(v,lStartZero,trace),
+                                v->isArray ? toTerm(v,lStartArg,pos,trace) : toTerm(v,lStartArg,trace)
+                            );
+                    };
+
+                    // PART 1: Add induction-axiom
+                    auto freeVars = enclosingIteratorsSymbols(statement);
+                    if (v->isArray)
+                    {
+                        freeVars.push_back(posSymbol);
+                    }
+
+                    auto [inductionAxBCDef, inductionAxICDef,inductionAxiomConDef, inductionAxiom] = logic::inductionAxiom1(inductionAxiomName, inductionAxiomNameShort, inductionHypothesis, freeVars);
+                    items.push_back(inductionAxBCDef);
+                    items.push_back(inductionAxICDef);
+                    items.push_back(inductionAxiomConDef);
+                    items.push_back(inductionAxiom);
+
+                    // PART 2: Add trace lemma
+                    auto argSymbols = freeVars;
+                    argSymbols.push_back(itSymbol);
+
+                    // forall enclosing iterators. {forall pos.} forall it. (it<=n => IH(it))
+                    auto lemma =
+                        logic::Formulas::universal(argSymbols,
+                            logic::Formulas::implication(
+                                logic::Theory::natSubEq(it, n),
+                                inductionHypothesis(it)
+                            )
+                        );
+
+                    std::vector<std::string> fromItems = {inductionAxBCDef->name, inductionAxICDef->name, inductionAxiomConDef->name, inductionAxiom->name};
+                    for (auto& item : programSemantics)
+                    {
+                        fromItems.push_back(item->name);
+                    }
+
+                    items.push_back(std::make_shared<logic::Lemma>(lemma, name, logic::ProblemItem::Visibility::Implicit, fromItems));
                 }
-                if (numberOfTraces > 1)
-                {
-                    freeVars.push_back(traceVarSymbol());
-                }
 
-                auto [inductionAxBCDef, inductionAxICDef,inductionAxiomConDef, inductionAxiom] = logic::inductionAxiom1(inductionAxiomName, inductionAxiomNameShort, inductionHypothesis, freeVars);
-                items.push_back(inductionAxBCDef);
-                items.push_back(inductionAxICDef);
-                items.push_back(inductionAxiomConDef);
-                items.push_back(inductionAxiom);
-
-                // PART 2: Add trace lemma
-                auto argSymbols = freeVars;
-                argSymbols.push_back(itSymbol);
-
-                // forall enclosing iterators. {forall pos.} forall it. (it<=n => IH(it))
-                auto lemma =
-                    logic::Formulas::universal(argSymbols,
-                        logic::Formulas::implication(
-                            logic::Theory::natSubEq(it, n),
-                            inductionHypothesis(it)
-                        )
-                    );
-
-                std::vector<std::string> fromItems = {inductionAxBCDef->name, inductionAxICDef->name, inductionAxiomConDef->name, inductionAxiom->name};
-                for (auto& item : programSemantics)
-                {
-                    fromItems.push_back(item->name);
-                }
-
-                items.push_back(std::make_shared<logic::Lemma>(lemma, name, logic::ProblemItem::Visibility::Implicit, fromItems));
             }
         }
     }

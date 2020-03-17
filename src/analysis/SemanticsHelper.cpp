@@ -11,10 +11,6 @@
 namespace analysis {
 # pragma mark - Methods for generating most used variables
 
-    std::shared_ptr<const logic::LVariable> traceVar()
-    {
-        return logic::Terms::var(traceVarSymbol());
-    }
     std::shared_ptr<const logic::LVariable> posVar()
     {
         return logic::Terms::var(posVarSymbol());

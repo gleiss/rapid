@@ -36,12 +36,12 @@ namespace analysis {
      * convert a program variable to a logical term refering to the value of Variable var at the Timepoint timepoint in the Trace trace.
      * The first version must only be used for non-array variables, the second version must only be used for array-variables (where position refers to the position in the array).
      */
-    std::shared_ptr<const logic::Term> toTermFull(std::shared_ptr<const program::Variable> var, std::shared_ptr<const logic::Term> timePoint, std::shared_ptr<const logic::Term> trace);
-    std::shared_ptr<const logic::Term> toTermFull(std::shared_ptr<const program::Variable> arrayVar, std::shared_ptr<const logic::Term> timePoint, std::shared_ptr<const logic::Term> position, std::shared_ptr<const logic::Term> trace);
+    std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const program::Variable> var, std::shared_ptr<const logic::Term> timePoint, std::shared_ptr<const logic::Term> trace);
+    std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const program::Variable> arrayVar, std::shared_ptr<const logic::Term> timePoint, std::shared_ptr<const logic::Term> position, std::shared_ptr<const logic::Term> trace);
     
     /*
      * convert the expression expr to a logical term refering to the value of the Expression expr at the Timepoint timepoint.
-     * calls toTermFull(var,...) internally.
+     * calls toTerm(var,...) internally.
      */
     std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const program::IntExpression> expr, std::shared_ptr<const logic::Term> timePoint, std::shared_ptr<const logic::Term> trace);
     

@@ -88,14 +88,14 @@ namespace analysis {
                         logic::Formulas::conjunction({
                             logic::Theory::natSub(it1,it2),
                             logic::Formulas::equality(
-                                toTermFull(v,lStartZero,t1),
-                                toTermFull(v,lStartZero,t2)
+                                toTerm(v,lStartZero,t1),
+                                toTerm(v,lStartZero,t2)
                             ),
                             logic::Formulas::universal({tr3Symbol,iSymbol},
                                 logic::Formulas::equality(
-                                    toTermFull(v,lStartSuccOfIt,tr3),
+                                    toTerm(v,lStartSuccOfIt,tr3),
                                     logic::Theory::intAddition(
-                                        toTermFull(v,lStartIt,tr3),
+                                        toTerm(v,lStartIt,tr3),
                                         logic::Theory::intConstant(1)
                                     )
                                 )
@@ -105,8 +105,8 @@ namespace analysis {
                     // Conclusion: i(l(it1),tr) < i(l(it2),tr)
                     auto conclusion =
                         logic::Theory::intLess(
-                            toTermFull(v,lStartIt1,tr),
-                            toTermFull(v,lStartIt2,tr)
+                            toTerm(v,lStartIt1,tr),
+                            toTerm(v,lStartIt2,tr)
                         );
                     
                     // forall enclosingIterators. forall tr,it1,it2. (premise => conclusion)

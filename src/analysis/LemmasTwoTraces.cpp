@@ -42,8 +42,8 @@ namespace analysis {
                                 auto lStartArg = timepointForLoopStatement(statement, arg);
                                 return
                                     logic::Formulas::equality(
-                                        v->isArray ? toTermFull(v, lStartArg, pos, t1) : toTermFull(v, lStartArg, t1),
-                                        v->isArray ? toTermFull(v, lStartArg, pos, t2) : toTermFull(v, lStartArg, t2)
+                                        v->isArray ? toTerm(v, lStartArg, pos, t1) : toTerm(v, lStartArg, t1),
+                                        v->isArray ? toTerm(v, lStartArg, pos, t2) : toTerm(v, lStartArg, t2)
                                     );
                             };
 
@@ -114,8 +114,8 @@ namespace analysis {
                                     logic::Formulas::universal(
                                         {posSymbol},
                                         logic::Formulas::equality(
-                                            toTermFull(v, lStartArg, pos, t1),
-                                            toTermFull(v, lStartArg, pos, t2)
+                                            toTerm(v, lStartArg, pos, t1),
+                                            toTerm(v, lStartArg, pos, t2)
                                         )
                                     )
                                 );
@@ -124,8 +124,8 @@ namespace analysis {
                             {
                                 conjuncts.push_back(
                                         logic::Formulas::equality(
-                                        toTermFull(v, lStartArg, t1),
-                                        toTermFull(v, lStartArg, t2)
+                                        toTerm(v, lStartArg, t1),
+                                        toTerm(v, lStartArg, t2)
                                     )
                                 );
                             }
@@ -159,8 +159,8 @@ namespace analysis {
                                 logic::Formulas::universal(
                                     {posSymbol},
                                     logic::Formulas::equality(
-                                        toTermFull(v, nullptr, pos, t1),
-                                        toTermFull(v, nullptr, pos, t2)
+                                        toTerm(v, nullptr, pos, t1),
+                                        toTerm(v, nullptr, pos, t2)
                                     )
                                 )
                             );
@@ -169,8 +169,8 @@ namespace analysis {
                         {
                             premiseConjuncts.push_back(
                                     logic::Formulas::equality(
-                                    toTermFull(v, nullptr, t1),
-                                    toTermFull(v, nullptr, t2)
+                                    toTerm(v, nullptr, t1),
+                                    toTerm(v, nullptr, t2)
                                 )
                             );
                         }

@@ -181,7 +181,7 @@ namespace analysis
         // if no value is cached yet, initialize cache (note that we use a free variable as trace (which has to be universally quantified later))
         if(cachedIntVarValues.find(var) == cachedIntVarValues.end())
         {
-            cachedIntVarValues[var] = toTermFull(var, currTimepoint, traceVar());
+            cachedIntVarValues[var] = toTerm(var, currTimepoint, traceVar());
         }
         // return cached value
         return cachedIntVarValues.at(var);
@@ -199,7 +199,7 @@ namespace analysis
             cachedArrayVarTimepoints[arrayVar] = currTimepoint;
         }
         auto cachedTimepoint = cachedArrayVarTimepoints.at(arrayVar);
-        return toTermFull(arrayVar, cachedTimepoint, position, traceVar());
+        return toTerm(arrayVar, cachedTimepoint, position, traceVar());
     }
 
     std::shared_ptr<const logic::Term> SemanticsInliner::toCachedTerm(std::shared_ptr<const program::IntExpression> expr)
@@ -319,7 +319,7 @@ namespace analysis
                 {
                     if (!var->isArray)
                     {
-                        auto currValue = toTermFull(var, timepoint, traceVar());
+                        auto currValue = toTerm(var, timepoint, traceVar());
 
                         // if we already know a value for the variable
                         if (cachedIntVarValues.find(var) != cachedIntVarValues.end())
@@ -352,8 +352,8 @@ namespace analysis
                             auto f = 
                                 logic::Formulas::universalSimp({posSymbol}, 
                                     logic::Formulas::equalitySimp(
-                                        toTermFull(var, currTimepoint, pos, traceVar()), 
-                                        toTermFull(var, cachedTimepoint, pos, traceVar())
+                                        toTerm(var, currTimepoint, pos, traceVar()), 
+                                        toTerm(var, cachedTimepoint, pos, traceVar())
                                     )
                                 );
                             conjuncts.push_back(f);
@@ -405,12 +405,12 @@ namespace analysis
                         // a variable x exists at loop locations l1 and l2 but the first assignment to x only appears after the loop, and we want to prove the conjecture forall it. (s(it)<n => x(l(it))=x(l(s(it))))
                         // using this branch of execution, we set the cached value of x at location l1 to x(l(zero)). Afterwards (but still in this method-invocation), we add an equality x(l(it))=x(l(zero)) which will then be used to prove the conjecture.
                         // we can interpret this edge case as covering the fact that uninitialized memory stays the same in each iteration, if no assigment occurs.
-                        cachedIntVarValues[var] = toTermFull(var, startTimepoint, traceVar());
+                        cachedIntVarValues[var] = toTerm(var, startTimepoint, traceVar());
                     }
 
                     auto f = 
                         logic::Formulas::equality(
-                            toTermFull(var, iterationTimepoint, traceVar()), 
+                            toTerm(var, iterationTimepoint, traceVar()), 
                             cachedIntVarValues[var]
                         );
                     conjuncts.push_back(f);
@@ -431,8 +431,8 @@ namespace analysis
                     auto pos = posVar();
                     auto f = 
                         logic::Formulas::equality(
-                            toTermFull(var, iterationTimepoint, pos, traceVar()),
-                            toTermFull(var, cachedArrayVarTimepoints[var], pos, traceVar())
+                            toTerm(var, iterationTimepoint, pos, traceVar()),
+                            toTerm(var, cachedArrayVarTimepoints[var], pos, traceVar())
                         );
                     conjuncts.push_back(f);
                 }
@@ -461,7 +461,7 @@ namespace analysis
                 // add formula
                 return 
                     logic::Formulas::equality(
-                        toTermFull(var, currTimepoint, traceVar()), 
+                        toTerm(var, currTimepoint, traceVar()), 
                         cachedIntVarValues[var]
                     );
             }

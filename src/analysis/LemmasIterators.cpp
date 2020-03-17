@@ -50,7 +50,7 @@ namespace analysis {
                     {
                         auto lStartArg = timepointForLoopStatement(statement, arg);
                         return logic::Theory::intLessEqual(
-                            v->isArray ? toTermFull(v, lStartArg, pos, traceVar()) : toTermFull(v, lStartArg, traceVar()),
+                            v->isArray ? toTerm(v, lStartArg, pos, traceVar()) : toTerm(v, lStartArg, traceVar()),
                             x
                         );
                     };
@@ -95,13 +95,13 @@ namespace analysis {
                                 logic::Theory::natSub(it, n),
                                 logic::Formulas::disjunction({
                                     logic::Formulas::equality(
-                                        v->isArray ? toTermFull(v,lStartSuccOfIt,pos,traceVar()) : toTermFull(v,lStartSuccOfIt,traceVar()),
-                                        v->isArray ? toTermFull(v,lStartIt,pos,traceVar()) : toTermFull(v,lStartIt,traceVar())
+                                        v->isArray ? toTerm(v,lStartSuccOfIt,pos,traceVar()) : toTerm(v,lStartSuccOfIt,traceVar()),
+                                        v->isArray ? toTerm(v,lStartIt,pos,traceVar()) : toTerm(v,lStartIt,traceVar())
                                     ),
                                     logic::Formulas::equality(
-                                        v->isArray ? toTermFull(v,lStartSuccOfIt,pos,traceVar()) : toTermFull(v,lStartSuccOfIt,traceVar()),
+                                        v->isArray ? toTerm(v,lStartSuccOfIt,pos,traceVar()) : toTerm(v,lStartSuccOfIt,traceVar()),
                                         logic::Theory::intAddition(
-                                            v->isArray ?  toTermFull(v,lStartIt,pos,traceVar()) : toTermFull(v,lStartIt,traceVar()),
+                                            v->isArray ?  toTerm(v,lStartIt,pos,traceVar()) : toTerm(v,lStartIt,traceVar()),
                                             logic::Theory::intConstant(1)
                                         )
                                     )
@@ -129,12 +129,12 @@ namespace analysis {
                     auto premiseFormula =
                         logic::Formulas::conjunction({
                             logic::Theory::intLessEqual(
-                                v->isArray ? toTermFull(v,lStartZero,pos,traceVar()) : toTermFull(v,lStartZero,traceVar()),
+                                v->isArray ? toTerm(v,lStartZero,pos,traceVar()) : toTerm(v,lStartZero,traceVar()),
                                 x
                             ),
                             logic::Theory::intLess(
                                 x,
-                                v->isArray ? toTermFull(v,lStartN,pos,traceVar()) : toTermFull(v,lStartN,traceVar())
+                                v->isArray ? toTerm(v,lStartN,pos,traceVar()) : toTerm(v,lStartN,traceVar())
                             ),
                             dense
                         });
@@ -160,13 +160,13 @@ namespace analysis {
                             logic::Formulas::conjunction({
                                 logic::Theory::natSub(it2,n),
                                 logic::Formulas::equality(
-                                    v->isArray ? toTermFull(v,lStartIt2,pos,traceVar()) : toTermFull(v,lStartIt2,traceVar()),
+                                    v->isArray ? toTerm(v,lStartIt2,pos,traceVar()) : toTerm(v,lStartIt2,traceVar()),
                                     x
                                 ),
                                 logic::Formulas::equality(
-                                    v->isArray ? toTermFull(v,lStartSuccOfIt2,pos,traceVar()) : toTermFull(v,lStartSuccOfIt2,traceVar()),
+                                    v->isArray ? toTerm(v,lStartSuccOfIt2,pos,traceVar()) : toTerm(v,lStartSuccOfIt2,traceVar()),
                                     logic::Theory::intAddition(
-                                        v->isArray ? toTermFull(v,lStartIt2,pos,traceVar()) : toTermFull(v,lStartIt2,traceVar()),
+                                        v->isArray ? toTerm(v,lStartIt2,pos,traceVar()) : toTerm(v,lStartIt2,traceVar()),
                                         logic::Theory::intConstant(1)
                                     )
                                 ),
@@ -230,7 +230,7 @@ namespace analysis {
                     auto inductionHypothesis = [&](std::shared_ptr<const logic::Term> arg)
                     {
                         auto lStartArg = timepointForLoopStatement(statement, arg);
-                        return logic::Theory::intLess(toTermFull(v,lStartIt1,traceVar()), toTermFull(v,lStartArg,traceVar()));
+                        return logic::Theory::intLess(toTerm(v,lStartIt1,traceVar()), toTerm(v,lStartArg,traceVar()));
                     };
 
                     auto [inductionAxBCDef, inductionAxICDef,inductionAxiomConDef, inductionAxiom] = logic::inductionAxiom1(inductionAxiomName, inductionAxiomNameShort, inductionHypothesis, freeVarSymbolsInd);
@@ -265,9 +265,9 @@ namespace analysis {
                         logic::Formulas::conjunction({
                             dense,
                             logic::Formulas::equality(
-                                toTermFull(v, lStartSuccOfIt1, traceVar()),
+                                toTerm(v, lStartSuccOfIt1, traceVar()),
                                 logic::Theory::intAddition(
-                                    toTermFull(v, lStartIt1, traceVar()),
+                                    toTerm(v, lStartIt1, traceVar()),
                                     logic::Theory::intConstant(1)
                                 )
                             ),
@@ -278,8 +278,8 @@ namespace analysis {
                     // Conclusion: v(l(it1))!=v(l(it2))
                     auto conclusion =
                         logic::Formulas::disequality(
-                            toTermFull(v,lStartIt1,traceVar()),
-                            toTermFull(v,lStartIt2,traceVar())
+                            toTerm(v,lStartIt1,traceVar()),
+                            toTerm(v,lStartIt2,traceVar())
                         );
                     
                     // forall enclosingIterators. forall it1,it2. (premise => conclusion)

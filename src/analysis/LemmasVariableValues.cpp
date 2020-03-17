@@ -60,8 +60,8 @@ namespace analysis {
                     {
                         auto lStartArg = timepointForLoopStatement(whileStatement, arg);
                         return predicateFunctor(
-                            v->isArray ? toTermFull(v, lStartBoundL, pos, traceVar()) : toTermFull(v,lStartBoundL,traceVar()),
-                            v->isArray ? toTermFull(v, lStartArg, pos, traceVar()) : toTermFull(v,lStartArg, traceVar()),
+                            v->isArray ? toTerm(v, lStartBoundL, pos, traceVar()) : toTerm(v,lStartBoundL,traceVar()),
+                            v->isArray ? toTerm(v, lStartArg, pos, traceVar()) : toTerm(v,lStartArg, traceVar()),
                             ""
                         );
                     };
@@ -103,14 +103,14 @@ namespace analysis {
                                     logic::Theory::natSubEq(boundL, it),
                                     logic::Theory::natSub(it, boundR),
                                     predicateFunctor(
-                                        v->isArray ? toTermFull(v,lStartBoundL,pos,traceVar()) : toTermFull(v,lStartBoundL,traceVar()),
-                                        v->isArray ? toTermFull(v,lStartIt,pos,traceVar()) : toTermFull(v,lStartIt,traceVar()),
+                                        v->isArray ? toTerm(v,lStartBoundL,pos,traceVar()) : toTerm(v,lStartBoundL,traceVar()),
+                                        v->isArray ? toTerm(v,lStartIt,pos,traceVar()) : toTerm(v,lStartIt,traceVar()),
                                         ""
                                     )
                                 }),
                                 predicateFunctor(
-                                    v->isArray ? toTermFull(v,lStartBoundL,pos,traceVar()) : toTermFull(v,lStartBoundL,traceVar()),
-                                    v->isArray ? toTermFull(v,lStartSuccOfIt,pos,traceVar()) : toTermFull(v,lStartSuccOfIt,traceVar()),
+                                    v->isArray ? toTerm(v,lStartBoundL,pos,traceVar()) : toTerm(v,lStartBoundL,traceVar()),
+                                    v->isArray ? toTerm(v,lStartSuccOfIt,pos,traceVar()) : toTerm(v,lStartSuccOfIt,traceVar()),
                                     ""
                                 )
                             )
@@ -183,8 +183,8 @@ namespace analysis {
                     auto lStartArg = timepointForLoopStatement(statement, arg);
                     return
                     logic::Formulas::equality(
-                                              v->isArray ? toTermFull(v,lStartZero,pos,traceVar()) : toTermFull(v,lStartZero,traceVar()),
-                                              v->isArray ? toTermFull(v,lStartArg,pos,traceVar()) : toTermFull(v,lStartArg,traceVar())
+                                              v->isArray ? toTerm(v,lStartZero,pos,traceVar()) : toTerm(v,lStartZero,traceVar()),
+                                              v->isArray ? toTerm(v,lStartArg,pos,traceVar()) : toTerm(v,lStartArg,traceVar())
                                               );
                 };
 

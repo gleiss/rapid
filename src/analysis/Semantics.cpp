@@ -132,8 +132,8 @@ namespace analysis {
                             {
                                 auto eq =
                                     logic::Formulas::equality(
-                                        toTermFull(var,l2,traceVar()),
-                                        toTermFull(var,l1,traceVar())
+                                        toTerm(var,l2,traceVar()),
+                                        toTerm(var,l1,traceVar())
                                     );
                                 conjuncts.push_back(eq);
                             }
@@ -146,8 +146,8 @@ namespace analysis {
                             auto conjunct =
                                 logic::Formulas::universal({posSymbol},
                                     logic::Formulas::equality(
-                                        toTermFull(var,l2,pos,traceVar()),
-                                        toTermFull(var,l1,pos,traceVar())
+                                        toTerm(var,l2,pos,traceVar()),
+                                        toTerm(var,l1,pos,traceVar())
                                     )
                                 );
                             conjuncts.push_back(conjunct);
@@ -171,7 +171,7 @@ namespace analysis {
                 conjuncts.push_back(f1);
 
                 // a(l2, cached(e)) = cached(rhs)
-                auto eq1Lhs = toTermFull(application->array,l2,inliner.toCachedTerm(application->index),traceVar());
+                auto eq1Lhs = toTerm(application->array,l2,inliner.toCachedTerm(application->index),traceVar());
                 auto eq1Rhs = inliner.toCachedTerm(intAssignment->rhs);
                 auto eq1 = logic::Formulas::equality(eq1Lhs, eq1Rhs);
                 conjuncts.push_back(eq1);
@@ -181,7 +181,7 @@ namespace analysis {
                 auto pos = posVar();
 
                 auto premise = logic::Formulas::disequality(pos, inliner.toCachedTerm(application->index));
-                auto eq2 = logic::Formulas::equality(toTermFull(application->array,l2,pos,traceVar()), inliner.toCachedTermFull(application->array,pos));
+                auto eq2 = logic::Formulas::equality(toTerm(application->array,l2,pos,traceVar()), inliner.toCachedTermFull(application->array,pos));
                 auto conjunct = logic::Formulas::universal({posSymbol}, logic::Formulas::implication(premise, eq2));
                 conjuncts.push_back(conjunct);
 
@@ -193,7 +193,7 @@ namespace analysis {
             else
             {
                 // a(l2, e(l1)) = rhs(l1)
-                auto eq1Lhs = toTermFull(application->array,l2,toTerm(application->index,l1,traceVar()),traceVar());
+                auto eq1Lhs = toTerm(application->array,l2,toTerm(application->index,l1,traceVar()),traceVar());
                 auto eq1Rhs = toTerm(intAssignment->rhs,l1,traceVar());
                 auto eq1 = logic::Formulas::equality(eq1Lhs, eq1Rhs);
                 conjuncts.push_back(eq1);
@@ -203,7 +203,7 @@ namespace analysis {
                 auto pos = posVar();
 
                 auto premise = logic::Formulas::disequality(pos, toTerm(application->index,l1,traceVar()));
-                auto eq2 = logic::Formulas::equality(toTermFull(application->array, l2, pos,traceVar()), toTermFull(application->array,l1,pos,traceVar()));
+                auto eq2 = logic::Formulas::equality(toTerm(application->array, l2, pos,traceVar()), toTerm(application->array,l1,pos,traceVar()));
                 auto conjunct = logic::Formulas::universal({posSymbol}, logic::Formulas::implication(premise, eq2));
                 conjuncts.push_back(conjunct);
 
@@ -216,8 +216,8 @@ namespace analysis {
                             // forall active non-const int-variables: v(l2) = v(l1)
                             auto eq =
                                 logic::Formulas::equality(
-                                    toTermFull(var,l2,traceVar()),
-                                    toTermFull(var,l1,traceVar())
+                                    toTerm(var,l2,traceVar()),
+                                    toTerm(var,l1,traceVar())
                                 );
                             conjuncts.push_back(eq);
                         }
@@ -231,8 +231,8 @@ namespace analysis {
                                 auto conjunct =
                                     logic::Formulas::universal({posSymbol},
                                         logic::Formulas::equality(
-                                            toTermFull(var,l2,pos,traceVar()),
-                                            toTermFull(var,l1,pos,traceVar())
+                                            toTerm(var,l2,pos,traceVar()),
+                                            toTerm(var,l1,pos,traceVar())
                                         )
                                     );
                                 conjuncts.push_back(conjunct);
@@ -328,7 +328,7 @@ namespace analysis {
             {
                 if (!var->isArray)
                 {
-                    auto varLEnd = toTermFull(var,lEnd,traceVar());
+                    auto varLEnd = toTerm(var,lEnd,traceVar());
 
                     // define the value of var at lEnd as the merge of values at the end of the two branches
                     conjunctsLeft.push_back(
@@ -355,7 +355,7 @@ namespace analysis {
 
                     auto posSymbol = posVarSymbol();
                     auto pos = posVar();
-                    auto varLEnd = toTermFull(var,lEnd,pos,traceVar());
+                    auto varLEnd = toTerm(var,lEnd,pos,traceVar());
 
                     // define the value of var at lEnd as the merge of values at the end of the two branches
                     conjunctsLeft.push_back(
@@ -485,7 +485,7 @@ namespace analysis {
                 {
                     conjPart1.push_back(
                         logic::Formulas::equalitySimp(
-                            toTermFull(var, lStart0,traceVar()),
+                            toTerm(var, lStart0,traceVar()),
                             inliner.toCachedTermFull(var)
                         )
                     );
@@ -495,7 +495,7 @@ namespace analysis {
                     conjPart1.push_back(
                         logic::Formulas::universalSimp({posSymbol},
                             logic::Formulas::equalitySimp(
-                                toTermFull(var,lStart0,pos,traceVar()),
+                                toTerm(var,lStart0,pos,traceVar()),
                                 inliner.toCachedTermFull(var, pos)
                             )
                         )
@@ -517,7 +517,7 @@ namespace analysis {
                 if (!var->isArray)
                 {
                     assert(!var->isConstant);
-                    auto result = inliner.setIntVarValue(var,toTermFull(var,lStartIt,traceVar()));
+                    auto result = inliner.setIntVarValue(var,toTerm(var,lStartIt,traceVar()));
                 }
                 else
                 {
@@ -552,7 +552,7 @@ namespace analysis {
                 {
                     conjunctsBody.push_back(
                         logic::Formulas::equalitySimp(
-                            toTermFull(var,lStartSuccOfIt,traceVar()),
+                            toTerm(var,lStartSuccOfIt,traceVar()),
                             inliner.toCachedTermFull(var),
                             "Define value of variable " + var->name + " at beginning of next iteration"
                         )
@@ -563,7 +563,7 @@ namespace analysis {
                     conjunctsBody.push_back(
                         logic::Formulas::universalSimp({posSymbol},
                             logic::Formulas::equalitySimp(
-                                toTermFull(var,lStartSuccOfIt,pos,traceVar()),
+                                toTerm(var,lStartSuccOfIt,pos,traceVar()),
                                 inliner.toCachedTermFull(var, pos)
                             ),
                             "Define value of array variable " + var->name + " at beginning of next iteration"
@@ -589,7 +589,7 @@ namespace analysis {
                 if (!var->isArray)
                 {
                     assert(!var->isConstant);
-                    auto result = inliner.setIntVarValue(var, toTermFull(var,lStartN,traceVar()));
+                    auto result = inliner.setIntVarValue(var, toTerm(var,lStartN,traceVar()));
                 }
                 else
                 {

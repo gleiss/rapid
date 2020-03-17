@@ -111,7 +111,7 @@ namespace analysis {
 
     
 # pragma mark - Methods for generating most used terms/predicates denoting program-expressions
-    std::shared_ptr<const logic::Term> toTermFull(std::shared_ptr<const program::Variable> var, std::shared_ptr<const logic::Term> timePoint, std::shared_ptr<const logic::Term> trace)
+    std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const program::Variable> var, std::shared_ptr<const logic::Term> timePoint, std::shared_ptr<const logic::Term> trace)
     {
         assert(var != nullptr);
         assert(trace != nullptr);
@@ -133,7 +133,7 @@ namespace analysis {
         return logic::Terms::func(var->name, arguments, logic::Sorts::intSort());
     }
     
-    std::shared_ptr<const logic::Term> toTermFull(std::shared_ptr<const program::Variable> var, std::shared_ptr<const logic::Term> timePoint, std::shared_ptr<const logic::Term> position, std::shared_ptr<const logic::Term> trace)
+    std::shared_ptr<const logic::Term> toTerm(std::shared_ptr<const program::Variable> var, std::shared_ptr<const logic::Term> timePoint, std::shared_ptr<const logic::Term> position, std::shared_ptr<const logic::Term> trace)
     {
         assert(var != nullptr);
         assert(position != nullptr);
@@ -194,12 +194,12 @@ namespace analysis {
             case program::IntExpression::Type::IntVariableAccess:
             {
                 auto castedExpr = std::static_pointer_cast<const program::IntVariableAccess>(expr);
-                return toTermFull(castedExpr->var, timePoint, trace);
+                return toTerm(castedExpr->var, timePoint, trace);
             }
             case program::IntExpression::Type::IntArrayApplication:
             {
                 auto castedExpr = std::static_pointer_cast<const program::IntArrayApplication>(expr);
-                return toTermFull(castedExpr->array, timePoint, toTerm(castedExpr->index, timePoint, trace), trace);
+                return toTerm(castedExpr->array, timePoint, toTerm(castedExpr->index, timePoint, trace), trace);
             }
         }
     }
@@ -257,8 +257,8 @@ namespace analysis {
         {
             return
                 logic::Formulas::equality(
-                    toTermFull(v,timePoint1,traceVar()),
-                    toTermFull(v,timePoint2,traceVar())
+                    toTerm(v,timePoint1,traceVar()),
+                    toTerm(v,timePoint2,traceVar())
                 );
         }
         else
@@ -268,8 +268,8 @@ namespace analysis {
             return
                 logic::Formulas::universal({posSymbol},
                     logic::Formulas::equality(
-                        toTermFull(v,timePoint1,pos,traceVar()),
-                        toTermFull(v,timePoint2,pos,traceVar())
+                        toTerm(v,timePoint1,pos,traceVar()),
+                        toTerm(v,timePoint2,pos,traceVar())
                     )
                 );
         }

@@ -17,8 +17,9 @@ namespace analysis
     class SemanticsInliner
     {
     public:
-        SemanticsInliner(std::vector<std::shared_ptr<const logic::ProblemItem>>& problemItems) : persistentVarTerms(), persistentConstVarTerms(), currTimepoint(nullptr), cachedIntVarValues(), cachedArrayVarTimepoints()
+        SemanticsInliner(std::vector<std::shared_ptr<const logic::ProblemItem>>& problemItems, std::shared_ptr<const logic::Term> trace) : persistentVarTerms(), persistentConstVarTerms(), currTimepoint(nullptr), trace(trace), cachedIntVarValues(), cachedArrayVarTimepoints()
         {
+            assert(trace != nullptr);
             computePersistentTerms(problemItems);
         }
         
@@ -51,6 +52,8 @@ namespace analysis
         const std::unordered_map<std::shared_ptr<const program::Variable>, std::shared_ptr<const logic::Term>>& getCachedArrayVarTimepoints() { return cachedArrayVarTimepoints; }
 
     private:
+        std::shared_ptr<const logic::Term> trace;
+
         typedef std::unordered_map<std::string, std::vector<std::string>> MapVarNameToLocationName;
         typedef std::unordered_set<std::string> SetConstVarNames;
 

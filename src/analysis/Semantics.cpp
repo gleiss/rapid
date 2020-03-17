@@ -37,7 +37,7 @@ namespace analysis {
         std::vector<std::shared_ptr<const logic::Axiom>> axioms;
         for(const auto& function : program.functions)
         {
-            SemanticsInliner inliner(problemItems);
+            SemanticsInliner inliner(problemItems, traceVar());
             std::vector<std::shared_ptr<const logic::Formula>> conjunctsFunction;
             for (const auto& statement : function->statements)
             {

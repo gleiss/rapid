@@ -34,7 +34,12 @@ namespace analysis {
         }
 
         auto name = "atLeastOneIteration-" + statement->location;
-        items.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
+        std::vector<std::string> fromItems;
+        for (auto& item : programSemantics)
+        {
+            fromItems.push_back(item->name);
+        }
+        items.push_back(std::make_shared<logic::Lemma>(bareLemma, name, logic::ProblemItem::Visibility::Implicit, fromItems));
     }
     
     void OrderingSynchronizationLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::ProblemItem>>& items)

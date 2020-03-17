@@ -45,7 +45,7 @@ namespace analysis {
         iterationInjectivityLemmas.generate(items);
         
         // Other lemmas
-        AtLeastOneIterationLemmas atLeastOneIterationLemmas(program, locationToActiveVars, numberOfTraces);
+        AtLeastOneIterationLemmas atLeastOneIterationLemmas(program, locationToActiveVars, numberOfTraces, programSemantics);
         atLeastOneIterationLemmas.generate(items);
         
         //            OrderingSynchronizationLemmas orderingSynchronizationLemmas(program, locationToActiveVars, numberOfTraces);

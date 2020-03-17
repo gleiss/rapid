@@ -407,8 +407,8 @@ namespace analysis {
             // don't need to take the intersection with active vars at lLeftStart/lRightStart, since the active vars at lStart are always a subset of those at lLeftStart/lRightStart
             auto activeVars = locationToActiveVars.at(lStart->symbol->name);
 
-            auto implicationIfBranch = logic::Formulas::implication(condition, allVarEqual(activeVars,lLeftStart,lStart), "Jumping into the left branch doesn't change the variable values");
-            auto implicationElseBranch = logic::Formulas::implication(negatedCondition, allVarEqual(activeVars,lRightStart,lStart), "Jumping into the right branch doesn't change the variable values");
+            auto implicationIfBranch = logic::Formulas::implication(condition, allVarEqual(activeVars,lLeftStart,lStart, traceVar()), "Jumping into the left branch doesn't change the variable values");
+            auto implicationElseBranch = logic::Formulas::implication(negatedCondition, allVarEqual(activeVars,lRightStart,lStart, traceVar()), "Jumping into the right branch doesn't change the variable values");
 
             conjuncts.push_back(implicationIfBranch);
             conjuncts.push_back(implicationElseBranch);
@@ -615,7 +615,7 @@ namespace analysis {
                 logic::Formulas::universal({itSymbol},
                     logic::Formulas::implication(
                         logic::Theory::natSub(it,n),
-                        allVarEqual(activeVars,lBodyStartIt,lStartIt)
+                        allVarEqual(activeVars,lBodyStartIt,lStartIt, traceVar())
                     ),
                     "Jumping into the loop body doesn't change the variable values"
                 );
@@ -654,7 +654,7 @@ namespace analysis {
             conjuncts.push_back(negConditionAtN);
 
             // Part 4: The values after the while-loop are the values from the timepoint with location lStart and iteration n
-            auto part4 = allVarEqual(activeVars,lEnd,lStartN, "The values after the while-loop are the values from the last iteration");
+            auto part4 = allVarEqual(activeVars,lEnd,lStartN, traceVar(), "The values after the while-loop are the values from the last iteration");
             conjuncts.push_back(part4);
 
             return logic::Formulas::conjunction(conjuncts, "Loop at location " + whileStatement->location);

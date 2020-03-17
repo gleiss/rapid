@@ -55,12 +55,12 @@ namespace analysis {
     /*
      * generate a formula asserting that the values of variable v at timepoint1 and timepoint2 are the same.
      */
-    std::shared_ptr<const logic::Formula> varEqual(std::shared_ptr<const program::Variable> v, std::shared_ptr<const logic::Term> timePoint1, std::shared_ptr<const logic::Term> timePoint2);
+    std::shared_ptr<const logic::Formula> varEqual(std::shared_ptr<const program::Variable> v, std::shared_ptr<const logic::Term> timePoint1, std::shared_ptr<const logic::Term> timePoint2, std::shared_ptr<const logic::Term> trace);
     /*
      * generate a formula asserting that for each variable v in activeVars, the values of v at timepoint1 and timepoint2 are the same.
      * ignores any v in activeVars which is constant.
      */
-    std::shared_ptr<const logic::Formula> allVarEqual(const std::vector<std::shared_ptr<const program::Variable>>& activeVars, std::shared_ptr<const logic::Term> timePoint1, std::shared_ptr<const logic::Term> timePoint2, std::string label="");
+    std::shared_ptr<const logic::Formula> allVarEqual(const std::vector<std::shared_ptr<const program::Variable>>& activeVars, std::shared_ptr<const logic::Term> timePoint1, std::shared_ptr<const logic::Term> timePoint2, std::shared_ptr<const logic::Term> trace, std::string label="");
 }
 
 

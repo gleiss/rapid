@@ -251,14 +251,14 @@ namespace analysis {
         }
     }
 
-    std::shared_ptr<const logic::Formula> varEqual(std::shared_ptr<const program::Variable> v, std::shared_ptr<const logic::Term> timePoint1, std::shared_ptr<const logic::Term> timePoint2)
+    std::shared_ptr<const logic::Formula> varEqual(std::shared_ptr<const program::Variable> v, std::shared_ptr<const logic::Term> timePoint1, std::shared_ptr<const logic::Term> timePoint2, std::shared_ptr<const logic::Term> trace)
     {
         if(!v->isArray)
         {
             return
                 logic::Formulas::equality(
-                    toTerm(v,timePoint1,traceVar()),
-                    toTerm(v,timePoint2,traceVar())
+                    toTerm(v,timePoint1,trace),
+                    toTerm(v,timePoint2,trace)
                 );
         }
         else
@@ -268,21 +268,21 @@ namespace analysis {
             return
                 logic::Formulas::universal({posSymbol},
                     logic::Formulas::equality(
-                        toTerm(v,timePoint1,pos,traceVar()),
-                        toTerm(v,timePoint2,pos,traceVar())
+                        toTerm(v,timePoint1,pos,trace),
+                        toTerm(v,timePoint2,pos,trace)
                     )
                 );
         }
     }
 
-    std::shared_ptr<const logic::Formula> allVarEqual(const std::vector<std::shared_ptr<const program::Variable>>& activeVars, std::shared_ptr<const logic::Term> timePoint1, std::shared_ptr<const logic::Term> timePoint2, std::string label)
+    std::shared_ptr<const logic::Formula> allVarEqual(const std::vector<std::shared_ptr<const program::Variable>>& activeVars, std::shared_ptr<const logic::Term> timePoint1, std::shared_ptr<const logic::Term> timePoint2, std::shared_ptr<const logic::Term> trace, std::string label)
     {
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts;
         for (const auto& var : activeVars)
         {
             if(!var->isConstant)
             {
-                conjuncts.push_back(varEqual(var, timePoint1, timePoint2));
+                conjuncts.push_back(varEqual(var, timePoint1, timePoint2, trace));
             }
         }
         return logic::Formulas::conjunction(conjuncts, label);

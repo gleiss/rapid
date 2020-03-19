@@ -15,7 +15,6 @@ func main()
   }
 
   low1 = high1;
-
 }
 
 (conjecture

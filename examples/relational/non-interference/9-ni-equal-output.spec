@@ -11,8 +11,9 @@ func main()
   while(hi < k)
   {
     output[i] = hi;
-    hi = hi + 1;
     i = i + 1;
+    
+    hi = hi + 1;
   }
 }
 
@@ -22,7 +23,7 @@ func main()
         (= (k t1) (k t2))
         (= (lo t1) (lo t2))
         (forall ((pos Int))
-          (= (output (l11 zero) pos t1) (output (l11 zero) pos t2))
+          (= (output (l7 zero) pos t1) (output (l7 zero) pos t2))
         )
       )
       (forall ((pos Int))

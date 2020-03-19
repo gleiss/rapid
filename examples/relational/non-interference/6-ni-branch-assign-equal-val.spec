@@ -6,13 +6,13 @@ func main()
   const Int low2;
   Int low1;
 
-  if (high > 0) {
+  if (high == 0) {
     low1 = low2 + low2;
   }
-  else {
+  else 
+  {
     low1 = 2 * low2;
   }
-
 }
 
 (conjecture

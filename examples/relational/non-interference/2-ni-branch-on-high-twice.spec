@@ -7,13 +7,13 @@ func main()
   Int[] output;
 
   Int counter = 0;
-  if(h > 0)
+  if(h == 0)
   {
     output[counter] = 5;
     counter = counter + 1;
   }
   else {
-    if (h2 > 0) {
+    if (h2 == 0) {
       output[counter] = 5;
       counter = counter + 1;
     } else {
@@ -29,3 +29,15 @@ func main()
   (= (counter main_end t1) (counter main_end t2))
 )
 
+(conjecture
+  (=>
+    (and
+      (forall ((pos Int))
+        (= (output l9 pos t1) (output l9 pos t2))
+      )
+    )
+    (forall ((pos Int))
+      (= (output main_end pos t1) (output main_end pos t2))
+    )
+  )
+)

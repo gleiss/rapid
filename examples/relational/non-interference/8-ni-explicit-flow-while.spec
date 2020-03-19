@@ -1,4 +1,3 @@
-
 (set-traces 2)
 
 func main()
@@ -20,10 +19,10 @@ func main()
     (=>
         (and
             (forall ((tr Trace))
-                (> (dec (l10 zero) tr) 0)
+                (> (dec (l9 zero) tr) 0)
             )
-            (= (dec (l10 zero) t1) (dec (l10 zero) t2) )
-            (= (lo  (l10 zero) t1) (lo  (l10 zero) t2) )
+            (= (dec (l9 zero) t1) (dec (l9 zero) t2) )
+            (= (lo  (l9 zero) t1) (lo  (l9 zero) t2) )
         )
         (= (lo main_end t1) (lo main_end t2) )
     )

@@ -3,28 +3,20 @@
 func main()
 {
   const Int h;
-  Int l = 5;
-
+  const Int h2;
   Int[] output;
+
   Int counter = 0;
-  
-  if (h == 1)
+  if(h == 0)
   {
-    l = l - 1;
+    output[counter] = 5;
+    counter = counter + 1;
   }
-  else
-  {
-    skip;
+  else {
+    output[counter] = 5;
+    counter = counter + 1;
   }
-  l = 4;
-
-  output[counter] = l;
-  counter = counter + 1;
 }
-
-(conjecture
-  (= (l main_end t1) (l main_end t2))
-)
 
 (conjecture
   (= (counter main_end t1) (counter main_end t2))

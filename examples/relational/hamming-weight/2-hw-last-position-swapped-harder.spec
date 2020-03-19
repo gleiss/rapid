@@ -56,7 +56,13 @@ func main()
 		(and
 			(= (alength t1) (alength t2))
 			(forall ((posA Int))
+				(=>
+					(and
+						(<= 0 posA)
+						(< posA (alength t1))
+					)
 					(= (a posA t1) (a posA t2))
+				)
 			)
 			(= (x t1) (y t2))
 			(= (y t1) (x t2))

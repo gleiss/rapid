@@ -36,7 +36,13 @@ func main()
 		(and
 			(= (alength t1) (alength t2))
 			(forall ((posA Int))
-				(= (a posA t1) (a posA t2))
+				(=>
+					(and
+						(<= 0 posA)
+						(< posA (alength t1))
+					)
+					(= (a posA t1) (a posA t2))
+				)
 			)
 		)
 		(= (hammingWeight main_end t1) (hammingWeight main_end t2))

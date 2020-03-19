@@ -310,7 +310,10 @@ namespace analysis {
                 auto var = pair.first;
                 if (cachedIntVarValues.find(var) == cachedIntVarValues.end() || *cachedIntVarValues[var] != *pair.second)
                 {
-                    mergeVars.insert(var);
+                    if(!var->isConstant)
+                    {
+                        mergeVars.insert(var);
+                    }
                 }
             }
             for (const auto& pair : cachedIntVarValuesRight)
@@ -318,7 +321,10 @@ namespace analysis {
                 auto var = pair.first;
                 if (cachedIntVarValues.find(var) == cachedIntVarValues.end() || *cachedIntVarValues[var] != *pair.second)
                 {
-                    mergeVars.insert(var);
+                    if(!var->isConstant)
+                    {
+                        mergeVars.insert(var);
+                    }
                 }
             }
             for (const auto& pair : cachedArrayVarTimepointsLeft)
@@ -326,7 +332,10 @@ namespace analysis {
                 auto var = pair.first;
                 if (cachedArrayVarTimepoints.find(var) == cachedArrayVarTimepoints.end() || *cachedArrayVarTimepoints[var] != *pair.second)
                 {
-                    mergeVars.insert(var);
+                    if(!var->isConstant)
+                    {
+                        mergeVars.insert(var);
+                    }
                 }
             }
             for (const auto& pair : cachedArrayVarTimepointsRight)
@@ -334,7 +343,10 @@ namespace analysis {
                 auto var = pair.first;
                 if (cachedArrayVarTimepoints.find(var) == cachedArrayVarTimepoints.end() || *cachedArrayVarTimepoints[var] != *pair.second)
                 {
-                    mergeVars.insert(var);
+                    if(!var->isConstant)
+                    {
+                        mergeVars.insert(var);
+                    }
                 }
             }
 

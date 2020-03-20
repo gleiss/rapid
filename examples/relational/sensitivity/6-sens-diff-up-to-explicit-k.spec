@@ -8,8 +8,8 @@ func main()
   const Int k;
   Int x = 0;
   Int y = 0;
-  Int i = 0;
 
+  Int i = 0;
   while(i < alength)
   {
     x = x + a[i];
@@ -37,11 +37,11 @@ func main()
       )
       (= (alength t1) (alength t2))
       (= (blength t1) (blength t2))
-      (= (k t1) 1)
-      (= (k t2) 0)
+      (= (k t1) 456)
+      (= (k t2) 123)
     )
     (and
-      (= (x main_end t1) (+ (x main_end t2) 1))
+      (= (x main_end t1) (+ (x main_end t2) 333))
       (= (y main_end t1) (y main_end t2))
     )
   )

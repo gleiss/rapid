@@ -7,7 +7,6 @@ func main()
   const Int[] a;
   const Int alength;
   const Int z;
-  const Int k;
   Int x = 0;
   Int i = 0;
 
@@ -18,22 +17,26 @@ func main()
   }
 
   x = x + z;
-
 }
 
 (conjecture
-  (=>
-    (and
-      (forall ((j Int))
-        (= (a j t1) (a j t2))
+  (forall ((k Int))
+    (=>
+      (and
+        (forall ((j Int))
+          (= (a j t1) (a j t2))
+        )
+        (= (alength t1) (alength t2))
+
+        // (< (abs (- (z t1) (z t2) )) k)
+        (< (z t1) (+ (z t2) k) )
+        (< (z t2) (+ (z t1) k) )
       )
-      (forall ((xInt Int)(yInt Int)(zInt Int))
-        (= (- (+ xInt zInt) (+ yInt zInt)) (- xInt yInt))
+      //(< (abs(- (x main_end t1) (x main_end t2) )) k)
+      (and
+        (< (x main_end t1) (+ (x main_end t2) k) )
+        (< (x main_end t2) (+ (x main_end t1) k) )
       )
-      (= (k t1) (k t2))
-      (= (alength t1) (alength t2))
-      (< (abs(- (z t1) (z t2) )) (k t2))
     )
-    (< (abs(- (x main_end t1) (x main_end t2) )) (k t2))
   )
 )

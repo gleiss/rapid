@@ -13,19 +13,21 @@
 #include "Problem.hpp"
 
 namespace analysis {
-    
+
     class TheoryAxioms
     {
     public:
         TheoryAxioms() {}
 
          std::vector<std::shared_ptr<const logic::Axiom>> generate();
-        
+
     private:
-        void generateTheoryAxiom1(std::vector<std::shared_ptr<const logic::Axiom>>& axioms);
-        void generateTheoryAxiom2(std::vector<std::shared_ptr<const logic::Axiom>>& axioms);
-        void generateTheoryAxiom3(std::vector<std::shared_ptr<const logic::Axiom>>& axioms);
-        void generateTheoryAxiom4(std::vector<std::shared_ptr<const logic::Axiom>>& axioms); // transitivity for Nat
+        void addZeroSmallestElementAxiom(std::vector<std::shared_ptr<const logic::Axiom>>& axioms);
+        void addDefineSubEqAxiom(std::vector<std::shared_ptr<const logic::Axiom>>& axioms);
+        void addMonotonicityAxiom(std::vector<std::shared_ptr<const logic::Axiom>>& axioms);
+        void addTransitivityAxioms(std::vector<std::shared_ptr<const logic::Axiom>>& axioms);
+        void addTotalityAxiom(std::vector<std::shared_ptr<const logic::Axiom>>& axioms);
+        void addDisjointnessAxioms(std::vector<std::shared_ptr<const logic::Axiom>>& axioms);
     };
 }
 #endif

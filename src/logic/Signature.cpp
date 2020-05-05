@@ -25,11 +25,7 @@ namespace logic {
             // declare and define the symbol time_sub
             if (!util::Configuration::instance().nativeNat() && name == "Sub")
             {
-                std::string ret = "(declare-fun Sub (Nat Nat) Bool)\n";
-                ret += "(assert (forall ((it Nat)) (Sub it (s it))) )\n";
-                ret += "(assert (forall ((it1 Nat)(it2 Nat)) (=> (Sub it1 it2) (Sub it1 (s it2))) ))\n";
-                ret += "(assert (forall ((it Nat)) (Sub zero (s it))))\n";
-                return ret;
+                return "(declare-fun Sub (Nat Nat) Bool)\n";
             }
             if (argSorts.size() == 0 && !(isLemmaPredicate && util::Configuration::instance().lemmaPredicates()))
             {

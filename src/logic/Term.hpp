@@ -76,9 +76,44 @@ namespace logic {
     // hack needed for bison: std::vector has no overload for ostream, but these overloads are needed for bison
     std::ostream& operator<<(std::ostream& ostr, const std::vector<std::shared_ptr<const logic::Term>>& t);
     std::ostream& operator<<(std::ostream& ostr, const std::vector<std::shared_ptr<const logic::LVariable>>& v);
+}
+
+// custom hash for terms
+namespace std
+{
+    template<> struct hash<const logic::Term>
+    {
+        using argument_type = const logic::Term;
+        using result_type = std::size_t;
+
+        result_type operator ()(argument_type const& t) const
+        {
+            // start from symbol of term
+            size_t result = std::hash<const logic::Symbol>()(*t.symbol);
+            // then integrate type into the hash
+            result ^= std::hash<logic::Term::Type>()(t.type()) + 0x9e3779b9 + (result << 6) + (result >> 2);
+            if (t.type() == logic::Term::Type::Variable)
+            {
+                // for an LVariable, finally integrate id into the hash
+                auto castedTerm = dynamic_cast<const logic::LVariable&>(t);
+                result ^= std::hash<unsigned>()(castedTerm.id) + 0x9e3779b9 + (result << 6) + (result >> 2);
+            }
+            else
+            {
+                // for a FuncTerm, integrate each subterm into the hash
+                auto castedTerm = dynamic_cast<const logic::FuncTerm&>(t);
+                for (const auto& subterm : castedTerm.subterms)
+                {
+                    result ^= std::hash<const logic::Term>()(*subterm) + 0x9e3779b9 + (result << 6) + (result >> 2);
+                }
+            }
+            return result;
+        }
+    };
+}
 
 # pragma mark - Terms
-    
+namespace logic {
     // We use Terms as a manager-class for Term-instances
     class Terms
     {

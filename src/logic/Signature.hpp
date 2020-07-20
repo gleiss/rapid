@@ -73,7 +73,18 @@ namespace std
     {
         using argument_type = logic::Symbol;
         using result_type = std::size_t;
-        
+
+        result_type operator ()(argument_type const& s) const
+        {
+            return std::hash<std::string>()(s.name);
+        }
+    };
+
+    template<> struct hash<const logic::Symbol>
+    {
+        using argument_type = logic::Symbol;
+        using result_type = std::size_t;
+
         result_type operator ()(argument_type const& s) const
         {
             return std::hash<std::string>()(s.name);

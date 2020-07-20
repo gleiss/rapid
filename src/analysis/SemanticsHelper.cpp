@@ -23,6 +23,17 @@ namespace analysis {
         return logic::Terms::func(traceSymbol(traceNumber), {});
     }
 
+    std::vector<std::shared_ptr<const logic::Term>> traceTerms(unsigned numberOfTraces)
+    {
+         std::vector<std::shared_ptr<const logic::Term>> traces;
+        for (unsigned traceNumber = 1; traceNumber < numberOfTraces+1; traceNumber++)
+        {
+            traces.push_back(traceTerm(traceNumber));
+        }
+        return traces;
+    }
+
+
 # pragma mark - Methods for generating most used timepoint terms and symbols
     
     std::shared_ptr<const logic::LVariable> iteratorTermForLoop(const program::WhileStatement* whileStatement)

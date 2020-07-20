@@ -18,7 +18,8 @@ namespace analysis {
 
 # pragma mark - Methods for generating most used trace terms
     std::shared_ptr<const logic::Term> traceTerm(unsigned traceNumber);
-    
+    std::vector<std::shared_ptr<const logic::Term>> traceTerms(unsigned numberOfTraces);
+
 # pragma mark - Methods for generating most used timepoint terms and symbols
     std::shared_ptr<const logic::LVariable> iteratorTermForLoop(const program::WhileStatement* whileStatement);
     std::shared_ptr<const logic::Term> lastIterationTermForLoop(const program::WhileStatement* whileStatement, unsigned numberOfTraces, std::shared_ptr<const logic::Term> trace);

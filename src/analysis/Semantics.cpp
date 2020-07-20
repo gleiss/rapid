@@ -16,15 +16,15 @@
 #include "SymbolDeclarations.hpp"
 
 namespace analysis {
-    
+
     std::vector<std::shared_ptr<const program::Variable>> intersection(std::vector<std::shared_ptr<const program::Variable>> v1,
                                                                        std::vector<std::shared_ptr<const program::Variable>> v2)
     {
         std::vector<std::shared_ptr<const program::Variable>> v3;
-        
+
         std::sort(v1.begin(), v1.end());
         std::sort(v2.begin(), v2.end());
-        
+
         std::set_intersection(v1.begin(),v1.end(),
                               v2.begin(),v2.end(),
                               back_inserter(v3));
@@ -77,7 +77,7 @@ namespace analysis {
 
         return axioms;
     }
-    
+
     std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::Statement* statement, SemanticsInliner& inliner, std::shared_ptr<const logic::Term> trace)
     {
         if (statement->type() == program::Statement::Type::IntAssignment)
@@ -102,11 +102,11 @@ namespace analysis {
             return generateSemantics(castedStatement, inliner, trace);
         }
     }
-    
+
     std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::IntAssignment* intAssignment, SemanticsInliner& inliner, std::shared_ptr<const logic::Term> trace)
     {
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts;
-        
+
         auto l1 = startTimepointForStatement(intAssignment);
         auto l2 = endTimePointMap.at(intAssignment);
         auto l1Name = l1->symbol->name;
@@ -117,7 +117,7 @@ namespace analysis {
         if (intAssignment->lhs->type() == program::IntExpression::Type::IntVariableAccess)
         {
             auto castedLhs = std::static_pointer_cast<const program::IntVariableAccess>(intAssignment->lhs);
-            
+
             if (util::Configuration::instance().inlineSemantics())
             {
                 inliner.currTimepoint = l1;
@@ -258,7 +258,7 @@ namespace analysis {
             }
         }
     }
-    
+
     std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::IfElse* ifElse, SemanticsInliner& inliner, std::shared_ptr<const logic::Term> trace)
     {
         std::vector<std::shared_ptr<const logic::Formula>> conjuncts;

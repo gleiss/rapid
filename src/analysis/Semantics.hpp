@@ -14,7 +14,7 @@
 #include "SemanticsInliner.hpp"
 
 namespace analysis {
-    
+
     class Semantics
     {
     public:
@@ -27,9 +27,9 @@ namespace analysis {
         locationToActiveVars(locationToActiveVars),
         problemItems(problemItems),
         numberOfTraces(numberOfTraces) {}
-        
+
         std::vector<std::shared_ptr<const logic::Axiom>> generateSemantics();
-        
+
     private:
 
         const program::Program& program;

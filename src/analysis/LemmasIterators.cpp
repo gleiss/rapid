@@ -7,25 +7,25 @@
 #include "AnalysisPreComputation.hpp"
 
 namespace analysis {
-    
+
     void IntermediateValueLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::ProblemItem>>& items)
     {
         auto itSymbol = iteratorSymbol(statement);
         auto it = iteratorTermForLoop(statement);
         auto it2Symbol = logic::Signature::varSymbol("it", logic::Sorts::natSort());
         auto it2 = logic::Terms::var(it2Symbol);
-        
+
         auto lStartIt = timepointForLoopStatement(statement, it);
         auto lStartIt2 = timepointForLoopStatement(statement, it2);
         auto lStartSuccOfIt = timepointForLoopStatement(statement, logic::Theory::natSucc(it));
         auto lStartSuccOfIt2 = timepointForLoopStatement(statement, logic::Theory::natSucc(it2));
         auto lStartZero = timepointForLoopStatement(statement, logic::Theory::natZero());
-        
+
         auto posSymbol = posVarSymbol();
         auto pos = logic::Terms::var(posSymbol);
         auto xSymbol = logic::Signature::varSymbol("xInt", logic::Sorts::intSort());
         auto x = logic::Terms::var(xSymbol);
-        
+
         auto assignedVars = AnalysisPreComputation::computeAssignedVars(statement);
 
         // add lemma for each intVar and each intArrayVar
@@ -185,7 +185,7 @@ namespace analysis {
             }
         }
     }
-    
+
     void IterationInjectivityLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::ProblemItem>> &items)
     {
         auto itSymbol = iteratorSymbol(statement);
@@ -194,13 +194,13 @@ namespace analysis {
         auto it1 = logic::Terms::var(it1Symbol);
         auto it2Symbol = logic::Signature::varSymbol("it2", logic::Sorts::natSort());
         auto it2 = logic::Terms::var(it2Symbol);
-        
+
         auto lStartIt = timepointForLoopStatement(statement, it);
         auto lStartSuccOfIt = timepointForLoopStatement(statement, logic::Theory::natSucc(it));
         auto lStartIt1 = timepointForLoopStatement(statement, it1);
         auto lStartSuccOfIt1 = timepointForLoopStatement(statement, logic::Theory::natSucc(it1));
         auto lStartIt2 = timepointForLoopStatement(statement, it2);
-        
+
         auto assignedVars = AnalysisPreComputation::computeAssignedVars(statement);
 
         // add lemma for each intVar

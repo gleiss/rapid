@@ -22,10 +22,10 @@ namespace analysis
             assert(trace != nullptr);
             computePersistentTerms(problemItems);
         }
-        
+
         std::shared_ptr<const logic::Term> currTimepoint;
 
-        // note: 
+        // note:
         // - we handle persistent terms referencing a timepoint as soon as we visit the location of the timepoint.
         // - since a const variable is formalized as term without a timepoint/location, we would miss to handle persistance for such terms.
         // - we solve this by handling persistance for terms which formalize const variables immediately when they are declared in setIntVarValue/setArrayVarTimepoint.
@@ -67,7 +67,7 @@ namespace analysis
          * a set containg the name of each const var which is referenced in some input conjecture (or in some input axiom/lemma)
          * Note that we don't (need to) save the exact term (of the conjecture/axiom/lemma) that occurs (we don't care about the position in the array)
          * We keep track of these terms, since the semantics must define those terms in order to be complete.
-         */        
+         */
         SetConstVarNames persistentConstVarTerms;
         void computePersistentTerms(std::vector<std::shared_ptr<const logic::ProblemItem>>& problemItems);
         void computePersistentTermsRec(std::shared_ptr<const logic::Formula> f);

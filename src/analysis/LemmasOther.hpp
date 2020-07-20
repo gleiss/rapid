@@ -9,11 +9,11 @@
 #include "Program.hpp"
 
 namespace analysis {
-    
+
     /*
      * We use the lemmas in this header to cover additional (inductive) reasoning which doesn't fit in any particular category.
      */
-    
+
     /*
      * LEMMA 1
      * if the loop condition holds at the first iteration, then there exists an iteration whose successor is the last iteration.
@@ -38,7 +38,7 @@ namespace analysis {
 
         virtual void generateOutputFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::ProblemItem>>& items) override;
     };
-    
+
     /*
      * LEMMA 2
      * TODO: not used currently, since implementation unsound
@@ -48,7 +48,7 @@ namespace analysis {
     {
     public:
         using ProgramTraverser::ProgramTraverser; // inherit initializer, note: doesn't allow additional members in subclass!
-        
+
     private:
         virtual void generateOutputFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::ProblemItem>>& items) override;
     };

@@ -10,12 +10,12 @@
 #include "AnalysisPreComputation.hpp"
 
 namespace analysis {
-    
+
     void EqualityPreservationTracesLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::ProblemItem>>& items)
     {
         auto posSymbol = posVarSymbol();
         auto pos = posVar();
-        
+
         auto assignedVars = AnalysisPreComputation::computeAssignedVars(statement);
 
         // add lemma for each intVar and each intArrayVar
@@ -67,7 +67,7 @@ namespace analysis {
     void NEqualLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::ProblemItem>>& items)
     {
         assert(numberOfTraces > 1);
-        
+
         auto itSymbol = iteratorSymbol(statement);
         auto it = iteratorTermForLoop(statement);
         auto lStartIt = timepointForLoopStatement(statement, it);

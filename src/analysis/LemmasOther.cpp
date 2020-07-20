@@ -8,7 +8,7 @@
 #include "SemanticsHelper.hpp"
 
 namespace analysis {
-    
+
     void AtLeastOneIterationLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::ProblemItem>>& items)
     {
         auto itSymbol = iteratorSymbol(statement);
@@ -42,32 +42,32 @@ namespace analysis {
             items.push_back(std::make_shared<logic::Lemma>(bareLemma, name, logic::ProblemItem::Visibility::Implicit, fromItems));
         }
     }
-    
+
     void OrderingSynchronizationLemmas::generateOutputFor(const program::WhileStatement *statement, std::vector<std::shared_ptr<const logic::ProblemItem>>& items)
     {
         // assert(numberOfTraces > 1);
-        
+
         // auto t1 = traceTerm(1);
         // auto t2 = traceTerm(2);
-        
+
         // auto iSymbol = iteratorSymbol(statement);
         // auto it = iteratorTermForLoop(statement);
         // auto it1Symbol = logic::Signature::varSymbol("it1", logic::Sorts::natSort());
         // auto it1 = logic::Terms::var(it1Symbol);
         // auto it2Symbol = logic::Signature::varSymbol("it2", logic::Sorts::natSort());
         // auto it2 = logic::Terms::var(it2Symbol);
-        
+
         // auto lStartIt = timepointForLoopStatement(statement, it);
         // auto lStartZero = timepointForLoopStatement(statement, logic::Theory::natZero());
         // auto lStartSuccOfIt = timepointForLoopStatement(statement, logic::Theory::natSucc(it));
         // auto lStartIt1 = timepointForLoopStatement(statement, it1);
         // auto lStartIt2 = timepointForLoopStatement(statement, it2);
-        
+
         // auto trSymbol = traceVarSymbol();
         // auto tr = traceVar();
         // auto tr3Symbol = logic::Signature::varSymbol("tr3", logic::Sorts::traceSort());
         // auto tr3 = logic::Terms::var(tr3Symbol);
-        
+
         // // add lemma for each intVar
         // // Lemma:
         // // forall ((tr : Trace) (it1 : Nat) (it2 : Nat))
@@ -102,14 +102,14 @@ namespace analysis {
         //                         )
         //                     )
         //                 });
-                    
+
         //             // Conclusion: i(l(it1),tr) < i(l(it2),tr)
         //             auto conclusion =
         //                 logic::Theory::intLess(
         //                     toTerm(v,lStartIt1,tr),
         //                     toTerm(v,lStartIt2,tr)
         //                 );
-                    
+
         //             // forall enclosingIterators. forall tr,it1,it2. (premise => conclusion)
         //             auto bareLemma =
         //                 logic::Formulas::universal(enclosingIteratorsSymbols(statement),
@@ -117,7 +117,7 @@ namespace analysis {
         //                         logic::Formulas::implication(premise,conclusion)
         //                     )
         //                 );
-                    
+
         //             auto name = "synchronization-orderings-" + v->name + "-" + statement->location;
         //             items.push_back(std::make_shared<logic::Lemma>(bareLemma, name));
         //         }

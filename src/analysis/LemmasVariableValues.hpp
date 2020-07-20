@@ -12,11 +12,11 @@
 #include "Program.hpp"
 
 namespace analysis {
-    
+
     /*
      * We use the lemmas in this header to cover the inductive reasoning about how values of program variables change in given intervals
      */
-    
+
     /*
      * LEMMA 1
      * Induction lemma to reason about how a single value of a variable (-position) evolves over an interval, for reflexive transitive connectives =,<=,>=.
@@ -154,12 +154,12 @@ namespace analysis {
             unsigned numberOfTraces,
             std::vector<std::shared_ptr<const logic::Axiom>> programSemantics) : 
             ProgramTraverser<std::vector<std::shared_ptr<const logic::ProblemItem>>>(program, locationToActiveVars, numberOfTraces), programSemantics(programSemantics) {}
-        
+
     private:
         std::vector<std::shared_ptr<const logic::Axiom>> programSemantics;
 
         virtual void generateOutputFor(const program::WhileStatement* statement, std::vector<std::shared_ptr<const logic::ProblemItem>>& items) override;
-        
+
         std::unordered_set<std::shared_ptr<const program::Variable>> computeAssignedVars(const program::Statement* statement);
     };
 }

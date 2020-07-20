@@ -205,7 +205,7 @@ namespace analysis
     std::shared_ptr<const logic::Term> SemanticsInliner::toCachedTerm(std::shared_ptr<const program::IntExpression> expr)
     {
         assert(expr != nullptr);
-        
+
         switch (expr->type())
         {
             case program::IntExpression::Type::ArithmeticConstant:
@@ -249,7 +249,7 @@ namespace analysis
     std::shared_ptr<const logic::Formula> SemanticsInliner::toCachedFormula(std::shared_ptr<const program::BoolExpression> expr)
     {
         assert(expr != nullptr);
-        
+
         switch (expr->type())
         {
             case program::BoolExpression::Type::BooleanConstant:
@@ -350,9 +350,9 @@ namespace analysis
                             auto posSymbol = posVarSymbol();
                             auto pos = posVar();
                             auto f = 
-                                logic::Formulas::universalSimp({posSymbol}, 
+                                logic::Formulas::universalSimp({posSymbol},
                                     logic::Formulas::equalitySimp(
-                                        toTerm(var, currTimepoint, pos, trace), 
+                                        toTerm(var, currTimepoint, pos, trace),
                                         toTerm(var, cachedTimepoint, pos, trace)
                                     )
                                 );
@@ -367,7 +367,7 @@ namespace analysis
                 }
             }
         }
-        
+
         return logic::Formulas::conjunctionSimp(conjuncts, label);
     }
 
@@ -408,7 +408,7 @@ namespace analysis
                         cachedIntVarValues[var] = toTerm(var, startTimepoint, trace);
                     }
 
-                    auto f = 
+                    auto f =
                         logic::Formulas::equality(
                             toTerm(var, iterationTimepoint, trace), 
                             cachedIntVarValues[var]
@@ -429,7 +429,7 @@ namespace analysis
                     }
 
                     auto pos = posVar();
-                    auto f = 
+                    auto f =
                         logic::Formulas::equality(
                             toTerm(var, iterationTimepoint, pos, trace),
                             toTerm(var, cachedArrayVarTimepoints[var], pos, trace)

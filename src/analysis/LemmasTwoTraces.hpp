@@ -10,12 +10,12 @@
 #include "Program.hpp"
 
 namespace analysis {
-    
+
     /*
      * We use the lemmas in this header to cover the inductive reasoning which relates values and timepoints of two execution-traces.
      * Each of these lemmas is added for any pair (t1,t2) of (different) traces.
      */
-    
+
     /*
      * LEMMA 1
      * If a variable has the same value (or if an array has at one position the same value) in both traces at some iteration,
@@ -48,11 +48,11 @@ namespace analysis {
     {
     public:
         using ProgramTraverser::ProgramTraverser; // inherit initializer, note: doesn't allow additional members in subclass!
-        
+
     private:
         virtual void generateOutputFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::ProblemItem>>& items) override;
     };
-    
+
     /*
      * LEMMA 2
      * if all variables used in the loop iteration have the same value in both traces in each iteration,
@@ -109,9 +109,6 @@ namespace analysis {
         void computeVariablesContainedInLoopCondition(std::shared_ptr<const program::BoolExpression> expr, std::unordered_set<std::shared_ptr<const program::Variable>>& variables);
         void computeVariablesContainedInLoopCondition(std::shared_ptr<const program::IntExpression> expr, std::unordered_set<std::shared_ptr<const program::Variable>>& variables);
     };
-    
-
-    
 }
 
 #endif

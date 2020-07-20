@@ -9,7 +9,7 @@
 #include "Program.hpp"
 
 namespace analysis {
-    
+
     /*
      * We use the lemmas in this header to cover the inductive reasoning for iterator variables.
      *
@@ -21,7 +21,7 @@ namespace analysis {
      * and add iterator lemmas only for those variables.
      * This would introduce less useless lemmas, but would burden the programmer with explicitly marking the iterator-variables.
      */
-    
+
     /*
      * LEMMA 1:
      * If the (iterator-) variable v is dense, and the value x is between the value of v at the beginning and at the end of the loop, then there is a timepoint in the loop,
@@ -101,11 +101,11 @@ namespace analysis {
     {
     public:
         using ProgramTraverser::ProgramTraverser; // inherit initializer, note: doesn't allow additional members in subclass!
-        
+
     private:
         virtual void generateOutputFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::ProblemItem>>& items) override;
     };
-    
+
     /*
      * LEMMA 2:
      * =>
@@ -151,7 +151,7 @@ namespace analysis {
     {
     public:
         using ProgramTraverser::ProgramTraverser; // inherit initializer, note: doesn't allow additional members in subclass!
-        
+
     private:
         virtual void generateOutputFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::ProblemItem>>& items) override;
     };

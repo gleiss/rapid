@@ -8,6 +8,7 @@
 #include "ProgramTraverser.hpp"
 #include "Problem.hpp"
 #include "Program.hpp"
+#include "SemanticsInliner.hpp"
 
 namespace analysis {
 
@@ -99,11 +100,13 @@ namespace analysis {
             const program::Program& program,
             std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars,
             unsigned numberOfTraces,
-            std::vector<std::shared_ptr<const logic::Axiom>> programSemantics) :
-            ProgramTraverser<std::vector<std::shared_ptr<const logic::ProblemItem>>>(program, locationToActiveVars, numberOfTraces), programSemantics(programSemantics) {}
+            std::vector<std::shared_ptr<const logic::Axiom>> programSemantics,
+            InlinedVariableValues& inlinedVarValues) :
+            ProgramTraverser<std::vector<std::shared_ptr<const logic::ProblemItem>>>(program, locationToActiveVars, numberOfTraces), programSemantics(programSemantics), inlinedVarValues(inlinedVarValues) {}
 
     private:
         std::vector<std::shared_ptr<const logic::Axiom>> programSemantics;
+        InlinedVariableValues& inlinedVarValues;
 
         virtual void generateOutputFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::ProblemItem>>& items) override;
     };

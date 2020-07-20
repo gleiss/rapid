@@ -72,6 +72,7 @@ namespace analysis {
         auto it = iteratorTermForLoop(statement);
         auto lStartIt = timepointForLoopStatement(statement, it);
 
+        auto assignedVars = AnalysisPreComputation::computeAssignedVars(statement);
         std::unordered_set<std::shared_ptr<const program::Variable>> loopConditionVars;
         AnalysisPreComputation::computeVariablesContainedInLoopCondition(statement->condition, loopConditionVars);
 
@@ -104,7 +105,7 @@ namespace analysis {
                     std::vector<std::shared_ptr<const logic::Formula>> conjuncts;
                     for (const auto& v : loopConditionVars)
                     {
-                        if (!v->isConstant)
+                        if (assignedVars.find(v) != assignedVars.end())
                         {
                             if (v->isArray)
                             {
@@ -146,10 +147,10 @@ namespace analysis {
                 // PART 2: Add trace lemma
                 std::vector<std::shared_ptr<const logic::Formula>> premiseConjuncts;
 
-                // PART 2A: Add EqVC to premise
+                // PART 2A: Add EqVC to premise, for (i) constant vars and (ii) non-constant but non-assigned vars
                 for (const auto& v : loopConditionVars)
                 {
-                    if (v->isConstant)
+                    if (assignedVars.find(v) == assignedVars.end())
                     {
                         if (v->isArray)
                         {
@@ -159,8 +160,8 @@ namespace analysis {
                                 logic::Formulas::universal(
                                     {posSymbol},
                                     logic::Formulas::equality(
-                                        toTerm(v, nullptr, pos, t1),
-                                        toTerm(v, nullptr, pos, t2)
+                                        inlinedVarValues.toInlinedTerm(statement, v, pos, t1),
+                                        inlinedVarValues.toInlinedTerm(statement, v, pos, t2)
                                     )
                                 )
                             );
@@ -169,15 +170,15 @@ namespace analysis {
                         {
                             premiseConjuncts.push_back(
                                     logic::Formulas::equality(
-                                    toTerm(v, nullptr, t1),
-                                    toTerm(v, nullptr, t2)
+                                        inlinedVarValues.toInlinedTerm(statement, v, t1),
+                                        inlinedVarValues.toInlinedTerm(statement, v, t2)
                                 )
                             );
                         }
                     }
                 }
 
-                // PART 2B: Add IH(zero) to premise
+                // PART 2B: Add IH(zero) to premise, ensuring that non-constant vars are the same at the beginning of the loop execution
                 premiseConjuncts.push_back(
                     inductionHypothesis(logic::Theory::natZero())
                 );

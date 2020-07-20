@@ -12,6 +12,7 @@
 #include "Problem.hpp"
 #include "AnalysisPreComputation.hpp"
 #include "SemanticsInliner.hpp"
+#include "SemanticsHelper.hpp"
 
 namespace analysis {
 
@@ -26,9 +27,9 @@ namespace analysis {
         endTimePointMap(AnalysisPreComputation::computeEndTimePointMap(program)),
         locationToActiveVars(locationToActiveVars),
         problemItems(problemItems),
-        numberOfTraces(numberOfTraces) {}
-
-        std::vector<std::shared_ptr<const logic::Axiom>> generateSemantics();
+        numberOfTraces(numberOfTraces),
+        inlinedVariableValues(traceTerms(numberOfTraces)) {}
+        std::pair<std::vector<std::shared_ptr<const logic::Axiom>>, InlinedVariableValues> generateSemantics();
 
     private:
 
@@ -37,6 +38,7 @@ namespace analysis {
         const std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars;
         std::vector<std::shared_ptr<const logic::ProblemItem>>& problemItems;
         const unsigned numberOfTraces;
+        InlinedVariableValues inlinedVariableValues;
 
         std::shared_ptr<const logic::Formula> generateSemantics(const program::Statement* statement, SemanticsInliner& inliner, std::shared_ptr<const logic::Term> trace);
         std::shared_ptr<const logic::Formula> generateSemantics(const program::IntAssignment* intAssignment, SemanticsInliner& inliner, std::shared_ptr<const logic::Term> trace);
@@ -46,5 +48,3 @@ namespace analysis {
     };
 }
 #endif
-
-

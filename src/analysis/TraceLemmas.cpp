@@ -23,7 +23,8 @@ namespace analysis {
         const program::Program& program,
         std::unordered_map<std::string, std::vector<std::shared_ptr<const program::Variable>>> locationToActiveVars,
         unsigned numberOfTraces,
-        std::vector<std::shared_ptr<const logic::Axiom>> programSemantics)
+        std::vector<std::shared_ptr<const logic::Axiom>> programSemantics,
+        InlinedVariableValues& inlinedVarValues)
     {
         std::vector<std::shared_ptr<const logic::ProblemItem>> items;
 
@@ -45,7 +46,7 @@ namespace analysis {
         iterationInjectivityLemmas.generate(items);
 
         // Other lemmas
-        AtLeastOneIterationLemmas atLeastOneIterationLemmas(program, locationToActiveVars, numberOfTraces, programSemantics);
+        AtLeastOneIterationLemmas atLeastOneIterationLemmas(program, locationToActiveVars, numberOfTraces, programSemantics, inlinedVarValues);
         atLeastOneIterationLemmas.generate(items);
 
         //            OrderingSynchronizationLemmas orderingSynchronizationLemmas(program, locationToActiveVars, numberOfTraces);
@@ -57,7 +58,7 @@ namespace analysis {
             EqualityPreservationTracesLemmas equalityPreservationTracesLemmas(program, locationToActiveVars, numberOfTraces);
             equalityPreservationTracesLemmas.generate(items);
 
-            NEqualLemmas nEqualLemmas(program, locationToActiveVars, numberOfTraces, programSemantics);
+            NEqualLemmas nEqualLemmas(program, locationToActiveVars, numberOfTraces, programSemantics, inlinedVarValues);
             nEqualLemmas.generate(items);
         }
 

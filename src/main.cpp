@@ -66,10 +66,10 @@ int main(int argc, char *argv[])
                 }
 
                 analysis::Semantics s(*parserResult.program, parserResult.locationToActiveVars, parserResult.problemItems, parserResult.numberOfTraces);
-                auto semantics = s.generateSemantics();
+                auto [semantics, inlinedVarValues] = s.generateSemantics();
                 problemItems.insert(problemItems.end(), semantics.begin(), semantics.end());
 
-                auto traceLemmas = analysis::generateTraceLemmas(*parserResult.program, parserResult.locationToActiveVars, parserResult.numberOfTraces, semantics);
+                auto traceLemmas = analysis::generateTraceLemmas(*parserResult.program, parserResult.locationToActiveVars, parserResult.numberOfTraces, semantics, inlinedVarValues);
                 problemItems.insert(problemItems.end(), traceLemmas.begin(), traceLemmas.end());
                 
 

@@ -11,6 +11,7 @@
 #include "Term.hpp"
 #include "Variable.hpp"
 #include "Expression.hpp"
+#include "AnalysisPreComputation.hpp"
 
 namespace analysis
 {
@@ -23,6 +24,9 @@ namespace analysis
             computePersistentTerms(problemItems);
         }
 
+        /*
+         * the timepoint we are at currently in the (simulated) execution of the program
+         */
         std::shared_ptr<const logic::Term> currTimepoint;
 
         // note:
@@ -73,10 +77,6 @@ namespace analysis
         void computePersistentTermsRec(std::shared_ptr<const logic::Formula> f);
         void computePersistentTermsRec(std::shared_ptr<const logic::Term> t);
 
-        /*
-         * the timepoint we are at currently in the (simulated) execution of the program
-         */
-
         typedef std::unordered_map<std::shared_ptr<const program::Variable>, std::shared_ptr<const logic::Term>> IntVarValues;
         typedef std::unordered_map<std::shared_ptr<const program::Variable>, std::shared_ptr<const logic::Term>> ArrayVarValues;
         /*
@@ -88,6 +88,58 @@ namespace analysis
          */
         IntVarValues cachedIntVarValues;
         ArrayVarValues cachedArrayVarTimepoints;
+    };
+
+    /*
+     * data structure which keeps track of the values inlined while generating the semantics of a program.
+     * It is needed for generating the trace lemmas, as these lemmas need to use the same inlining as the semantics (we could also inline the user conjecture(s), but we want to keep them in their original form)
+     *
+     * For generating correct trace lemmas, we depend on the fact that variables, which get assigned in a loop, are never inlined for that loop. We check and ensure this property in the InlinedVariableValues-class.
+     */
+    class InlinedVariableValues
+    {
+    public:
+        InlinedVariableValues(std::vector<std::shared_ptr<const logic::Term>> traces);
+
+        void initializeWhileStatement(const program::WhileStatement* whileStatement);
+        void setValue(const program::WhileStatement* whileStatement, std::shared_ptr<const program::Variable> var, std::shared_ptr<const logic::Term> trace, std::shared_ptr<const logic::Term> value);
+        void setArrayTimepoint(const program::WhileStatement* whileStatement, std::shared_ptr<const program::Variable> arrayVar, std::shared_ptr<const logic::Term> trace, std::shared_ptr<const logic::Term> timepoint);
+
+        // the following four methods provide access to the value of the given expression at the after inlining has been performed
+        // for each of the following two methods getValue(...) we require that a corresponding value has been set earlier using setValue(...).
+        std::shared_ptr<const logic::Term> toInlinedTerm(const program::WhileStatement* whileStatement, std::shared_ptr<const program::Variable> var, std::shared_ptr<const logic::Term> trace);
+        std::shared_ptr<const logic::Term> toInlinedTerm(const program::WhileStatement* whileStatement, std::shared_ptr<const program::Variable> arrayVar, std::shared_ptr<const logic::Term> position, std::shared_ptr<const logic::Term> trace);
+
+        // evaluate the given expr at the given timepoint, while using inlined values for whileStatement for all variables, which are not assigned in that WhileStatement.
+        std::shared_ptr<const logic::Term> toInlinedTerm(const program::WhileStatement* whileStatement, std::shared_ptr<const program::IntExpression> expr, std::shared_ptr<const logic::Term> timepoint, std::shared_ptr<const logic::Term> trace);
+        std::shared_ptr<const logic::Formula> toInlinedFormula(const program::WhileStatement* whileStatement, std::shared_ptr<const program::BoolExpression> expr, std::shared_ptr<const logic::Term> timepoint, std::shared_ptr<const logic::Term> trace);
+
+    private:
+        class TermPointerHash {
+        public:
+            std::size_t operator ()(const std::shared_ptr<const logic::Term>& p) const
+            {
+                return std::hash<const logic::Term>()(*p);
+            }
+        };
+        class TermPointerEqual {
+        public:
+            bool operator ()(const std::shared_ptr<const logic::Term>& p1, const std::shared_ptr<const logic::Term>& p2) const
+            {
+                return *p1 == *p2;
+            }
+        };
+
+        typedef std::unordered_map<std::shared_ptr<const program::Variable>, std::shared_ptr<const logic::Term>> VarToValueMap;
+        typedef std::unordered_map<const program::WhileStatement*, VarToValueMap> LoopToVarToValueMap;
+        typedef std::unordered_map<std::shared_ptr<const logic::Term>, LoopToVarToValueMap, TermPointerHash, TermPointerEqual> TraceToLoopToVarToValueMap;
+
+        typedef std::unordered_map<std::shared_ptr<const program::Variable>, std::shared_ptr<const logic::Term>> ArrayVarToTimepointMap;
+        typedef std::unordered_map<const program::WhileStatement*, ArrayVarToTimepointMap> LoopToArrayVarToTimepointMap;
+        typedef std::unordered_map<std::shared_ptr<const logic::Term>, LoopToArrayVarToTimepointMap, TermPointerHash, TermPointerEqual> TraceToLoopToArrayVarToTimepointMap;
+
+        TraceToLoopToVarToValueMap values;
+        TraceToLoopToArrayVarToTimepointMap arrayValues;
     };
 }
 #endif

@@ -479,4 +479,192 @@ namespace analysis
 
         // note: there is nothing to do here for handling persistance for const-array-vars (it is not possible to assign a concrete value to a constant array)
     }
+
+    InlinedVariableValues::InlinedVariableValues(std::vector<std::shared_ptr<const logic::Term>> traces) : values()
+    {
+        for (const auto& trace : traces)
+        {
+            // initialize an empty dictionary for each trace
+            values[trace]={};
+            arrayValues[trace]={};
+        }
+    }
+
+    void InlinedVariableValues::initializeWhileStatement(const program::WhileStatement* whileStatement)
+    {
+        for (auto& m : values)
+        {
+            if(m.second.find(whileStatement) == m.second.end())
+            {
+                m.second[whileStatement] = {};
+            }
+        }
+        for (auto& m : arrayValues)
+        {
+            if(m.second.find(whileStatement) == m.second.end())
+            {
+                m.second[whileStatement] = {};
+            }
+        }
+    }
+
+    void InlinedVariableValues::setValue(const program::WhileStatement* whileStatement, std::shared_ptr<const program::Variable> var, std::shared_ptr<const logic::Term> trace, std::shared_ptr<const logic::Term> value)
+    {
+        assert(whileStatement != nullptr);
+        assert(var != nullptr);
+        assert(value != nullptr);
+        assert(trace != nullptr);
+        assert(!var->isArray);
+        assert(AnalysisPreComputation::computeAssignedVars(whileStatement).count(var) == 0);
+        values.at(trace);
+        values.at(trace).at(whileStatement);
+
+        values.at(trace).at(whileStatement)[var] = value;
+    }
+
+    void InlinedVariableValues::setArrayTimepoint(const program::WhileStatement* whileStatement, std::shared_ptr<const program::Variable> arrayVar, std::shared_ptr<const logic::Term> trace, std::shared_ptr<const logic::Term> timepoint)
+    {
+        assert(whileStatement != nullptr);
+        assert(arrayVar != nullptr);
+        assert(trace != nullptr);
+        assert(timepoint != nullptr);
+        assert(arrayVar->isArray);
+        assert(AnalysisPreComputation::computeAssignedVars(whileStatement).count(arrayVar) == 0);
+
+        arrayValues.at(trace).at(whileStatement)[arrayVar] = timepoint;
+    }
+
+    std::shared_ptr<const logic::Term> InlinedVariableValues::toInlinedTerm(const program::WhileStatement* whileStatement, std::shared_ptr<const program::Variable> var, std::shared_ptr<const logic::Term> trace)
+    {
+        assert(whileStatement != nullptr);
+        assert(var != nullptr);
+        assert(trace != nullptr);
+        assert(!var->isArray);
+
+        return values.at(trace).at(whileStatement).at(var);
+    }
+
+    std::shared_ptr<const logic::Term> InlinedVariableValues::toInlinedTerm(const program::WhileStatement* whileStatement, std::shared_ptr<const program::Variable> arrayVar, std::shared_ptr<const logic::Term> position, std::shared_ptr<const logic::Term> trace)
+    {
+        assert(whileStatement != nullptr);
+        assert(arrayVar != nullptr);
+        assert(position != nullptr);
+        assert(arrayVar->isArray);
+
+        auto timepoint = arrayValues.at(trace).at(whileStatement).at(arrayVar);
+        return toTerm(arrayVar, timepoint, position, trace);
+    }
+
+    std::shared_ptr<const logic::Term> InlinedVariableValues::toInlinedTerm(const program::WhileStatement* whileStatement, std::shared_ptr<const program::IntExpression> expr, std::shared_ptr<const logic::Term> timepoint, std::shared_ptr<const logic::Term> trace)
+    {
+        assert(expr != nullptr);
+        assert(whileStatement != nullptr);
+
+        switch (expr->type())
+        {
+            case program::IntExpression::Type::ArithmeticConstant:
+            {
+                auto castedExpr = std::static_pointer_cast<const program::ArithmeticConstant>(expr);
+                return logic::Theory::intConstant(castedExpr->value);
+            }
+            case program::IntExpression::Type::Addition:
+            {
+                auto castedExpr = std::static_pointer_cast<const program::Addition>(expr);
+                return logic::Theory::intAddition(toInlinedTerm(whileStatement, castedExpr->summand1, timepoint, trace), toInlinedTerm(whileStatement, castedExpr->summand2, timepoint, trace));
+            }
+            case program::IntExpression::Type::Subtraction:
+            {
+                auto castedExpr = std::static_pointer_cast<const program::Subtraction>(expr);
+                return logic::Theory::intSubtraction(toInlinedTerm(whileStatement, castedExpr->child1, timepoint, trace), toInlinedTerm(whileStatement, castedExpr->child2, timepoint, trace));
+            }
+            case program::IntExpression::Type::Modulo:
+            {
+                auto castedExpr = std::static_pointer_cast<const program::Modulo>(expr);
+                return logic::Theory::intModulo(toInlinedTerm(whileStatement, castedExpr->child1, timepoint, trace), toInlinedTerm(whileStatement, castedExpr->child2, timepoint, trace));
+            }
+            case program::IntExpression::Type::Multiplication:
+            {
+                auto castedExpr = std::static_pointer_cast<const program::Multiplication>(expr);
+                return logic::Theory::intMultiplication(toInlinedTerm(whileStatement, castedExpr->factor1, timepoint, trace), toInlinedTerm(whileStatement, castedExpr->factor2, timepoint, trace));
+            }
+            case program::IntExpression::Type::IntVariableAccess:
+            {
+                auto var = std::static_pointer_cast<const program::IntVariableAccess>(expr)->var;
+                if (AnalysisPreComputation::computeAssignedVars(whileStatement).count(var) == 0)
+                {
+                    // 'var' was not assigned to in 'whileStatement', so use inlined value (which must exist)
+                    return toInlinedTerm(whileStatement, var, trace);
+                }
+                else
+                {
+                    // 'var' was assigned to in 'whileStatement', so use original value
+                    return toTerm(var, timepoint, trace);
+                }
+            }
+            case program::IntExpression::Type::IntArrayApplication:
+            {
+                auto castedExpr = std::static_pointer_cast<const program::IntArrayApplication>(expr);
+                auto arrayVar = castedExpr->array;
+                auto arrayIndex = castedExpr->index;
+
+                auto position = toInlinedTerm(whileStatement, arrayIndex, timepoint, trace);
+                if (AnalysisPreComputation::computeAssignedVars(whileStatement).count(arrayVar) == 0)
+                {
+                    // 'arrayVar' was not assigned to in 'whileStatement', so use inlined value (which must exist)
+                    return toInlinedTerm(whileStatement, arrayVar, position, trace);
+                }
+                else
+                {
+                    // 'arrayVar' was assigned to in 'whileStatement', so use original value
+                    return toTerm(arrayVar, timepoint, position, trace);
+                }
+            }
+        }
+    }
+
+    std::shared_ptr<const logic::Formula> InlinedVariableValues::toInlinedFormula(const program::WhileStatement* whileStatement, std::shared_ptr<const program::BoolExpression> expr, std::shared_ptr<const logic::Term> timepoint, std::shared_ptr<const logic::Term> trace)
+    {
+        assert(expr != nullptr);
+
+        switch (expr->type())
+        {
+            case program::BoolExpression::Type::BooleanConstant:
+            {
+                auto castedExpr = std::static_pointer_cast<const program::BooleanConstant>(expr);
+                return castedExpr->value ? logic::Theory::boolTrue() : logic::Theory::boolFalse();
+            }
+            case program::BoolExpression::Type::BooleanAnd:
+            {
+                auto castedExpr = std::static_pointer_cast<const program::BooleanAnd>(expr);
+                return logic::Formulas::conjunction({toInlinedFormula(whileStatement, castedExpr->child1, timepoint, trace), toInlinedFormula(whileStatement, castedExpr->child2, timepoint, trace)});
+            }
+            case program::BoolExpression::Type::BooleanOr:
+            {
+                auto castedExpr = std::static_pointer_cast<const program::BooleanOr>(expr);
+                return logic::Formulas::disjunction({toInlinedFormula(whileStatement, castedExpr->child1, timepoint, trace), toInlinedFormula(whileStatement, castedExpr->child2, timepoint, trace)});
+            }
+            case program::BoolExpression::Type::BooleanNot:
+            {
+                auto castedExpr = std::static_pointer_cast<const program::BooleanNot>(expr);
+                return logic::Formulas::negation(toInlinedFormula(whileStatement, castedExpr->child, timepoint, trace));
+            }
+            case program::BoolExpression::Type::ArithmeticComparison:
+            {
+                auto castedExpr = std::static_pointer_cast<const program::ArithmeticComparison>(expr);
+                switch (castedExpr->kind)
+                {
+                    case program::ArithmeticComparison::Kind::GT:
+                        return logic::Theory::intGreater(toInlinedTerm(whileStatement, castedExpr->child1, timepoint, trace), toInlinedTerm(whileStatement, castedExpr->child2, timepoint, trace));
+                    case program::ArithmeticComparison::Kind::GE:
+                        return logic::Theory::intGreaterEqual(toInlinedTerm(whileStatement, castedExpr->child1, timepoint, trace), toInlinedTerm(whileStatement, castedExpr->child2, timepoint, trace));
+                    case program::ArithmeticComparison::Kind::LT:
+                        return logic::Theory::intLess(toInlinedTerm(whileStatement, castedExpr->child1, timepoint, trace), toInlinedTerm(whileStatement, castedExpr->child2, timepoint, trace));
+                    case program::ArithmeticComparison::Kind::LE:
+                        return logic::Theory::intLessEqual(toInlinedTerm(whileStatement, castedExpr->child1, timepoint, trace), toInlinedTerm(whileStatement, castedExpr->child2, timepoint, trace));
+                    case program::ArithmeticComparison::Kind::EQ:
+                        return logic::Formulas::equality(toInlinedTerm(whileStatement, castedExpr->child1, timepoint, trace), toInlinedTerm(whileStatement, castedExpr->child2, timepoint, trace));
+                }
+            }
+        }
+    }
 }

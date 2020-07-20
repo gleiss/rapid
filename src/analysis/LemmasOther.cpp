@@ -27,7 +27,7 @@ namespace analysis {
             auto bareLemma =
                 logic::Formulas::universal(enclosingIteratorsSymbols(statement),
                     logic::Formulas::implication(
-                        toFormula(statement->condition, lStartZero,trace),
+                        inlinedVarValues.toInlinedFormula(statement, statement->condition, lStartZero, trace),
                         logic::Formulas::existential({itSymbol},
                             logic::Formulas::equality(logic::Theory::natSucc(it),n)
                         )

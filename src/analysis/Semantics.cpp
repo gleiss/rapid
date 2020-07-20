@@ -12,7 +12,6 @@
 #include "Theory.hpp"
 #include "Options.hpp"
 
-#include "SemanticsHelper.hpp"
 #include "SymbolDeclarations.hpp"
 
 namespace analysis {
@@ -31,7 +30,7 @@ namespace analysis {
         return v3;
     }
 
-    std::vector<std::shared_ptr<const logic::Axiom>> Semantics::generateSemantics()
+    std::pair<std::vector<std::shared_ptr<const logic::Axiom>>, InlinedVariableValues> Semantics::generateSemantics()
     {
         // generate semantics compositionally
         std::vector<std::shared_ptr<const logic::Axiom>> axioms;
@@ -39,11 +38,9 @@ namespace analysis {
         {
             std::vector<std::shared_ptr<const logic::Formula>> conjunctsFunction;
 
-            for (unsigned traceNumber = 1; traceNumber < numberOfTraces+1; traceNumber++)
+            for (const auto& trace : traceTerms(numberOfTraces))
             {
                 std::vector<std::shared_ptr<const logic::Formula>> conjunctsTrace;
-
-                auto trace = traceTerm(traceNumber);
 
                 SemanticsInliner inliner(problemItems, trace);
                 for (const auto& statement : function->statements)
@@ -75,7 +72,7 @@ namespace analysis {
             axioms.push_back(std::make_shared<logic::Axiom>(axiomFormula, "Semantics of function " + function->name, logic::ProblemItem::Visibility::Implicit));
         }
 
-        return axioms;
+        return std::make_pair(axioms, inlinedVariableValues);
     }
 
     std::shared_ptr<const logic::Formula> Semantics::generateSemantics(const program::Statement* statement, SemanticsInliner& inliner, std::shared_ptr<const logic::Term> trace)
@@ -480,7 +477,7 @@ namespace analysis {
         if (util::Configuration::instance().inlineSemantics())
         {
             auto assignedVars = AnalysisPreComputation::computeAssignedVars(whileStatement);
-            // Part 0: custom persistence handling: handle all vars which are 1) active, 2) keep the same value throughout the loop, 3) non-const, and 4) persistent at the loop condition check
+            // Part 0: custom persistence handling: handle all vars which 1) are active, 2) keep the same value throughout the loop, 3) are non-const, and 4) are persistent at the loop condition check
             // note: condition 3) is a requirement since otherwise the defining formulas could be unsound. Condition 4) does not lead to incompleteness of the formalization, since the value of variables, which change their value in the loop, will be defined afterwards anyway.
             std::vector<std::shared_ptr<const program::Variable>> vars;
             for (const auto& var : activeVars)
@@ -560,6 +557,26 @@ namespace analysis {
                     "The loop-condition holds always before the last iteration"
                 )
             );
+
+            // Extra part: collect in inlinedVarValues the values of all variables, which occur in the loop condition but are not assigned to.
+            inlinedVariableValues.initializeWhileStatement(whileStatement);
+            std::unordered_set<std::shared_ptr<const program::Variable>> loopConditionVars;
+            AnalysisPreComputation::computeVariablesContainedInLoopCondition(whileStatement->condition, loopConditionVars);
+
+            for (const auto& var : loopConditionVars)
+            {
+                if (assignedVars.find(var) == assignedVars.end())
+                {
+                    if (var->isArray)
+                    {
+                        inlinedVariableValues.setArrayTimepoint(whileStatement, var, trace, inliner.getCachedArrayVarTimepoints().at(var));
+                    }
+                    else
+                    {
+                        inlinedVariableValues.setValue(whileStatement, var, trace, inliner.getCachedIntVarValues().at(var));
+                    }
+                }
+            }
 
             // Part 3: collect all formulas describing semantics of the body, and define values of assignedVars at all iterations s(it)
             assert(*inliner.currTimepoint == *lStartIt);

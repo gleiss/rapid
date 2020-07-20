@@ -73,7 +73,7 @@ namespace analysis {
         auto lStartIt = timepointForLoopStatement(statement, it);
 
         std::unordered_set<std::shared_ptr<const program::Variable>> loopConditionVars;
-        computeVariablesContainedInLoopCondition(statement->condition, loopConditionVars);
+        AnalysisPreComputation::computeVariablesContainedInLoopCondition(statement->condition, loopConditionVars);
 
         for (unsigned traceNumber1 = 1; traceNumber1 < numberOfTraces+1; traceNumber1++)
         {
@@ -249,99 +249,4 @@ namespace analysis {
             }
         }
     }
-
-    void NEqualLemmas::computeVariablesContainedInLoopCondition(std::shared_ptr<const program::BoolExpression> expr, std::unordered_set<std::shared_ptr<const program::Variable>>& variables) 
-    {
-        assert(expr != nullptr);
-        switch (expr->type())
-        {
-            case program::BoolExpression::Type::BooleanAnd:
-            {
-                auto castedExpr = std::static_pointer_cast<const program::BooleanAnd>(expr);
-                computeVariablesContainedInLoopCondition(castedExpr->child1, variables);
-                computeVariablesContainedInLoopCondition(castedExpr->child2, variables);
-                break;
-            }
-            case program::BoolExpression::Type::BooleanOr:
-            {
-                auto castedExpr = std::static_pointer_cast<const program::BooleanOr>(expr);
-                computeVariablesContainedInLoopCondition(castedExpr->child1, variables);
-                computeVariablesContainedInLoopCondition(castedExpr->child2, variables);
-                break;
-            }
-            case program::BoolExpression::Type::BooleanNot:
-            {
-                auto castedExpr = std::static_pointer_cast<const program::BooleanNot>(expr);
-                computeVariablesContainedInLoopCondition(castedExpr->child, variables);
-                break;
-            }
-            case program::BoolExpression::Type::ArithmeticComparison:
-            {
-                auto castedExpr = std::static_pointer_cast<const program::ArithmeticComparison>(expr);
-                computeVariablesContainedInLoopCondition(castedExpr->child1, variables);
-                computeVariablesContainedInLoopCondition(castedExpr->child2, variables);
-                break;
-            }
-            case program::BoolExpression::Type::BooleanConstant:
-            {
-                // do nothing
-                break;
-            }
-        }
-    }
-
-    void NEqualLemmas::computeVariablesContainedInLoopCondition(std::shared_ptr<const program::IntExpression> expr, std::unordered_set<std::shared_ptr<const program::Variable>>& variables)
-    {
-        assert(expr != nullptr);
-        switch (expr->type())
-        {
-            case program::IntExpression::Type::Addition:
-            {
-                auto castedExpr = std::static_pointer_cast<const program::Addition>(expr);
-                computeVariablesContainedInLoopCondition(castedExpr->summand1, variables);
-                computeVariablesContainedInLoopCondition(castedExpr->summand2, variables);
-                break;
-            }
-            case program::IntExpression::Type::Subtraction:
-            {
-                auto castedExpr = std::static_pointer_cast<const program::Subtraction>(expr);
-                computeVariablesContainedInLoopCondition(castedExpr->child1, variables);
-                computeVariablesContainedInLoopCondition(castedExpr->child2, variables);
-                break;
-            }
-            case program::IntExpression::Type::Multiplication:
-            {
-                auto castedExpr = std::static_pointer_cast<const program::Multiplication>(expr);
-                computeVariablesContainedInLoopCondition(castedExpr->factor1, variables);
-                computeVariablesContainedInLoopCondition(castedExpr->factor2, variables);
-                break;
-            }
-            case program::IntExpression::Type::Modulo:
-            {
-                auto castedExpr = std::static_pointer_cast<const program::Modulo>(expr);
-                computeVariablesContainedInLoopCondition(castedExpr->child1, variables);
-                computeVariablesContainedInLoopCondition(castedExpr->child2, variables);
-                break;
-            }
-            case program::IntExpression::Type::IntVariableAccess:
-            {
-                auto castedExpr = std::static_pointer_cast<const program::IntVariableAccess>(expr);
-                variables.insert(castedExpr->var);
-                break;
-            }
-            case program::IntExpression::Type::IntArrayApplication:
-            {
-                auto castedExpr = std::static_pointer_cast<const program::IntArrayApplication>(expr);
-                variables.insert(castedExpr->array);
-                computeVariablesContainedInLoopCondition(castedExpr->index, variables);
-                break;
-            }
-            case program::IntExpression::Type::ArithmeticConstant:
-            {
-                // do nothing
-                break;
-            }
-        }
-    }
 }
-

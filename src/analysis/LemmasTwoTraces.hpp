@@ -106,8 +106,6 @@ namespace analysis {
         std::vector<std::shared_ptr<const logic::Axiom>> programSemantics;
 
         virtual void generateOutputFor(const program::WhileStatement* statement,  std::vector<std::shared_ptr<const logic::ProblemItem>>& items) override;
-        void computeVariablesContainedInLoopCondition(std::shared_ptr<const program::BoolExpression> expr, std::unordered_set<std::shared_ptr<const program::Variable>>& variables);
-        void computeVariablesContainedInLoopCondition(std::shared_ptr<const program::IntExpression> expr, std::unordered_set<std::shared_ptr<const program::Variable>>& variables);
     };
 }
 

@@ -8,6 +8,7 @@
 #include "SymbolDeclarations.hpp"
 #include "SemanticsHelper.hpp"
 #include "AnalysisPreComputation.hpp"
+#include "Options.hpp"
 
 namespace analysis {
 
@@ -76,6 +77,8 @@ namespace analysis {
         std::unordered_set<std::shared_ptr<const program::Variable>> loopConditionVars;
         AnalysisPreComputation::computeVariablesContainedInLoopCondition(statement->condition, loopConditionVars);
 
+        bool inlineSemantics = util::Configuration::instance().inlineSemantics();
+
         for (unsigned traceNumber1 = 1; traceNumber1 < numberOfTraces+1; traceNumber1++)
         {
             for (unsigned traceNumber2 = traceNumber1+1; traceNumber2 < numberOfTraces+1; traceNumber2++)
@@ -105,7 +108,9 @@ namespace analysis {
                     std::vector<std::shared_ptr<const logic::Formula>> conjuncts;
                     for (const auto& v : loopConditionVars)
                     {
-                        if (assignedVars.find(v) != assignedVars.end())
+                        // note: Inlining variable values removes the need for induction for non-const non-assigned vars
+                        if ((inlineSemantics && assignedVars.find(v) != assignedVars.end()) ||
+                            (!inlineSemantics && !v->isConstant))
                         {
                             if (v->isArray)
                             {
@@ -150,7 +155,8 @@ namespace analysis {
                 // PART 2A: Add EqVC to premise, for (i) constant vars and (ii) non-constant but non-assigned vars
                 for (const auto& v : loopConditionVars)
                 {
-                    if (assignedVars.find(v) == assignedVars.end())
+                    if ((inlineSemantics && assignedVars.find(v) == assignedVars.end()) ||
+                       (!inlineSemantics && v->isConstant))
                     {
                         if (v->isArray)
                         {
@@ -160,8 +166,8 @@ namespace analysis {
                                 logic::Formulas::universal(
                                     {posSymbol},
                                     logic::Formulas::equality(
-                                        inlinedVarValues.toInlinedTerm(statement, v, pos, t1),
-                                        inlinedVarValues.toInlinedTerm(statement, v, pos, t2)
+                                        inlineSemantics ? inlinedVarValues.toInlinedTerm(statement, v, pos, t1) : toTerm(v, nullptr, pos, t1),
+                                        inlineSemantics ? inlinedVarValues.toInlinedTerm(statement, v, pos, t2) : toTerm(v, nullptr, pos, t2)
                                     )
                                 )
                             );
@@ -169,9 +175,9 @@ namespace analysis {
                         else
                         {
                             premiseConjuncts.push_back(
-                                    logic::Formulas::equality(
-                                        inlinedVarValues.toInlinedTerm(statement, v, t1),
-                                        inlinedVarValues.toInlinedTerm(statement, v, t2)
+                                logic::Formulas::equality(
+                                    inlineSemantics ? inlinedVarValues.toInlinedTerm(statement, v, t1) : toTerm(v, nullptr, t1),
+                                    inlineSemantics ? inlinedVarValues.toInlinedTerm(statement, v, t2) : toTerm(v, nullptr, t2)
                                 )
                             );
                         }

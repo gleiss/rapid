@@ -6,6 +6,7 @@
 #include "Theory.hpp"
 #include "SymbolDeclarations.hpp"
 #include "SemanticsHelper.hpp"
+#include "Options.hpp"
 
 namespace analysis {
 
@@ -27,7 +28,9 @@ namespace analysis {
             auto bareLemma =
                 logic::Formulas::universal(enclosingIteratorsSymbols(statement),
                     logic::Formulas::implication(
-                        inlinedVarValues.toInlinedFormula(statement, statement->condition, lStartZero, trace),
+                        util::Configuration::instance().inlineSemantics() ?
+                            inlinedVarValues.toInlinedFormula(statement, statement->condition, lStartZero, trace) :
+                            toFormula(statement->condition, lStartZero,trace),
                         logic::Formulas::existential({itSymbol},
                             logic::Formulas::equality(logic::Theory::natSucc(it),n)
                         )

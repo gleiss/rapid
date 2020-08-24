@@ -75,9 +75,9 @@ namespace util {
         Configuration() :
         _outputDir("-dir", ""),
         _generateBenchmark("generateBenchmark", false),
-        _nativeNat("-nat", false),
+        _nativeNat("-nat", true),
         _inlineSemantics("-inlineSemantics", true),
-        _lemmaPredicates("-lemmaPredicates", false),
+        _lemmaPredicates("-lemmaPredicates", true),
         _allOptions()
         {
             registerOption(&_outputDir);
